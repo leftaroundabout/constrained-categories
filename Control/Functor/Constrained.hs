@@ -1,3 +1,16 @@
+-- |
+-- Module      : Control.Functor.Constrained 
+-- Copyright   : (c) Justus Sagemüller 2012
+-- License     : GPL v3
+-- 
+-- Maintainer  : (@) sagemuej $ smail.uni-koeln.de
+-- Stability   : experimental
+-- Portability : portable
+-- 
+-- 
+-- Constrained functor class. For the canonical mapping @f a -> f b@ to exists, both
+-- @f a@ and @f b@ need to fulfill the constraint @'CFunctorCtxt'@.
+
 {-# LANGUAGE ConstraintKinds      #-}
 {-# LANGUAGE FlexibleInstances    #-}
 

@@ -1,0 +1,15 @@
+Name:                constrained-categories
+Version:             0.1
+Category:            media
+Synopsis:            Constrained versions of the stadard category-theory-based type classes, using ConstraintKinds
+Description:         Constrained versions of the stadard category-theory-based type classes, using ConstraintKinds
+License:             GPL-3
+License-file:        COPYING
+Author:              Justus Sagemüller
+Maintainer:          (@) sagemuej $ smail.uni-koeln.de
+Build-Type:          Simple
+Cabal-Version:       >=1.2
+
+Library
+  Build-Depends:     base>=4.5
+  Exposed-modules:   Control.Functor.Constrained
