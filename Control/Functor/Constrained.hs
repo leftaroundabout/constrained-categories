@@ -36,6 +36,6 @@ class CFunctor f where
 
 infixl 4 <$>#
 
-(<$>#) :: (CFunctorCtxt f a, CFunctorCtxt f b)
+(<$>#) :: (CFunctor f, CFunctorCtxt f a, CFunctorCtxt f b)
      => (a -> b) -> f a -> f b
 (<$>#) = cfmap
