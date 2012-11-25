@@ -12,16 +12,19 @@
 -- @f a@ and @f b@ need to fulfill the constraint @'CFunctorCtxt'@.
 
 {-# LANGUAGE ConstraintKinds      #-}
+{-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Control.Functor.Constrained where
 
+import GHC.Exts
 
 class CFunctor f where
   type CFunctorCtxt f a :: Constraint
-  type CFunctorCtxt f a = ()
+--   type CFunctorCtxt f a = ()
   cfmap :: (CFunctorCtxt f a, CFunctorCtxt f b)
      => (a -> b) -> f a -> f b
 
-instance (Functor f) => CFunctor f where
-  cfmap = fmap
+-- instance (Functor f) => CFunctor f where
+--   cfmap = fmap
