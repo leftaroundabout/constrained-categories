@@ -8,7 +8,7 @@
 -- Portability : portable
 -- 
 -- 
--- Constrained functor class. For the canonical mapping @f a -> f b@ to exists, both
+-- Constrained functor class. For the canonical mapping @f a -> f b@ to exist, both
 -- @f a@ and @f b@ need to fulfill the constraint @'CFunctorCtxt'@.
 
 {-# LANGUAGE ConstraintKinds      #-}

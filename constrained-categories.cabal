@@ -1,8 +1,8 @@
 Name:                constrained-categories
 Version:             0.1
-Category:            media
-Synopsis:            Constrained versions of the stadard category-theory-based type classes, using ConstraintKinds
-Description:         Constrained versions of the stadard category-theory-based type classes, using ConstraintKinds
+Category:            control
+Synopsis:            Constrained versions of the standard category-theory-based type classes, using ConstraintKinds
+Description:         Constrained versions of the standard category-theory-based type classes, using ConstraintKinds
 License:             GPL-3
 License-file:        COPYING
 Author:              Justus Sagemüller
