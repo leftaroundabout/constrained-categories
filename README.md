@@ -15,4 +15,4 @@ The naming scheme employed here tries to avoid clashes with the Prelude as well 
 
 The constrained version of a standard class `Ξ` is named `CΞ`, e.g. the constrained version of `Applicative` is `CApplicative`. Methods and other functions are prefixed with a `c` without uppercasing the first letter of the original name, e.g. `cfmap`. Infix operators are postfixed with a `#`, like in `<*>#`.
 
-The module names are obtained as `Control.Ξ.Constrained`, e.g. `Control.Functor.Contrained`.
+The module names are obtained as `Control.Ξ.Constrained`, e.g. `Control.Functor.Constrained`.
