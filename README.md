@@ -11,8 +11,9 @@ where `RMonad` is the `Monad` class plus an added `Constraint` `RMonadCtxt`, whi
 
 <hr>
 
-The naming scheme employed here tries to avoid clashes with the Prelude as well as the [`rmonad` package](http://hackage.haskell.org/package/rmonad) (which does not use actual constraint kinds yet).
+This pattern of defining a "constrained version" of some existing type class ad-hoc (with a constrain specifically for types turning up in that class's methods), while applicable, is bound to lead to many incompatible instances, it does not really obey the mathematical concepts from category theory.
 
-The constrained version of a standard class `Ξ` is named `CΞ`, e.g. the constrained version of `Applicative` is `CApplicative`. Methods and other functions are prefixed with a `c` without uppercasing the first letter of the original name, e.g. `cfmap`. Infix operators are postfixed with a `#`, like in `<*>#`.
+This library attemps to better things, by actually starting right from the `Category` class. The flip side is that the resulting classes can't be expected to permit instances for already-existing types as readily as specific versions do.
 
-The module names are obtained as `Control.Ξ.Constrained`, e.g. `Control.Functor.Constrained`.
+
+
