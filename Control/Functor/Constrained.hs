@@ -1,8 +1,6 @@
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
 {-# LANGUAGE FunctionalDependencies       #-}
-{-# LANGUAGE FlexibleInstances            #-}
-{-# LANGUAGE UndecidableInstances         #-}
 
 
 module Control.Functor.Constrained where
@@ -12,7 +10,6 @@ import Control.Category.Constrained
 
 import Prelude hiding (id, (.), Functor(..))
 import qualified Prelude
-import GHC.Exts (Constraint)
 
 
 class (Category r, Category t) => Functor f r t | f r -> t, f t -> r where
