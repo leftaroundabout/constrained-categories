@@ -6,9 +6,10 @@ module Control.Category.Constrained ( Category (..)
                                     , ConstrainedCategory ()
                                     , constrained, unconstrained
                                     , Function (..)
+                                    , Curry (..)
                                     ) where
 
-import Prelude hiding (id, (.), ($))
+import Prelude hiding (id, (.), ($), curry, uncurry)
 import qualified Prelude
 import GHC.Exts (Constraint)
 
@@ -53,4 +54,19 @@ instance Function (->) where ($) = (Prelude.$)
 
 instance (Function f) => Function (ConstrainedCategory f o) where
   ConstrainedMorphism q $ x = q $ x
+
+
+
+class (Category k) => Curry k where
+  type PairObject k a b :: Constraint
+  type PairObject k a b = ()
+  uncurry :: (Object k a, Object k b, Object k c, PairObject k a b) 
+         => k a (k b c) -> k (a, b) c
+  curry :: (Object k a, Object k b, Object k c, PairObject k a b) 
+         => k (a, b) c -> k a (k b c)
+
+instance Curry (->) where
+  uncurry = Prelude.uncurry
+  curry = Prelude.curry
+
 
