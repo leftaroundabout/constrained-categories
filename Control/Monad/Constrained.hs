@@ -5,7 +5,9 @@
 {-# LANGUAGE FlexibleContexts             #-}
 
 
-module Control.Monad.Constrained where
+module Control.Monad.Constrained( module Control.Applicative.Constrained 
+                                , Monad(..), return, (>>=), (=<<) 
+                                ) where
 
 
 import Control.Category.Constrained

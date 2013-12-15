@@ -3,7 +3,9 @@
 {-# LANGUAGE FunctionalDependencies       #-}
 
 
-module Control.Applicative.Constrained where
+module Control.Applicative.Constrained ( module Control.Functor.Constrained
+                                       , Applicative(..)
+                                       ) where
 
 
 import Control.Category.Constrained
