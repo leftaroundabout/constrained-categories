@@ -33,7 +33,7 @@ newtype ConstrainedCategory (k :: * -> * -> *) (o :: * -> Constraint) (a :: *) (
 constrained :: (Category k, o a, o b) => k a b -> ConstrainedCategory k o a b
 constrained = ConstrainedMorphism
 
-unconstrained :: (Category k, o a, o b) => ConstrainedCategory k o a b -> k a b
+unconstrained :: (Category k) => ConstrainedCategory k o a b -> k a b
 unconstrained = unconstrainedMorphism
 
 instance (Category k) => Category (ConstrainedCategory k isObj) where
