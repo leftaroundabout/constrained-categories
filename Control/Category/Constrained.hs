@@ -5,9 +5,10 @@
 module Control.Category.Constrained ( Category (..)
                                     , ConstrainedCategory ()
                                     , constrained, unconstrained
+                                    , Function (..)
                                     ) where
 
-import Prelude hiding (id, (.))
+import Prelude hiding (id, (.), ($))
 import qualified Prelude
 import GHC.Exts (Constraint)
 
@@ -41,4 +42,15 @@ instance (Category k) => Category (ConstrainedCategory k isObj) where
   id = ConstrainedMorphism id
   ConstrainedMorphism f . ConstrainedMorphism g = ConstrainedMorphism $ f . g
 
+
+
+infixr 0 $
+
+class (Category k) => Function k where
+  ($) :: (Object k a, Object k b) => k a b -> a -> b
+
+instance Function (->) where ($) = (Prelude.$)
+
+instance (Function f) => Function (ConstrainedCategory f o) where
+  ConstrainedMorphism q $ x = q $ x
 

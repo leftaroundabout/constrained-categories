@@ -14,7 +14,7 @@ import Control.Category.Constrained
 import Control.Functor.Constrained
 import Control.Applicative.Constrained
 
-import Prelude hiding (id, (.), Functor(..), Monad(..), (=<<))
+import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<))
 import qualified Prelude
 
 
