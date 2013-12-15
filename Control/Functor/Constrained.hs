@@ -5,6 +5,7 @@
 
 module Control.Functor.Constrained ( module Control.Category.Constrained
                                    , Functor(..)
+                                   , constrainedFmap
                                    ) where
 
 
@@ -23,6 +24,12 @@ instance Functor ((->)a) (->) (->) where
 
 instance Functor [] (->) (->) where
   fmap = map
+
+  
+constrainedFmap :: (Category r, Category t, o a, o b, o (f a), o (f b)) 
+      => (        r a b               -> t (f a) (f b)                      ) 
+       -> ConstrainedCategory r o a b -> ConstrainedCategory t o (f a) (f b)
+constrainedFmap q = constrained . q . unconstrained
 
   
 

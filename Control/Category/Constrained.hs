@@ -2,7 +2,10 @@
 {-# LANGUAGE PolyKinds                    #-}
 {-# LANGUAGE TypeFamilies                 #-}
 
-module Control.Category.Constrained where
+module Control.Category.Constrained ( Category (..)
+                                    , ConstrainedCategory ()
+                                    , constrained, unconstrained
+                                    ) where
 
 import Prelude hiding (id, (.))
 import qualified Prelude
@@ -26,6 +29,12 @@ instance Category (->) where
 --   extra constraints to what is considered an object.
 newtype ConstrainedCategory (k :: * -> * -> *) (o :: * -> Constraint) (a :: *) (b :: *)
    = ConstrainedMorphism { unconstrainedMorphism :: k a b }
+
+constrained :: (Category k, o a, o b) => k a b -> ConstrainedCategory k o a b
+constrained = ConstrainedMorphism
+
+unconstrained :: (Category k, o a, o b) => ConstrainedCategory k o a b -> k a b
+unconstrained = unconstrainedMorphism
 
 instance (Category k) => Category (ConstrainedCategory k isObj) where
   type Object (ConstrainedCategory k isObj) o = (Object k o, isObj o)
