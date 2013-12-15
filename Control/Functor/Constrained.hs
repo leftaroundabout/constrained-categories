@@ -1,6 +1,9 @@
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
 {-# LANGUAGE FunctionalDependencies       #-}
+{-# LANGUAGE FlexibleInstances            #-}
+{-# LANGUAGE UndecidableInstances         #-}
+
 
 module Control.Functor.Constrained where
 
@@ -21,4 +24,6 @@ instance Functor ((->)a) (->) (->) where
 
 instance Functor [] (->) (->) where
   fmap = map
+
+  
 

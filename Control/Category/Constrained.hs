@@ -1,4 +1,5 @@
 {-# LANGUAGE ConstraintKinds              #-}
+{-# LANGUAGE PolyKinds                    #-}
 {-# LANGUAGE TypeFamilies                 #-}
 
 module Control.Category.Constrained where
@@ -17,4 +18,12 @@ class Category k where
 instance Category (->) where
   id = Prelude.id
   (.) = (Prelude..)
+
+newtype ConstrainedCategory (k :: * -> * -> *) (o :: * -> Constraint) (a :: *) (b :: *)
+   = ConstrainedMorphism { unconstrainedMorphism :: k a b }
+
+instance (Category k) => Category (ConstrainedCategory k isObj) where
+  type Object (ConstrainedCategory k isObj) o = (Object k o, isObj o)
+  id = ConstrainedMorphism id
+  ConstrainedMorphism f . ConstrainedMorphism g = ConstrainedMorphism $ f . g
 
