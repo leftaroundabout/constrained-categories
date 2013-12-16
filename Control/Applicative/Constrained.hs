@@ -20,12 +20,11 @@ import qualified Prelude
 
 class (Functor f r t, Curry r, Curry t) => Monoidal f r t where
   pure :: (Object r a, Object t (f a)) => a -> f a
-  fpure :: (MorphObject r a b, Object t (f a)) => r a b -> f (r a b)
   fzipWith :: (Object r c, PairObject t (f a) (f b), Object t (f c))
               => r (a, b) c -> t (f a, f b) (f c)
 
 class (Monoidal f r t) => Applicative f r t where
-  -- pure :: (Object r a, Object r b) => r a b -> f (r a b)
+  fpure :: (MorphObject r a b, Object t (f a)) => r a b -> f (r a b)
   (<*>) :: ( MorphObject r a b, Object r (r a b)
            , MorphObject t (f a) (f b), Object t (t (f a) (f b)), Object t (f (r a b))
            , PairObject r (r a b) a, PairObject t (f (r a b)) (f a)
@@ -50,16 +49,16 @@ infixl 4 <*>
 
 instance Monoidal ((->)a) (->) (->) where
   pure = const
-  fpure = const
   fzipWith f (a, b) x = f (a x, b x)
 instance Applicative ((->)a) (->) (->) where
+  fpure = const
   f <*> g = \x -> f x $ g x
   
 instance Monoidal [] (->) (->) where
   pure x = [x]
-  fpure f = [f]
   fzipWith f (as, bs) = [ f (a,b) | a<-as, b<-bs ]
 instance Applicative [] (->) (->) where
+  fpure f = [f]
   fs <*> xs = fs >>= (`map`xs)
 
   
