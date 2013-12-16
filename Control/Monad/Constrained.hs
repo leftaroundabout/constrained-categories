@@ -6,7 +6,7 @@
 
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
-                                , Monad(..), return, (>>=), (=<<) 
+                                , Monad(..), (>>=), (=<<) 
                                 ) where
 
 
@@ -19,11 +19,10 @@ import qualified Prelude
 
 
 class (Applicative m k k) => Monad m k where
+  return :: (Object k a, Object k (m a)) => k a (m a)
   join :: (Object k (m a), Object k (m (m a)))
        => m (m a) `k` m a
 
-return :: (Monad m k, Object k a, Object k (m a)) => k a (m a)
-return = pure
          
 
 infixl 1 >>=
@@ -36,9 +35,11 @@ infixr 1 =<<
 (>>=) = flip (=<<)
 
 instance Monad ((->)a) (->) where
+  return = const
   join f x = f x x
 
 instance Monad [] (->) where
+  return = (:[])
   join = concat
   
 

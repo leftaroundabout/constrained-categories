@@ -1,10 +1,12 @@
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
+{-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE FunctionalDependencies       #-}
 {-# LANGUAGE FlexibleContexts             #-}
 
 
 module Control.Applicative.Constrained ( module Control.Functor.Constrained
+                                       , Monoidal(..)
                                        , Applicative(..)
                                        ) where
 
@@ -12,21 +14,24 @@ module Control.Applicative.Constrained ( module Control.Functor.Constrained
 import Control.Category.Constrained
 import Control.Functor.Constrained
 
-import Prelude hiding (id, (.), ($), Functor(..))
+import Prelude hiding (id, (.), ($), Functor(..), curry, uncurry)
 import qualified Prelude
 
 
 class (Functor f r t, Curry r, Curry t) => Monoidal f r t where
   pure :: (Object r a, Object t (f a)) => a -> f a
-  fpure :: (PairObject r a b, Object t (f a)) => r a c -> f (r a c)
+  fpure :: (MorphObject r a b, Object t (f a)) => r a b -> f (r a b)
   fzipWith :: (Object r c, PairObject t (f a) (f b), Object t (f c))
               => r (a, b) c -> t (f a, f b) (f c)
 
 class (Monoidal f r t) => Applicative f r t where
   -- pure :: (Object r a, Object r b) => r a b -> f (r a b)
-  (<*>) :: (Function r, Object r a, Object r b, Object t (f a), Object t (f b))
-       => f (r a b) -> t (f a) (f b)
-  (<*>) m = fzipWith 
+  (<*>) :: ( MorphObject r a b, Object r (r a b)
+           , MorphObject t (f a) (f b), Object t (t (f a) (f b)), Object t (f (r a b))
+           , PairObject r (r a b) a, PairObject t (f (r a b)) (f a)
+           , Object r a, Object r b, Object t (f a), Object t (f b))
+       => f (r a b) `t` t (f a) (f b)
+  (<*>) = curry (fzipWith $ uncurry id)
 
 infixl 4 <*>
 
@@ -45,12 +50,14 @@ infixl 4 <*>
 
 instance Monoidal ((->)a) (->) (->) where
   pure = const
+  fpure = const
   fzipWith f (a, b) x = f (a x, b x)
 instance Applicative ((->)a) (->) (->) where
   f <*> g = \x -> f x $ g x
   
 instance Monoidal [] (->) (->) where
   pure x = [x]
+  fpure f = [f]
   fzipWith f (as, bs) = [ f (a,b) | a<-as, b<-bs ]
 instance Applicative [] (->) (->) where
   fs <*> xs = fs >>= (`map`xs)

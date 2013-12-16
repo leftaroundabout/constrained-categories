@@ -60,13 +60,18 @@ instance (Function f) => Function (ConstrainedCategory f o) where
 class (Category k) => Curry k where
   type PairObject k a b :: Constraint
   type PairObject k a b = ()
-  uncurry :: (Object k a, Object k b, Object k c, PairObject k a b) 
+  type MorphObject k b c :: Constraint
+  type MorphObject k b c = ()
+  uncurry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c)
          => k a (k b c) -> k (a, b) c
-  curry :: (Object k a, Object k b, Object k c, PairObject k a b) 
+  curry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c) 
          => k (a, b) c -> k a (k b c)
 
 instance Curry (->) where
   uncurry = Prelude.uncurry
   curry = Prelude.curry
 
+-- instance (Curry f) => Curry (ConstrainedCategory f o) where
+--   type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o :w
+                                                                     
 
