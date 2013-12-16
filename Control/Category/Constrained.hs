@@ -71,7 +71,10 @@ instance Curry (->) where
   uncurry = Prelude.uncurry
   curry = Prelude.curry
 
--- instance (Curry f) => Curry (ConstrainedCategory f o) where
---   type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o :w
+instance (Curry f) => Curry (ConstrainedCategory f o) where
+  type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o a, o b, o (a, b))
+  type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
+  uncurry (ConstrainedMorphism f) = ConstrainedMorphism $ \(a,b) -> unconstrained (f a) b
+  curry (ConstrainedMorphism f) = ConstrainedMorphism $ \a -> ConstrainedMorphism $ \b -> f (a, b)
                                                                      
 
