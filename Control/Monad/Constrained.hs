@@ -6,7 +6,7 @@
 
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
-                                , Monad(..), (>>=), (=<<) 
+                                , Monad(..), (>>=), (=<<), (>>)
                                 ) where
 
 
@@ -16,6 +16,7 @@ import Control.Applicative.Constrained
 
 import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<))
 import qualified Prelude
+import qualified Control.Arrow as A
 
 
 class (Applicative m k k) => Monad m k where
@@ -36,6 +37,15 @@ infixl 1 >>=
          , Object f (m a), Object f (m b), Object f (m (m b)) ) 
              => m a -> f a (m b) -> m b
 g >>= h = (=<<) h $ g
+
+infixl 1 >>
+(>>) :: ( Function f, A.Arrow f, Monad m f, Object f a, Object f b
+         , Object f (m a), Object f (m b), Object f (m (m b)) ) 
+            => m a -> f (m b) (m b)
+(>>) a = result
+  where result = A.arr $ \b -> (join . fmap (A.arr $ const b)) `asTypeOf` catDummy $ a
+        catDummy = undefined . result . undefined -- Just to get in the right category
+
 
 instance Monad ((->)a) (->) where
   return = const
