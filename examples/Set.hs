@@ -1,6 +1,7 @@
 
 {-# LANGUAGE MultiParamTypeClasses       #-}
 {-# LANGUAGE FlexibleInstances           #-}
+{-# LANGUAGE RebindableSyntax            #-}
 
 import Control.Monad.Constrained
 

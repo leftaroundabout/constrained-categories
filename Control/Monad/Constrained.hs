@@ -3,6 +3,7 @@
 {-# LANGUAGE FunctionalDependencies       #-}
 {-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE FlexibleContexts             #-}
+{-# LANGUAGE FlexibleInstances            #-}
 
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
@@ -15,7 +16,7 @@ import Control.Functor.Constrained
 import Control.Applicative.Constrained
 
 import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<))
-import qualified Prelude
+import qualified Control.Category.Hask as Hask
 import qualified Control.Arrow as A
 
 
@@ -47,13 +48,9 @@ infixl 1 >>
         catDummy = undefined . result . undefined -- Just to get in the right category
 
 
-instance Monad ((->)a) (->) where
-  return = const
-  join f x = f x x
-
-instance Monad [] (->) where
-  return = (:[])
-  join = concat
+instance (Hask.Applicative m, Hask.Monad m) => Monad m (->) where
+  return = Hask.return
+  join = Hask.join
   
 
 -- | Deliberately break attempts to use this function.

@@ -3,6 +3,7 @@
 {-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE FunctionalDependencies       #-}
 {-# LANGUAGE FlexibleContexts             #-}
+{-# LANGUAGE FlexibleInstances            #-}
 
 
 module Control.Applicative.Constrained ( module Control.Functor.Constrained
@@ -16,7 +17,7 @@ import Control.Category.Constrained
 import Control.Functor.Constrained
 
 import Prelude hiding (id, (.), ($), Functor(..), curry, uncurry)
-import qualified Prelude
+import qualified Control.Category.Hask as Hask
 
 
 class (Functor f r t, Curry r, Curry t) => Monoidal f r t where
@@ -42,21 +43,16 @@ constrainedFZipWith :: ( Category r, Category t, o a, o b, o (a,b), o c
          -> ConstrainedCategory r o (a, b) c -> ConstrainedCategory t o (f a, f b) (f c)
 constrainedFZipWith zf = constrained . zf . unconstrained
          
-  
 
-instance Monoidal ((->)a) (->) (->) where
-  pure = const
-  fzipWith f (a, b) x = f (a x, b x)
-instance Applicative ((->)a) (->) (->) where
-  fpure = const
-  f <*> g = \x -> f x $ g x
+instance (Hask.Applicative f) => Monoidal f (->) (->) where
+  pure = Hask.pure
+  fzipWith f (p, q) = curry f Hask.<$> p Hask.<*> q
+
+instance (Hask.Applicative f) => Applicative f (->) (->) where
+  fpure = Hask.pure
+  (<*>) = (Hask.<*>)
+
   
-instance Monoidal [] (->) (->) where
-  pure x = [x]
-  fzipWith f (as, bs) = [ f (a,b) | a<-as, b<-bs ]
-instance Applicative [] (->) (->) where
-  fpure f = [f]
-  fs <*> xs = fs >>= (`map`xs)
 
   
 
