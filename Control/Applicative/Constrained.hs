@@ -35,11 +35,7 @@ class (Monoidal f r t) => Applicative f r t where
 
 infixl 4 <*>
 
---constrainedPure :: ( Functor f r t, Object r a, Object t (f a) )
---      => ( a -> f a ) 
---       -> ConstrainedCategory r o a b -> f (ConstrainedCategory r o a b)
--- constrainedPure f m = f m
--- 
+
 constrainedFZipWith :: ( Category r, Category t, o a, o b, o (a,b), o c
                                                , o (f a, f b), o (f c) )
         =>  ( r (a, b) c -> t (f a, f b) (f c) )
@@ -47,13 +43,6 @@ constrainedFZipWith :: ( Category r, Category t, o a, o b, o (a,b), o c
 constrainedFZipWith zf = constrained . zf . unconstrained
          
   
--- constrainedAp :: ( Applicative f (ConstrainedCategory r o) (ConstrainedCategory t o)
---                  , Category r, Object r a, Object r b, o a, o b
---                  , Category t, Object t (f a), Object t (f b), o (f a), o (f b) )
---        => (f (r a b)                       ->                     t (f a) (f b)   ) 
---         -> f (ConstrainedCategory r o a b) -> ConstrainedCategory t o (f a) (f b)
--- constrainedAp q m =  fmap unconstrained m
--- 
 
 instance Monoidal ((->)a) (->) (->) where
   pure = const
