@@ -13,3 +13,7 @@ Cabal-Version:       >=1.2
 Library
   Build-Depends:     base>=4.5
   Exposed-modules:   Control.Category.Constrained
+                     Control.Functor.Constrained
+                     Control.Applicative.Constrained
+                     Control.Monad.Constrained
+                     Control.Category.Hask
