@@ -28,15 +28,15 @@ Description:         Haskell has, and makes great use of, powerful facilities fr
                      elaborate, defining functors themselves as morphisms in the category
                      Cat.
                      .
-                     While this may be in principle the ideal way to go about this,
+                     While this may be in principle the ideal way to go,
                      it is neither simple to learn nor adapt to actual Haskell programs,
                      with their somewhat sloppy but effective-proven notion of functors
-                     and monads in particular.
+                     (and monads in particular).
                      .
                      On the other side of the spectrum, there are packages like
                      <http://hackage.haskell.org/package/ConstraintKinds>, which focus
-                     on just allowing more instances of the functor through monad classes
-                     to be defined. This allows for some practically useful things like
+                     on just enabling more instances of the functor through monad classes.
+                     This allows some practically useful things like
                      a @Monad@ instance of the standard @Set@ container without introducing
                      much to be learned or changed about existing Haskell programs;
                      but it hardly generalises
@@ -73,6 +73,7 @@ License:             GPL-3
 License-file:        COPYING
 Author:              Justus Sagemüller
 Maintainer:          (@) sagemuej $ smail.uni-koeln.de
+Home-page:           https://github.com/leftaroundabout/constrained-categories
 Build-Type:          Simple
 Cabal-Version:       >=1.2
 
