@@ -3,10 +3,8 @@
 {-# LANGUAGE FlexibleInstances           #-}
 {-# LANGUAGE RebindableSyntax            #-}
 
-import Control.Monad.Constrained
-
-import Prelude hiding ((.), id, ($), Functor(..), Monad(..), curry, uncurry)
-import qualified Prelude
+import Control.Category.Constrained.Prelude
+import qualified Control.Category.Hask as Hask
 
 import Data.Set as Set
 

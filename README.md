@@ -53,7 +53,7 @@ Short HowTo
 
 First on importing the modules. The classes are designed to have good backwards-compatibility, so you basically don't need the `Prelude` versions at all anymore. Here's the recommended import list:
 
-    import Prelude hiding ((.), id, ($), Functor(..), Monad(..), curry, uncurry)
+    import Control.Category.Constrained.Prelude
     import qualified Control.Category.Hask as Hask
     
     import Control.Monad.Constrained
@@ -73,6 +73,7 @@ What will not work is if you
         instance Hask.Functor YourFunctor where
           Hask.fmap = ...
 
+where `Hask.Functor` is just the plain old `Functor` class from the prelude, as re-imported through `Control.Category.Hask`.
 
 As for actually doing stuff you couldn't have also done with `Prelude.Monad` etc. – There are mainly two such things:
 

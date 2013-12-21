@@ -88,4 +88,5 @@ Library
                      Control.Applicative.Constrained
                      Control.Monad.Constrained
                      Control.Category.Hask
+                     Control.Category.Constrained.Prelude
                      
