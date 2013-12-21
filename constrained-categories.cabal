@@ -8,7 +8,7 @@ Description:         Haskell has, and makes great use of, powerful facilities fr
                      However, all those are just endofunctors in Hask, the category of
                      all Haskell types with functions as morphisms. Which is sufficient
                      for container / control structures that you want to be able to handle 
-                     any type of data, but otherwise a bit limiting, seeing as 
+                     any type of data, but otherwise it's a bit limiting, seeing as 
                      there are (in maths, science etc.) many categories that cannot properly
                      be represented this way. Commonly used libraries such as 
                      <http://hackage.haskell.org/package/vector-space> thus make 
@@ -16,59 +16,14 @@ Description:         Haskell has, and makes great use of, powerful facilities fr
                      form a category, instead defining just specialised versions of
                      the operations.
                      .
-                     Haskell sure can do better than that!
-                     <http://hackage.haskell.org/package/categories> rolls up the category
-                     theory much more rigorously, with all the correct and general notions
-                     as would be used in a mathematical treatment. Functors are not limited
-                     to any particular category, functions are generalised to closed
-                     cartesian category morphisms, and rather than just having a monad
-                     type class thown in you get a fine-grained hierarchy and define
-                     monoidal endofunctors.
-                     <http://hackage.haskell.org/package/data-category> is even more
-                     elaborate, defining functors themselves as morphisms in the category
-                     Cat.
+                     This library generalises functors etc. to a much wider class of
+                     categories, by allowing for constraints on objects (so these can have
+                     extra properties required). At the same time, we try to keep as close
+                     as possible to the well-known Haskell type class hierarchies rather
+                     than exactly adopting the mathematicians' notions.
                      .
-                     While this may be in principle the ideal way to go,
-                     it is neither simple to learn nor adapt to actual Haskell programs,
-                     with their somewhat sloppy but effective-proven notion of functors
-                     (and monads in particular).
-                     .
-                     On the other side of the spectrum, there are packages like
-                     <http://hackage.haskell.org/package/ConstraintKinds>, which focus
-                     on just enabling more instances of the functor through monad classes.
-                     This allows some practically useful things like
-                     a @Monad@ instance of the standard @Set@ container without introducing
-                     much to be learned or changed about existing Haskell programs;
-                     but it hardly generalises
-                     the classes themselves and certainly does not open up new opportunities
-                     for using specific categories in a canonical manner. Moreover, it
-                     is not readily clear how exactly these generalised classes relate
-                     to the old plain Hask endofunctors.
-                     .
-                     This package attempts to offer a good compromise between the two
-                     approaches. Two crucial changes are made, relative to the established
-                     standard classes:
-                     .
-                     - Functors are parameterised on the two categories they map between.
-                       If both are @(->)@, we have an ordinary Hask-endofunctor and all
-                       works like what we're used to. In fact, this parameterisation allows
-                       there to be a safe (non-overlapping) generic instance: all instances
-                       @Prelude.Functor f@ give rise to
-                       @instance 'Control.Functor.Constrained.Functor' f (->) (->)@. Likewise
-                       for 'Control.Applicative.Constrained.Applicative'
-                       and 'Control.Monad.Constrained.Monad'. As a result, it is trivial
-                       to adapt Haskell code to the classes from this package if you
-                       just import the \"@Constrained@\" modules. Any of the numerous
-                       monad etc. instances, from any package, can immediately be used
-                       as Hask-specific instances of the general @Monad@ class.
-                       But functors can as well map between other categories!
-                     .
-                     - A category is classified by its morphisms. The objects on the other
-                       hand remain ordinary types of kind @*@, but with one important
-                       constraint, namely 'Control.Category.Constrained.Object'. This
-                       allows a category to narrow its objects down to e.g. totally
-                       ordered types, or vector spaces, or whatever your morphisms and
-                       functors require.
+                     Consider the README file, the examples, and/or the documentation to
+                     "Control.Category.Constrained" for how to make use of this.
 License:             GPL-3
 License-file:        COPYING
 Author:              Justus Sagemüller
