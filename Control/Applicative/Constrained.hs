@@ -13,7 +13,6 @@ module Control.Applicative.Constrained ( module Control.Functor.Constrained
                                        ) where
 
 
-import Control.Category.Constrained
 import Control.Functor.Constrained
 
 import Prelude hiding (id, (.), ($), Functor(..), curry, uncurry)

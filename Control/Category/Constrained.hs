@@ -12,7 +12,7 @@ module Control.Category.Constrained (
             -- * The category class
             Category (..)
             -- * Constraining categories
-          , ConstrainedCategory ()
+          , ConstrainedCategory (ConstrainedMorphism)
           , constrained, unconstrained
             -- * Function-like categories
           , Function (..)

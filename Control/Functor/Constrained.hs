@@ -11,7 +11,7 @@ module Control.Functor.Constrained ( module Control.Category.Constrained
                                    ) where
 
 
-import Control.Category.Constrained
+import Control.Category.Constrained hiding (ConstrainedMorphism)
 
 import Prelude hiding (id, (.), ($), Functor(..))
 import qualified Prelude
