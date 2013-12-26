@@ -68,11 +68,32 @@ instance (Monad m k) => Category (Kleisli m k) where
   id = Kleisli return
   Kleisli a . Kleisli b = Kleisli $ join . fmap a . b
 
-instance (Monad m a, Arrow a (->)) => Curry (Kleisli m a) where
+instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
   type PairObject (Kleisli m a) b c 
           = ( Object a (b, c), Object a (m (b, c)), Object a (m b, c), Object a (b, m c)
             , PairObject a b c, PairObject a (m b) c, PairObject a b (m c)               )
-  -- curry (Kleisli f) = Kleisli . arr $ \a -> 
+  type MorphObject (Kleisli m a) c d
+          = ( Object a c, Object a d, Object a (m d), Object a (m (m d))
+            , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
+            , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
+  uncurry = kleisliUncurry
+  curry = kleisliCurry
+
+kleisliUncurry :: forall m a k b c d .
+                ( Monad m a, Arrow a (->), Function a, k ~ Kleisli m a, Curry k
+                , Object k b, PairObject k b c, MorphObject k c d
+                ) => k b (k c d) -> k (b,c) d
+kleisliUncurry (Kleisli fCur) = Kleisli $ arr fUnc
+   where fUnc :: (b, c) -> m d
+         fUnc (b, c) = join . fmap (arr $ ($c) . runKleisli) . fCur $ b
+kleisliCurry :: forall m a k b c d .
+                ( Monad m a, Arrow a (->), Function a, k ~ Kleisli m a, Curry k
+                , Object k b, PairObject k b c, MorphObject k c d
+                ) => k (b, c) d -> k b (k c d)
+kleisliCurry (Kleisli fUnc) = Kleisli undefined -- $ arr fCur
+ --  where fCur :: b -> m (k c d)
+ --        fCur b = return f . join . fmap (arr $ ($c) . runKleisli) . fCur $ b
+  
 
 instance (Monad m a, Arrow a (->), Function a, Curry a) => Arrow (Kleisli m a) (->) where
   arr f = Kleisli $ return . arr f
