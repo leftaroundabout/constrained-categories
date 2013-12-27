@@ -28,7 +28,7 @@ License:             GPL-3
 License-file:        COPYING
 Author:              Justus Sagemüller
 Maintainer:          (@) sagemuej $ smail.uni-koeln.de
-Home-page:           https://github.com/leftaroundabout/constrained-categories
+Homepage:            https://github.com/leftaroundabout/constrained-categories
 Build-Type:          Simple
 Cabal-Version:       >=1.2
 
@@ -38,6 +38,7 @@ Library
                      TypeFamilies
                      FlexibleInstances
                      UndecidableInstances
+                     Trustworthy
   Exposed-modules:   Control.Category.Constrained
                      Control.Functor.Constrained
                      Control.Applicative.Constrained

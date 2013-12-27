@@ -1,6 +1,6 @@
 -- |
 -- Module      :  Control.Arrow.Constrained
--- Copyright   :  (c) 2013 Justus Sagem\"uller
+-- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
 -- 
