@@ -77,23 +77,10 @@ instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
             , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
             , Object a (a c (m d))
             , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
-  uncurry = kleisliUncurry
-  curry = kleisliCurry
+  curry (Kleisli fUnc) = Kleisli $ return . arr Kleisli . curry fUnc
+  uncurry (Kleisli fCur) = Kleisli . arr $ 
+               \(b,c) -> join . fmap (arr $ ($c) . runKleisli) . fCur $ b
 
-kleisliUncurry :: forall m a k b c d .
-                ( Monad m a, Arrow a (->), Function a, k ~ Kleisli m a, Curry k
-                , Object k b, PairObject k b c, MorphObject k c d
-                ) => k b (k c d) -> k (b,c) d
-kleisliUncurry (Kleisli fCur) = Kleisli $ arr fUnc
-   where fUnc :: (b, c) -> m d
-         fUnc (b, c) = join . fmap (arr $ ($c) . runKleisli) . fCur $ b
-kleisliCurry :: forall m a k b c d .
-                ( Monad m a, Arrow a (->), Function a, k ~ Kleisli m a, Curry k
-                , Object k b, PairObject k b c, MorphObject k c d
-                ) => k (b, c) d -> k b (k c d)
-kleisliCurry (Kleisli fUnc) = Kleisli $ return . arr Kleisli . curry fUnc
- -- where fCur :: b -> m (k c d)
-       -- fCur b = pure . Kleisli $ curry fUnc $ b
   
 
 instance (Monad m a, Arrow a (->), Function a, Curry a) => Arrow (Kleisli m a) (->) where
