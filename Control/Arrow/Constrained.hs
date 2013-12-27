@@ -10,7 +10,9 @@
 {-# LANGUAGE FunctionalDependencies       #-}
 {-# LANGUAGE TupleSections                #-}
 {-# LANGUAGE ScopedTypeVariables          #-}
+{-# LANGUAGE FlexibleInstances            #-}
 {-# LANGUAGE FlexibleContexts             #-}
+{-# LANGUAGE UndecidableInstances         #-}
 
 
 module Control.Arrow.Constrained where
@@ -21,6 +23,13 @@ import Control.Category.Constrained.Prelude
 import qualified Control.Category.Hask as Hask
 
 import qualified Control.Arrow as Arr
+
+(>>>) :: (Category k, Object k a, Object k b, Object k c) 
+             => k a b -> k b c -> k a c
+(>>>) = flip (.)
+(<<<) :: (Category k, Object k a, Object k b, Object k c) 
+             => k b c -> k a b -> k a c
+(<<<) = (.)
 
 class (Category a, Curry a) => PreArrow a where
   first :: (Object a b, Object a c, PairObject a b d, PairObject a c d) 

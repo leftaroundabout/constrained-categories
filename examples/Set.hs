@@ -1,10 +1,13 @@
 
 {-# LANGUAGE MultiParamTypeClasses       #-}
 {-# LANGUAGE FlexibleInstances           #-}
+-- {-# LANGUAGE Arrows                      #-}
 {-# LANGUAGE RebindableSyntax            #-}
 
 import Control.Category.Constrained.Prelude
 import qualified Control.Category.Hask as Hask
+  
+import Control.Arrow.Constrained
 
 import Data.Set as Set
 
@@ -20,6 +23,10 @@ main = do
          . join . fmap (ordd $ \x -> fromList [x^2, x^2+1/x .. x^2+1]) 
                 . fmap (ordd (2**)) 
                     $ fromList [0..2]
+   putStr "Kleisli:  "
+   let k :: Kleisli Set Preorder Double Char
+       k = arr show >>> Kleisli (arr fromList)
+   print $ runKleisli k $ pi
 
 
 type Preorder = ConstrainedCategory (->) Ord
