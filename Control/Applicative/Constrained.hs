@@ -10,13 +10,19 @@
 {-# LANGUAGE FunctionalDependencies       #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE FlexibleInstances            #-}
+{-# LANGUAGE ScopedTypeVariables          #-}
 
 
-module Control.Applicative.Constrained ( module Control.Functor.Constrained
-                                       , Monoidal(..)
-                                       , Applicative(..)
-                                       , constrainedFZipWith
-                                       ) where
+module Control.Applicative.Constrained ( 
+            module Control.Functor.Constrained
+            -- * Monoidal / applicative functors
+          , Monoidal(..)
+          , Applicative(..)
+            -- * Helper for constrained categories
+          , constrainedFZipWith
+            -- * Utility functions
+          , (<**>), liftA, liftA2, liftA3
+          ) where
 
 
 import Control.Functor.Constrained
@@ -40,6 +46,32 @@ class (Monoidal f r t) => Applicative f r t where
   (<*>) = curry (fzipWith $ uncurry id)
 
 infixl 4 <*>
+  
+(<**>) :: ( Applicative f r (->), Object r a, Object r b
+          , MorphObject r a b, Object r (r a b), PairObject r (r a b) a )
+             => f a -> f (r a b) -> f b
+(<**>) = flip $ curry (fzipWith $ uncurry id)
+
+liftA :: (Applicative f r t, Object r a, Object r b, Object t (f a), Object t (f b)) 
+             => a `r` b -> f a `t` f b
+liftA = fmap
+
+liftA2 :: ( Applicative f r t, Object r a, Object r b, Object r c, MorphObject r b c
+          , Object t (f a), Object t (f b), Object t (f c), MorphObject t (f b) (f c) 
+          , PairObject r a b, PairObject t (f a) (f b) ) 
+             => a `r` (b `r` c) -> f a `t` (f b `t` f c)
+liftA2 = curry . fzipWith . uncurry
+
+liftA3 :: ( Applicative f r t
+          , Object r a, Object r b, Object r c, Object r d
+          , MorphObject r c d, MorphObject r b (c`r`d), Object r (r c d)
+          , PairObject r a b, PairObject r (r c d) c 
+          , Object t (f a), Object t (f b), Object t (f c), Object t (f d), Object t(f a,f b)
+          , MorphObject t (f c)(f d),MorphObject t (f b)(t(f c)(f d)),Object t(t(f c)(f d))
+          , PairObject t (f a) (f b), PairObject t (t (f c) (f d)) (f c)
+          , PairObject t (f (r c d)) (f c), Object t (f (r c d))
+          ) => a `r` (b `r` (c `r` d)) -> f a `t` (f b `t` (f c `t` f d))
+liftA3 f = curry $ (<*>) . (fzipWith $ uncurry f)
 
 
 constrainedFZipWith :: ( Category r, Category t, o a, o b, o (a,b), o c
