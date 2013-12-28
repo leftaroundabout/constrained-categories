@@ -25,7 +25,7 @@ import qualified Prelude
 
 
 class (Category r, Category t) => Functor f r t | f r -> t, f t -> r where
-  fmap :: (Object r a, Object r (f a), Object t b, Object t (f b))
+  fmap :: (Object r a, Object t (f a), Object r b, Object t (f b))
      => r a b -> t (f a) (f b)
 
 instance (Prelude.Functor f) => Functor f (->) (->) where
