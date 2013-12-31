@@ -10,18 +10,22 @@
 {-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE FlexibleInstances            #-}
+{-# LANGUAGE ScopedTypeVariables          #-}
+{-# LANGUAGE TupleSections                #-}
 
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
-                                , Monad(..), (>>=), (=<<), (>>)
+                                , Monad(..), (>>=), (=<<), (>>), Kleisli(..)
                                 ) where
 
 
 import Control.Applicative.Constrained
 
-import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<))
+import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<), uncurry, curry)
 import qualified Control.Category.Hask as Hask
 import qualified Control.Arrow as A
+
+import Control.Arrow.Constrained
 
 
 class (Applicative m k k) => Monad m k where
@@ -61,5 +65,65 @@ instance (Hask.Applicative m, Hask.Monad m) => Monad m (->) where
 fail :: ()
 fail = undefined
 
+
+-- forM_ :: (Monad m k, Function k, Object k a, Object k b, Object k (m b), Object k ())
+--         => [a] -> a `k` m b -> m ()
+-- forM_ [] f = pure ()
+-- forM_ (x:xs) f = (f $ x) >> forM_ xs f
+-- 
+-- 
+-- mapM :: ( Monad m k, Object k a, Object k [a], Object k b, Object k (m b), Object k (m [b]) )
+--         => a `k` m b -> [a] `k` m[b]
+-- 
+-- 
+
+
+newtype Kleisli m k a b = Kleisli { runKleisli :: k a (m b) }
+
+instance (Monad m k) => Category (Kleisli m k) where
+  type Object (Kleisli m k) o = (Object k o, Object k (m o), Object k (m (m o)))
+  id = Kleisli return
+  Kleisli a . Kleisli b = Kleisli $ join . fmap a . b
+
+instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
+  type PairObject (Kleisli m a) b c 
+          = ( Object a (b, c), Object a (m (b, c)), Object a (m b, c), Object a (b, m c)
+            , PairObject a b c, PairObject a (m b) c, PairObject a b (m c)               )
+  type MorphObject (Kleisli m a) c d
+          = ( Object a c, Object a d, Object a (m d), Object a (m (m d))
+            , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
+            , Object a (a c (m d))
+            , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
+  curry (Kleisli fUnc) = Kleisli $ return . arr Kleisli . curry fUnc
+  uncurry (Kleisli fCur) = Kleisli . arr $ 
+               \(b,c) -> join . fmap (arr $ ($c) . runKleisli) . fCur $ b
+
   
+
+instance (Monad m a, Arrow a (->), Function a, Curry a) => Arrow (Kleisli m a) (->) where
+  arr f = Kleisli $ return . arr f
+instance (Monad m a, Arrow a (->), Function a, Curry a) => PreArrow (Kleisli m a) where
+  first = kleisliFirst
+  second = kleisliSecond
+
+kleisliFirst :: forall m a k b c d .
+                ( Monad m a, Arrow a (->), Function a, k ~ Kleisli m a, Curry k
+                , Object k b, Object k c, PairObject k b d, PairObject k c d ) 
+             => k b c -> k (b, d) (c, d)
+kleisliFirst (Kleisli f) = Kleisli $ arr monadOut . first f 
+ where monadOut :: (m c, d) -> m (c, d)
+       monadOut (mc, d) = fmap dPost $ mc
+        where dPost :: a c (c, d)
+              dPost = arr (, d)
+kleisliSecond :: forall m a k b c d .
+                ( Arrow a (->), Monad m a, Function a, k ~ Kleisli m a, Curry k
+                , Object k b, Object k c, PairObject k d b, PairObject k d c ) 
+             => k b c -> k (d, b) (d, c)
+kleisliSecond (Kleisli f) = Kleisli $ arr monadOut . second f 
+ where monadOut :: (d, m c) -> m (d, c)
+       monadOut (d, mc) = fmap dPre $ mc
+        where dPre :: a c (d, c)
+              dPre = arr (d,)
+
+ 
 
