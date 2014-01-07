@@ -21,7 +21,12 @@ module Control.Monad.Constrained( module Control.Applicative.Constrained
 
 import Control.Applicative.Constrained
 
-import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<), uncurry, curry)
+import Prelude hiding (
+     id, (.), ($)
+   , Functor(..), Monad(..), (=<<)
+   , uncurry, curry
+   , mapM, mapM_, sequence
+   )
 import qualified Control.Category.Hask as Hask
 import qualified Control.Arrow as A
 
@@ -71,9 +76,22 @@ fail = undefined
 -- forM_ [] f = pure ()
 -- forM_ (x:xs) f = (f $ x) >> forM_ xs f
 -- 
--- 
--- mapM :: ( Monad m k, Object k a, Object k [a], Object k b, Object k (m b), Object k (m [b]) )
+class (Category k, Category l, Functor s l l, Functor t k k) => Traversable s t k l where
+  mapM :: (Monoidal f k l, Object l a, Object k b, Object l (f b), Object l (f (t b)))
+               => a `l` f b -> s a `l` f (t b)
+
+sequence :: ( Traversable t t k k, Monoidal f k k
+            , Object k a, Object k (f a), Object k (f (t a)) )
+            => t (f a) `k` f (t a)
+sequence = mapM id
+
+instance Traversable [] [] (->) (->) where
+  mapM f [] = pure []
+  mapM f (x:xs) = fzipWith (uncurry(:)) (f x, mapM f xs)
+
+-- mapM :: ( Monad m k, Monad [] k, Arrow k (->), Object k a, Object k [a], Object k b, Object k (m b), Object k (m [b]) )
 --         => a `k` m b -> [a] `k` m[b]
+-- mapM f = sequence . fmap f
 -- 
 -- 
 
