@@ -32,7 +32,7 @@ import qualified Control.Category.Hask as Hask
 
 
 class (Functor f r t, Curry r, Curry t) => Monoidal f r t where
-  pure :: (Object r a, Object t (f a)) => a -> f a
+  pure :: (Object r a, Object t (f a)) => a `t` f a
   fzipWith :: (PairObject r a b, Object r c, PairObject t (f a) (f b), Object t (f c))
               => r (a, b) c -> t (f a, f b) (f c)
 
