@@ -9,11 +9,13 @@
 {-# LANGUAGE TypeFamilies                 #-}
 {-# LANGUAGE FunctionalDependencies       #-}
 {-# LANGUAGE FlexibleInstances            #-}
+{-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE UndecidableInstances         #-}
 
 
 module Control.Functor.Constrained ( module Control.Category.Constrained
                                    , Functor(..)
+                                   , (<$>)
                                    , constrainedFmap
                                    ) where
 
@@ -30,6 +32,10 @@ class (Category r, Category t) => Functor f r t | f r -> t, f t -> r where
 
 instance (Prelude.Functor f) => Functor f (->) (->) where
   fmap = Prelude.fmap
+
+(<$>) :: (Functor f r (->), Object r a, Object r b)
+     => r a b -> f a -> f b
+(<$>) = fmap
 
   
 constrainedFmap :: (Category r, Category t, o a, o b, o (f a), o (f b)) 
