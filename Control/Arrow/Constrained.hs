@@ -23,6 +23,9 @@ import qualified Control.Category.Hask as Hask
 
 import qualified Control.Arrow as Arr
 
+infixr 1 >>>, <<<
+infixr 3 &&&, ***
+
 (>>>) :: (Category k, Object k a, Object k b, Object k c) 
              => k a b -> k b c -> k a c
 (>>>) = flip (.)
@@ -35,6 +38,11 @@ class (Category a, Curry a) => PreArrow a where
          => a b c -> a (b, d) (c, d)
   second :: (Object a b, Object a c, PairObject a d b, PairObject a d c) 
          => a b c -> a (d, b) (d, c)
+  (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
+         => a b c -> a b c' -> a b (c,c')
+  (***) :: ( Object a b, Object a c, Object a b', Object a c'
+           , PairObject a b b', PairObject a c c' )
+         => a b c -> a b' c' -> a (b,b') (c,c')
 class (PreArrow a, Category k) => Arrow a k where
   arr :: (Object k b, Object k c, Object a b, Object a c)
          => k b c -> a b c
@@ -42,6 +50,8 @@ class (PreArrow a, Category k) => Arrow a k where
 instance PreArrow (->) where
   first = Arr.first
   second = Arr.second
+  (&&&) = (Arr.&&&)
+  (***) = (Arr.***)
 instance Arrow (->) (->) where
   arr = Arr.arr
 
@@ -62,9 +72,12 @@ constrainedSecond :: ( Category a, Curry a, o b, o c, o d
      -> ConstrainedCategory a o b c -> ConstrainedCategory a o (d, b) (d, c)
 constrainedSecond sn = ConstrainedMorphism . sn . unconstrained
 
+
 instance (PreArrow a) => PreArrow (ConstrainedCategory a o) where
   first = constrainedFirst first
   second = constrainedSecond second
+  ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
+  ConstrainedMorphism a *** ConstrainedMorphism b = ConstrainedMorphism $ a *** b
   
 instance (Arrow a k) => Arrow (ConstrainedCategory a o) k where
   arr = constrainedArr arr 
