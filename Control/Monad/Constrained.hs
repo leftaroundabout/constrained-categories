@@ -94,6 +94,11 @@ instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
   curry (Kleisli fUnc) = Kleisli $ return . arr Kleisli . curry fUnc
   uncurry (Kleisli fCur) = Kleisli . arr $ 
                \(b,c) -> join . fmap (arr $ ($c) . runKleisli) . fCur $ b
+  
+  unitBranchIsoIn = Kleisli $ return . unitBranchIsoIn
+  unitBranchIsoOut = Kleisli $ return . unitBranchIsoOut
+  regroupIsoIn = Kleisli $ return . regroupIsoIn
+  regroupIsoOut = Kleisli $ return . regroupIsoOut
 
   
 
