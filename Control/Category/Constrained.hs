@@ -105,30 +105,39 @@ instance (Function f) => Function (ConstrainedCategory f o) where
 
 -- | Apart from /the/ identity morphism, 'id', there are other morphisms that
 --   can basically be considered identies. For instance, in any cartesian
---   category (where it makes sense to have tuples at all), it should be
---   possible to morph between @a@ and the isomorphic @(a, ())@. 'iso' is
+--   category (where it makes sense to have tuples and unit @()@ at all), it should be
+--   possible to switch between @a@ and the isomorphic @(a, ())@. 'iso' is
 --   the method for such \"pseudo-identities\", the most basic of which
 --   are required as methods of the 'Curry' class.
 --   
 --   Why it is necessary to make these morphisms explicit: they are needed
 --   for a couple of general-purpose category-theory methods, but even though
---   they're normally trivial to define there is no uniform way to do so
+--   they're normally trivial to define there is no uniform way to do so.
+--   For instance, for vector spaces, the baseis of @(a, (b,c))@ and @((a,b), c)@
+--   are sure enough structurally equivalent, but not in the same way the spaces
+--   themselves are (sum vs. product types).
 class (Category k) => Isomorphic k a b where
   iso :: k a b
 
-instance (Curry k, Object k a, Object k (), PairObject k a ()) => Isomorphic k a (a,()) where
-  iso = unitBranchIsoIn
-          
-instance (Curry k, Object k a, Object k (), PairObject k a ()) => Isomorphic k (a,()) a where
-  iso = unitBranchIsoOut
+instance (Curry k, Object k a, Object k u, UnitObject k u, PairObject k a u) => Isomorphic k a (a,u) where
+  iso = attachUnit
+instance (Curry k, Object k a, Object k u, UnitObject k u, PairObject k a u) => Isomorphic k (a,u) a where
+  iso = detachUnit
+instance (Curry k, Object k a, Object k u, UnitObject k u, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
+              => Isomorphic k a (u,a) where
+  iso = swap . attachUnit
+instance (Curry k, Object k a, Object k u, UnitObject k u, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
+              => Isomorphic k (u,a) a where
+  iso = detachUnit . swap
 instance ( Curry k, Object k a, PairObject k a b, PairObject k b c
          , PairObject k a (b,c), PairObject k (a,b) c, Object k c )
                                        => Isomorphic k (a,(b,c)) ((a,b),c) where
-  iso = regroupIsoIn
-instance ( Curry k, Object k a, PairObject k a b, PairObject k b c
-         , PairObject k a (b,c), PairObject k (a,b) c, Object k c )
+  iso = regroup
+instance ( Curry k, Object k a, Object k b, Object k c, PairObject k a b, PairObject k b c, PairObject k c a
+         , PairObject k a (b,c), PairObject k (a,b) c, PairObject k (b, c) a, PairObject k b (c, a), PairObject k (c,a) b, PairObject k c (a,b)
+         , Object k (a, (b, c)), Object k ((b,c),a), Object k (b,(c,a)), Object k ((a,b), c), Object k ((c,a),b), Object k (c,(a,b)) )
                                        => Isomorphic k ((a,b),c) (a,(b,c)) where
-  iso = regroupIsoOut
+  iso = swap . regroup . swap . regroup . swap
 
 
         
@@ -161,19 +170,21 @@ class (Category k) => Curry k where
   type PairObject k a b = ()
   type MorphObject k b c :: Constraint
   type MorphObject k b c = ()
+  type UnitObject k u :: Constraint
+  type UnitObject k u = (u ~ ())
+  
   uncurry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c)
          => k a (k b c) -> k (a, b) c
   curry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c) 
          => k (a, b) c -> k a (k b c)
   
-  unitBranchIsoIn  :: ( Object k a, Object k (), PairObject k a () ) => k a (a,())
-  unitBranchIsoOut :: ( Object k a, Object k (), PairObject k a () ) => k (a,()) a
-  regroupIsoIn     :: ( Object k a, Object k c, PairObject k a b, PairObject k b c
+  swap :: ( PairObject k a b, PairObject k b a ) => k (a,b) (b,a)
+  
+  attachUnit  :: ( Object k a, Object k u, UnitObject k u, PairObject k a u ) => k a (a,u)
+  detachUnit :: ( Object k a, Object k u, UnitObject k u, PairObject k a u ) => k (a,u) a
+  regroup     :: ( Object k a, Object k c, PairObject k a b, PairObject k b c
                       , PairObject k a (b,c), PairObject k (a,b) c )
                       => k (a, (b, c)) ((a, b), c)
-  regroupIsoOut    :: ( Object k a, Object k c, PairObject k a b, PairObject k b c
-                      , PairObject k a (b,c), PairObject k (a,b) c )
-                      => k ((a, b), c) (a, (b, c))
   
   
 
@@ -181,21 +192,23 @@ instance Curry (->) where
   uncurry = Prelude.uncurry
   curry = Prelude.curry
   
-  unitBranchIsoIn = \a -> (a, ())
-  unitBranchIsoOut = \(a, ()) -> a
-  regroupIsoIn = \(a, (b, c)) -> ((a, b), c)
-  regroupIsoOut = \((a, b), c) -> (a, (b, c))
+  swap = \(a,b) -> (b,a)
+  attachUnit = \a -> (a, ())
+  detachUnit = \(a, ()) -> a
+  regroup = \(a, (b, c)) -> ((a, b), c)
       
 
 instance (Curry f) => Curry (ConstrainedCategory f o) where
   type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o a, o b, o (a, b))
   type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
+  type UnitObject (ConstrainedCategory f o) u = ( UnitObject f u, o u )
+  
   uncurry (ConstrainedMorphism f) = ConstrainedMorphism $ \(a,b) -> unconstrained (f a) b
   curry (ConstrainedMorphism f) = ConstrainedMorphism $ \a -> ConstrainedMorphism $ \b -> f (a, b)
   
-  unitBranchIsoIn = ConstrainedMorphism unitBranchIsoIn
-  unitBranchIsoOut = ConstrainedMorphism unitBranchIsoOut
-  regroupIsoIn = ConstrainedMorphism regroupIsoIn
-  regroupIsoOut = ConstrainedMorphism regroupIsoOut
+  swap = ConstrainedMorphism swap
+  attachUnit = ConstrainedMorphism attachUnit
+  detachUnit = ConstrainedMorphism detachUnit
+  regroup = ConstrainedMorphism regroup
                                                                      
 

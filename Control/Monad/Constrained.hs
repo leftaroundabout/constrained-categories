@@ -91,14 +91,16 @@ instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
             , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
             , Object a (a c (m d))
             , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
+  type UnitObject (Kleisli m a) u = UnitObject a u
+  
   curry (Kleisli fUnc) = Kleisli $ return . arr Kleisli . curry fUnc
   uncurry (Kleisli fCur) = Kleisli . arr $ 
                \(b,c) -> join . fmap (arr $ ($c) . runKleisli) . fCur $ b
   
-  unitBranchIsoIn = Kleisli $ return . unitBranchIsoIn
-  unitBranchIsoOut = Kleisli $ return . unitBranchIsoOut
-  regroupIsoIn = Kleisli $ return . regroupIsoIn
-  regroupIsoOut = Kleisli $ return . regroupIsoOut
+  swap = Kleisli $ return . swap
+  attachUnit = Kleisli $ return . attachUnit
+  detachUnit = Kleisli $ return . detachUnit
+  regroup = Kleisli $ return . regroup
 
   
 
