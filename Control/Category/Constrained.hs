@@ -7,6 +7,8 @@
 
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
+{-# LANGUAGE MultiParamTypeClasses        #-}
+{-# LANGUAGE RankNTypes                   #-}
 
 module Control.Category.Constrained ( 
             -- * The category class
@@ -100,6 +102,35 @@ instance (Function f) => Function (ConstrainedCategory f o) where
   ConstrainedMorphism q $ x = q $ x
 
 
+class (Category k) => Isomorphic k a b where
+  iso :: k a b
+
+instance (Curry k, Object k a, Object k (), PairObject k a ()) => Isomorphic k a (a,()) where
+  iso = unitBranchIsoIn trivialIsomorphisms
+instance (Curry k, Object k a, Object k (), PairObject k a ()) => Isomorphic k (a,()) a where
+  iso = unitBranchIsoOut trivialIsomorphisms
+instance (Curry k, Object k a, PairObject k a b, PairObject k b c, Object k c) 
+                                       => Isomorphic k (a,(b,c)) ((a,b),c) where
+  iso = regroupIsoIn trivialIsomorphisms
+instance (Curry k, Object k a, PairObject k a b, PairObject k b c, Object k c) 
+                                       => Isomorphic k ((a,b),c) (a,(b,c)) where
+  iso = regroupIsoOut trivialIsomorphisms
+
+data TrivialIsoDefinitions k a b c = TrivialIsoDefinitions {
+    unitBranchIsoIn :: k a (a,())
+  , unitBranchIsoOut :: k (a,()) a
+  , regroupIsoIn :: k (a, (b, c)) ((a, b), c)
+  , regroupIsoOut :: k ((a, b), c) (a, (b, c))
+  }
+
+packTrivialIsoDefinitions :: (Category k, Category r)
+          => (forall a b . r a b -> k a b)
+            -> TrivialIsoDefinitions r c d e -> TrivialIsoDefinitions k c d e
+packTrivialIsoDefinitions packer (TrivialIsoDefinitions ui uo ri ro)
+  = TrivialIsoDefinitions (packer ui) (packer uo) (packer ri) (packer ro)
+    
+        
+
 
 -- | Quite a few categories (/monoidal categories/) will permit pairs of 
 --   objects as objects again, allowing for \"dyadic morphisms\" @(x,y) ~> r@.
@@ -132,15 +163,29 @@ class (Category k) => Curry k where
          => k a (k b c) -> k (a, b) c
   curry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c) 
          => k (a, b) c -> k a (k b c)
+  
+  trivialIsomorphisms :: ( Object k a, Object k b, Object k c, Object k ()
+                         , PairObject k a (), PairObject k a b, PairObject k b c ) 
+      => TrivialIsoDefinitions k a b c
+  
 
 instance Curry (->) where
   uncurry = Prelude.uncurry
   curry = Prelude.curry
+  
+  trivialIsomorphisms = TrivialIsoDefinitions
+          (\a -> (a, ()))
+          (\(a, ()) -> a)
+          (\(a, (b, c)) -> ((a, b), c))
+          (\((a, b), c) -> (a, (b, c)))
+  
 
 instance (Curry f) => Curry (ConstrainedCategory f o) where
   type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o a, o b, o (a, b))
   type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
   uncurry (ConstrainedMorphism f) = ConstrainedMorphism $ \(a,b) -> unconstrained (f a) b
   curry (ConstrainedMorphism f) = ConstrainedMorphism $ \a -> ConstrainedMorphism $ \b -> f (a, b)
+  
+  trivialIsomorphisms = packTrivialIsoDefinitions ConstrainedMorphism trivialIsomorphisms
                                                                      
 
