@@ -46,5 +46,6 @@ Library
                      Control.Monad.Constrained
                      Control.Category.Hask
                      Control.Category.Constrained.Prelude
+                     Data.Foldable.Constrained
                      Data.Traversable.Constrained
                      
