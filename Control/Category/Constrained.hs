@@ -20,6 +20,8 @@ module Control.Category.Constrained (
             -- * Function-like categories
           , Function (..)
           , Curry (..)
+            -- * Utility
+          , inCategoryOf
           ) where
 
 import Prelude hiding (id, (.), ($), curry, uncurry)
@@ -51,6 +53,11 @@ infixr 9 .
 instance Category (->) where
   id = Prelude.id
   (.) = (Prelude..)
+
+-- | Analogue to 'asTypeOf', this does not actually do anything but can
+--   give the compiler type unification hints in a convenient manner.
+inCategoryOf :: (Category k) => k a b -> k c d -> k a b
+m `inCategoryOf` _ = m
 
 
 -- | A given category can be specialised, by using the same morphisms but adding
