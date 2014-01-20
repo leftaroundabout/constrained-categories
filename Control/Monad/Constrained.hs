@@ -85,7 +85,9 @@ instance (Monad m k) => Category (Kleisli m k) where
 instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
   type PairObject (Kleisli m a) b c 
           = ( Object a (b, c), Object a (m (b, c)), Object a (m b, c), Object a (b, m c)
-            , PairObject a b c, PairObject a (m b) c, PairObject a b (m c)               )
+            , Object a (m b, m c), Object a (m (m b, m c)), Object a (m (m (m b, m c)))
+            , PairObject a b c
+            , PairObject a (m b) c, PairObject a b (m c), PairObject a (m b) (m c) )
   type MorphObject (Kleisli m a) c d
           = ( Object a c, Object a d, Object a (m d), Object a (m (m d))
             , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
@@ -109,6 +111,8 @@ instance (Monad m a, Arrow a (->), Function a, Curry a) => Arrow (Kleisli m a) (
 instance (Monad m a, Arrow a (->), Function a, Curry a) => PreArrow (Kleisli m a) where
   first = kleisliFirst
   second = kleisliSecond
+  (***) = kleisliSplit
+  (&&&) = kleisliFanout
 
 kleisliFirst :: forall m a k b c d .
                 ( Monad m a, Arrow a (->), Function a, k ~ Kleisli m a, Curry k
@@ -128,6 +132,24 @@ kleisliSecond (Kleisli f) = Kleisli $ arr monadOut . second f
        monadOut (d, mc) = fmap dPre $ mc
         where dPre :: a c (d, c)
               dPre = arr (d,)
+kleisliSplit :: forall m a k b b' c c' .
+                ( Arrow a (->), Monad m a, Function a, k ~ Kleisli m a, Curry k
+                , Object k b, Object k c, Object k b', Object k c'
+                , PairObject k b b', PairObject k c c', Object k (m c, m c') )
+             => k b c -> k b' c' -> k (b, b') (c, c')
+kleisliSplit  (Kleisli f) (Kleisli g) 
+    = Kleisli $ monadOut . (f *** g)
+  where monadOut :: a (m c, m c') (m (c, c'))
+        monadOut = fzipWith (arr $ uncurry(,)) 
+kleisliFanout :: forall m a k b b' c c' .
+                ( Arrow a (->), Monad m a, Function a, k ~ Kleisli m a, Curry k
+                , Object k b, Object k c, Object k c'
+                , PairObject k c c', Object k (m c, m c') )
+             => k b c -> k b c' -> k b (c, c')
+kleisliFanout  (Kleisli f) (Kleisli g) 
+    = Kleisli $ monadOut . (f &&& g)
+  where monadOut :: a (m c, m c') (m (c, c'))
+        monadOut = fzipWith (arr $ uncurry(,)) 
 
  
 
