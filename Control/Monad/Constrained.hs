@@ -35,7 +35,9 @@ import qualified Control.Arrow as A
 import Control.Arrow.Constrained
 
 
-class (Applicative m k k) => Monad m k where
+class ( Applicative m k k
+      , Object k (m (UnitObject k)), Object k (m (m (UnitObject k)))
+      ) => Monad m k where
   return :: (Object k a, Object k (m a)) => k a (m a)
   join :: (Object k a, Object k (m a), Object k (m (m a)))
        => m (m a) `k` m a
@@ -82,7 +84,7 @@ instance (Monad m k) => Category (Kleisli m k) where
   id = Kleisli return
   Kleisli a . Kleisli b = Kleisli $ join . fmap a . b
 
-instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
+instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
   type PairObject (Kleisli m a) b c 
           = ( Object a (b, c), Object a (m (b, c)), Object a (m b, c), Object a (b, m c)
             , Object a (m b, m c), Object a (m (m b, m c)), Object a (m (m (m b, m c)))
@@ -93,7 +95,7 @@ instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
             , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
             , Object a (a c (m d))
             , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
-  type UnitObject (Kleisli m a) u = UnitObject a u
+  type UnitObject (Kleisli m a) = UnitObject a
   
   curry (Kleisli fUnc) = Kleisli $ return . arr Kleisli . curry fUnc
   uncurry (Kleisli fCur) = Kleisli . arr $ 

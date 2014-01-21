@@ -126,14 +126,14 @@ instance (Function f) => Function (ConstrainedCategory f o) where
 class (Category k) => Isomorphic k a b where
   iso :: k a b
 
-instance (Curry k, Object k a, Object k u, UnitObject k u, PairObject k a u) => Isomorphic k a (a,u) where
+instance (Curry k, Object k a, u ~ UnitObject k, PairObject k a u) => Isomorphic k a (a,u) where
   iso = attachUnit
-instance (Curry k, Object k a, Object k u, UnitObject k u, PairObject k a u) => Isomorphic k (a,u) a where
+instance (Curry k, Object k a, u ~ UnitObject k, PairObject k a u) => Isomorphic k (a,u) a where
   iso = detachUnit
-instance (Curry k, Object k a, Object k u, UnitObject k u, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
+instance (Curry k, Object k a, u ~ UnitObject k, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
               => Isomorphic k a (u,a) where
   iso = swap . attachUnit
-instance (Curry k, Object k a, Object k u, UnitObject k u, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
+instance (Curry k, Object k a, u ~ UnitObject k, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
               => Isomorphic k (u,a) a where
   iso = detachUnit . swap
 instance ( Curry k, Object k a, PairObject k a b, PairObject k b c
@@ -172,13 +172,13 @@ instance ( Curry k, Object k a, Object k b, Object k c, PairObject k a b, PairOb
 --   accurately be an associated type family /monoidal product/, and \"morphism objects\"
 --   are better called /exponential types/. Use the @categories@ package if you
 --   prefer a more rigorous approach to the one taken here.
-class (Category k) => Curry k where
+class (Category k, Object k (UnitObject k)) => Curry k where
   type PairObject k a b :: Constraint
   type PairObject k a b = ()
   type MorphObject k b c :: Constraint
   type MorphObject k b c = ()
-  type UnitObject k u :: Constraint
-  type UnitObject k u = (u ~ ())
+  type UnitObject k :: *
+  type UnitObject k = ()
   
   uncurry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c)
          => k a (k b c) -> k (a, b) c
@@ -187,8 +187,8 @@ class (Category k) => Curry k where
   
   swap :: ( PairObject k a b, PairObject k b a ) => k (a,b) (b,a)
   
-  attachUnit  :: ( Object k a, Object k u, UnitObject k u, PairObject k a u ) => k a (a,u)
-  detachUnit :: ( Object k a, Object k u, UnitObject k u, PairObject k a u ) => k (a,u) a
+  attachUnit  :: ( Object k a, u ~ UnitObject k, PairObject k a u ) => k a (a,u)
+  detachUnit :: ( Object k a, u ~ UnitObject k, PairObject k a u ) => k (a,u) a
   regroup     :: ( Object k a, Object k c, PairObject k a b, PairObject k b c
                       , PairObject k a (b,c), PairObject k (a,b) c )
                       => k (a, (b, c)) ((a, b), c)
@@ -205,10 +205,10 @@ instance Curry (->) where
   regroup = \(a, (b, c)) -> ((a, b), c)
       
 
-instance (Curry f) => Curry (ConstrainedCategory f o) where
+instance (Curry f, o (UnitObject f)) => Curry (ConstrainedCategory f o) where
   type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o a, o b, o (a, b))
   type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
-  type UnitObject (ConstrainedCategory f o) u = ( UnitObject f u, o u )
+  type UnitObject (ConstrainedCategory f o) = UnitObject f
   
   uncurry (ConstrainedMorphism f) = ConstrainedMorphism $ \(a,b) -> unconstrained (f a) b
   curry (ConstrainedMorphism f) = ConstrainedMorphism $ \a -> ConstrainedMorphism $ \b -> f (a, b)

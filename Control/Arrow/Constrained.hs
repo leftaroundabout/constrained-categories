@@ -73,13 +73,13 @@ constrainedSecond :: ( Category a, Curry a, o b, o c, o d
 constrainedSecond sn = ConstrainedMorphism . sn . unconstrained
 
 
-instance (PreArrow a) => PreArrow (ConstrainedCategory a o) where
+instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) where
   first = constrainedFirst first
   second = constrainedSecond second
   ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
   ConstrainedMorphism a *** ConstrainedMorphism b = ConstrainedMorphism $ a *** b
   
-instance (Arrow a k) => Arrow (ConstrainedCategory a o) k where
+instance (Arrow a k, o (UnitObject a)) => Arrow (ConstrainedCategory a o) k where
   arr = constrainedArr arr 
 
  
