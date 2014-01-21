@@ -21,23 +21,33 @@ module Control.Applicative.Constrained (
             -- * Helper for constrained categories
           , constrainedFZipWith
             -- * Utility functions
-          , (<**>), liftA, liftA2, liftA3
+          , constPure, (<**>), liftA, liftA2, liftA3
           ) where
 
 
 import Control.Functor.Constrained
+import Control.Arrow.Constrained
 
 import Prelude hiding (id, (.), ($), Functor(..), curry, uncurry)
 import qualified Control.Category.Hask as Hask
 
 
 class (Functor f r t, Curry r, Curry t) => Monoidal f r t where
-  pure :: (Object r a, Object t (f a)) => a `t` f a
+  pureUnit :: UnitObject t `t` f (UnitObject r)
   fzipWith :: (PairObject r a b, Object r c, PairObject t (f a) (f b), Object t (f c))
               => r (a, b) c -> t (f a, f b) (f c)
 
+constPure :: (Arrow r (->), Monoidal f r t, Object r a, Object t (f a) )
+       => a -> t (UnitObject t) (f a)
+constPure a = fmap (arr $ const a) . pureUnit
+
+
 class (Monoidal f r t) => Applicative f r t where
+  -- ^ Note that this tends to make little sense for non-endofunctors. 
+  --   Consider using 'constPure' instead.
+  pure :: (Object r a, Object t (f a)) => a `t` f a 
   fpure :: (MorphObject r a b, Object t (f a)) => r a b -> f (r a b)
+  
   (<*>) :: ( MorphObject r a b, Object r (r a b)
            , MorphObject t (f a) (f b), Object t (t (f a) (f b)), Object t (f (r a b))
            , PairObject r (r a b) a, PairObject t (f (r a b)) (f a)
@@ -82,10 +92,11 @@ constrainedFZipWith zf = constrained . zf . unconstrained
          
 
 instance (Hask.Applicative f) => Monoidal f (->) (->) where
-  pure = Hask.pure
+  pureUnit = Hask.pure
   fzipWith f (p, q) = curry f Hask.<$> p Hask.<*> q
 
 instance (Hask.Applicative f) => Applicative f (->) (->) where
+  pure = Hask.pure
   fpure = Hask.pure
   (<*>) = (Hask.<*>)
 
