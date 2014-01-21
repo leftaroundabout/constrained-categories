@@ -8,6 +8,7 @@
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
 {-# LANGUAGE MultiParamTypeClasses        #-}
+{-# LANGUAGE FlexibleContexts             #-}
 
 module Control.Category.Constrained ( 
             -- * The category class
@@ -27,6 +28,7 @@ module Control.Category.Constrained (
 import Prelude hiding (id, (.), ($), curry, uncurry)
 import qualified Prelude
 import GHC.Exts (Constraint)
+import Data.Monoid
 
 -- | In mathematics, a category is defined as a class of /objects/, plus a class of
 --   /morphisms/ between those objects. In Haskell, one traditionally works in
@@ -172,7 +174,10 @@ instance ( Curry k, Object k a, Object k b, Object k c, PairObject k a b, PairOb
 --   accurately be an associated type family /monoidal product/, and \"morphism objects\"
 --   are better called /exponential types/. Use the @categories@ package if you
 --   prefer a more rigorous approach to the one taken here.
-class (Category k, Object k (UnitObject k)) => Curry k where
+class ( Category k
+      , Monoid (UnitObject k), Object k (UnitObject k)
+      -- , PairObject k (UnitObject k) (UnitObject k), Object k (UnitObject k,UnitObject k) 
+      ) => Curry k where
   type PairObject k a b :: Constraint
   type PairObject k a b = ()
   type MorphObject k b c :: Constraint
