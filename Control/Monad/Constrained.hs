@@ -16,11 +16,12 @@
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
                                 , Monad(..), (>>=), (=<<), (>>), Kleisli(..)
-                                , mapM
+                                , mapM, mapM_
                                 ) where
 
 
 import Control.Applicative.Constrained
+import Data.Foldable.Constrained
 import Data.Traversable.Constrained
 
 import Prelude hiding (
