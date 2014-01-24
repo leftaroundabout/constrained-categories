@@ -18,6 +18,7 @@
 module Data.Foldable.Constrained
            ( module Control.Category.Constrained 
            , Foldable(..)
+           , fold
            , traverse_, mapM_
            ) where
 
