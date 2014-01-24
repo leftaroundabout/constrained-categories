@@ -20,7 +20,7 @@ module Control.Functor.Constrained ( module Control.Category.Constrained
                                    ) where
 
 
-import Control.Category.Constrained hiding (ConstrainedMorphism)
+import Control.Category.Constrained
 
 import Prelude hiding (id, (.), ($), Functor(..))
 import qualified Prelude
@@ -43,6 +43,10 @@ constrainedFmap :: (Category r, Category t, o a, o b, o (f a), o (f b))
       => (        r a b               -> t (f a) (f b)                      ) 
        -> ConstrainedCategory r o a b -> ConstrainedCategory t o (f a) (f b)
 constrainedFmap q = constrained . q . unconstrained
+
+instance (Functor [] k k, o [UnitObject k]) 
+       => Functor [] (ConstrainedCategory k o) (ConstrainedCategory k o) where
+  fmap (ConstrainedMorphism f) = ConstrainedMorphism $ fmap f
 
 
   

@@ -35,6 +35,8 @@ import qualified Control.Arrow as A
 
 import Control.Arrow.Constrained
 
+import Data.Monoid
+
 
 
 
@@ -57,14 +59,14 @@ sequence = traverse id
 
 instance (Arrow k (->), Function k, Functor [] k k) => Traversable [] [] k k where
   traverse f = arr mM
-   where mM [] = constPure [] `inCategoryOf` f $ undefined
+   where mM [] = constPure [] `inCategoryOf` f $ mempty
          mM (x:xs) = fzipWith (arr $ uncurry(:)) `inCategoryOf` f 
                                                 $ (f $ x, mM xs)
 
 instance (Arrow k (->), Function k, Functor Maybe k k)
             => Traversable Maybe Maybe k k where
   traverse f = arr mM 
-   where mM Nothing = constPure Nothing `inCategoryOf` f $ undefined
+   where mM Nothing = constPure Nothing `inCategoryOf` f $ mempty
          mM (Just x) = fmap (arr Just) . f $ x
 
 
