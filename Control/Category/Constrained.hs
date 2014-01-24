@@ -23,6 +23,7 @@ module Control.Category.Constrained (
           , Curry (..)
             -- * Utility
           , inCategoryOf
+          , ObjectPair
           ) where
 
 import Prelude hiding (id, (.), ($), curry, uncurry)
@@ -197,6 +198,11 @@ class ( Category k
   regroup     :: ( Object k a, Object k c, PairObject k a b, PairObject k b c
                       , PairObject k a (b,c), PairObject k (a,b) c )
                       => k (a, (b, c)) ((a, b), c)
+
+
+
+type ObjectPair k a b = ( Category k, Object k a, Object k b
+                        , PairObject k a b, Object k (a,b)   )
   
   
 
