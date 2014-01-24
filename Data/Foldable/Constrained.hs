@@ -18,6 +18,7 @@
 module Data.Foldable.Constrained
            ( module Control.Category.Constrained 
            , Foldable(..)
+           , traverse_, mapM_
            ) where
 
 
@@ -114,20 +115,33 @@ instance ( Foldable f s t, Arrow s (->), Arrow t (->)
   ffoldl (ConstrainedMorphism f) = ConstrainedMorphism $ ffoldl f
 --  mapM_ = mapM_Cs 
 --
-mapM_ :: forall t k l o f a uk ul .
+
+-- | Despite the ridiculous-looking signature, this is in fact equivalent
+--   to 'Data.Foldable.traverse_' within Hask.
+traverse_ :: forall t k l o f a uk ul .
            ( Foldable t k l, Arrow k (->), Arrow l (->)
-           , Functor t k l, Monoidal f l l, Monoidal f k k
-           , Object k a, Object l (t a)
-           , PairObject l (f ul) (t a), PairObject k (f ul) a
-           , Object l (f ul, t a), Object l (ul, t a), Object l (t a, ul)
-           , PairObject l ul (t a), PairObject l (t a) ul
-           , PairObject k (f ul) (f ul), PairObject k ul ul
-           , Object k (f ul, f ul), Object k (f ul, a)
+           , Monoidal f l l, Monoidal f k k
+           , ObjectPair l (f ul) (t a), ObjectPair k (f ul) a
+           , ObjectPair l ul (t a), ObjectPair l (t a) ul
+           , ObjectPair k (f ul) (f ul), ObjectPair k ul ul
            , uk ~ UnitObject k, ul ~ UnitObject l, uk ~ ul
            ) => a `k` f uk -> t a `l` f ul
-mapM_ f = ffoldl q . first pureUnit . swap . attachUnit
+traverse_ f = ffoldl q . first pureUnit . swap . attachUnit
     where q :: k (f uk, a) (f uk)
           q = fzipWith detachUnit . second f
+  
+-- | The distinction between 'mapM_' and 'traverse_' doesn't really make sense
+--   on grounds of 'Monoidal' / 'Applicative' vs 'Monad', but is has in fact its
+--   benefits to restrict this to endofunctors, to make the constraint list
+--   at least somewhat shorter.
+mapM_ :: forall t k o f a u .
+           ( Foldable t k k, Arrow k (->), Monoidal f k k
+           , u ~ UnitObject k
+           , ObjectPair k (f u) (t a), ObjectPair k (f u) a
+           , ObjectPair k u (t a), ObjectPair k (t a) u
+           , ObjectPair k (f u) (f u), ObjectPair k u u
+           ) => a `k` f u -> t a `k` f u
+mapM_ = traverse_
 --   -- mapM_ f = arr runMonoidal . foldMap (arr Monoidal . f)
 --   mapM_ (ConstrainedMorphism f) = arr mM_
 --    where mM_ [] = pure `inCategoryOf` f $ mempty
