@@ -46,7 +46,6 @@ class (Monoidal f r t) => Applicative f r t where
   -- ^ Note that this tends to make little sense for non-endofunctors. 
   --   Consider using 'constPure' instead.
   pure :: (Object r a, Object t (f a)) => a `t` f a 
-  fpure :: (MorphObject r a b, Object t (f a)) => r a b -> f (r a b)
   
   (<*>) :: ( MorphObject r a b, Object r (r a b)
            , MorphObject t (f a) (f b), Object t (t (f a) (f b)), Object t (f (r a b))
@@ -97,7 +96,6 @@ instance (Hask.Applicative f) => Monoidal f (->) (->) where
 
 instance (Hask.Applicative f) => Applicative f (->) (->) where
   pure = Hask.pure
-  fpure = Hask.pure
   (<*>) = (Hask.<*>)
 
   

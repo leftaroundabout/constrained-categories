@@ -40,6 +40,7 @@ class ( Applicative m k k
       , Object k (m (UnitObject k)), Object k (m (m (UnitObject k)))
       ) => Monad m k where
   return :: (Object k a, Object k (m a)) => k a (m a)
+  return = pure
   join :: (Object k a, Object k (m a), Object k (m (m a)))
        => m (m a) `k` m a
 
