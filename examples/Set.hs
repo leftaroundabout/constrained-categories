@@ -36,8 +36,7 @@ main = do
    print $ runKleisli k $ pi
    
    putStr "Traverse: "
-   print $ inOrd (traverse $ ordd $ Set.singleton)
-               $ map Set.fromList . take 2 $ iterate (>>=show.fromEnum) "Hello, World!"
+   print $ inOrd (traverse $ ordd Set.fromList) $ (\s -> [s, s>>=show.fromEnum]) "seq"
    
 
 type Preorder = ConstrainedCategory (->) Ord
