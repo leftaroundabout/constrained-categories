@@ -15,8 +15,14 @@
 
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
-                                , Monad(..), (>>=), (=<<), (>>), Kleisli(..)
+                                -- * Monads                                
+                                , Monad(..), (>>=), (=<<), (>>)
                                 , mapM, mapM_
+                                -- * Kleisli arrows
+                                , Kleisli(..)
+                                -- * Monoid-Monads
+                                , MonadZero(..), MonadPlus(..), mplus
+                                , MonadFail(..)
                                 ) where
 
 
@@ -72,10 +78,34 @@ instance (Hask.Applicative m, Hask.Monad m) => Monad m (->) where
   join = Hask.join
   
 
--- | Deliberately break attempts to use this function.
-fail :: ()
-fail = undefined
+-- | 'Hask.MonadPlus' cannot be adapted quite analogously to 'Monad',
+--   since 'mzero' is just a value with no way to indicate its morphism
+--   category. The current implementation is probably not ideal, mainly
+--   written to give 'MonadFail' ('fail' being needed for @RebindableSyntax@-@do@
+--   notation) a mathematically reasonable superclass.
+--   
+--   Consider these classes provisorial, avoid relying on them explicitly.
+class MonadZero m a where
+  mzero :: m a
 
+class (Monad m k, MonadZero m (UnitObject k)) => MonadPlus m k where
+  fmplus :: (MonadZero m a) => k (m a, m a) (m a)
+
+mplus :: (MonadPlus m (->), MonadZero m a) => m a -> m a -> m a
+mplus = curry fmplus
+  
+instance (Hask.MonadPlus m) => MonadZero m () where
+  mzero = Hask.mzero
+instance (Hask.MonadPlus m, Hask.Applicative m) => MonadPlus m (->) where
+  fmplus = uncurry Hask.mplus
+
+
+class (MonadPlus m k) => MonadFail m k where
+  fail :: (Object k (m a)) => k String (m a) 
+
+instance (Hask.MonadPlus m, Hask.Applicative m) => MonadFail m (->) where
+  fail = Hask.fail
+  
 
 
 
