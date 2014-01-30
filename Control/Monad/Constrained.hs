@@ -25,7 +25,8 @@ module Control.Monad.Constrained( module Control.Applicative.Constrained
                                 , MonadFail(..)
                                 -- * Utility
                                 , mapM, mapM_, forM, forM_, sequence, sequence_
-                                , when
+                                , guard, when, unless
+                                , forever, void
                                 ) where
 
 

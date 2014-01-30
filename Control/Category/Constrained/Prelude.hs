@@ -26,6 +26,7 @@ import Prelude hiding ( id, (.), ($), curry, uncurry
 import Control.Category.Constrained hiding (ConstrainedMorphism)
 import Control.Functor.Constrained
 import Control.Applicative.Constrained
-import Control.Monad.Constrained hiding (MonadPlus(..), MonadZero(..))
+import Control.Monad.Constrained hiding 
+         (MonadPlus(..), MonadZero(..), (>=>), (<=<), guard, forever, void)
 import Control.Arrow.Constrained (ifThenElse)
 
