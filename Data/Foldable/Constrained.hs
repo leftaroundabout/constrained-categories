@@ -19,7 +19,7 @@ module Data.Foldable.Constrained
            ( module Control.Category.Constrained 
            , Foldable(..)
            , fold
-           , traverse_, mapM_, forM_
+           , traverse_, mapM_, forM_, sequence_
            ) where
 
 
@@ -31,7 +31,7 @@ import Prelude hiding (
      id, (.), ($)
    , Functor(..)
    , uncurry, curry
-   , mapM_
+   , mapM_, sequence_
    )
 import Data.Monoid
 
@@ -144,4 +144,17 @@ forM_ :: forall t k l f a b uk ul .
           , ObjectPair k uk uk, ObjectPair k (f uk) a, ObjectPair k (f uk) (f uk)
           ) => t a -> a `k` f b -> f uk
 forM_ v f = traverse_ f $ v
-  
+
+
+sequence_ :: forall t k l m a b uk ul . 
+             ( Foldable t k l, Arrow k (->), Arrow l (->)
+             , uk ~ UnitObject k, ul ~ UnitObject l, uk ~ ul
+             , Monoidal m k k, Monoidal m l l
+             , ObjectPair k a uk, ObjectPair k (t (m a)) uk
+             , ObjectPair k uk uk, ObjectPair k (m uk) (m uk), PairObject k (t (m a)) ul
+             , ObjectPair l (m ul) (t (m a)), ObjectPair l ul (t (m a))
+             , ObjectPair l (m uk) (t (m a)), ObjectPair l (t (m a)) ul
+             , ObjectPair k (m uk) (m a)
+             ) => t (m a) `l` m uk
+sequence_ = traverse_ id 
+--   

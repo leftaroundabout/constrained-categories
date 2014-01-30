@@ -23,7 +23,7 @@ module Control.Monad.Constrained( module Control.Applicative.Constrained
                                 , MonadZero(..), MonadPlus(..), mplus
                                 , MonadFail(..)
                                 -- * Utility
-                                , mapM, mapM_, forM, forM_
+                                , mapM, mapM_, forM, forM_, sequence, sequence_
                                 , when
                                 ) where
 
@@ -36,7 +36,7 @@ import Prelude hiding (
      id, (.), ($)
    , Functor(..), Monad(..), (=<<)
    , uncurry, curry
-   , mapM, mapM_, sequence
+   , mapM, mapM_, sequence, sequence_
    )
 import qualified Control.Category.Hask as Hask
 import qualified Control.Arrow as A

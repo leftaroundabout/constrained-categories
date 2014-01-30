@@ -20,7 +20,8 @@ module Control.Category.Constrained.Prelude (
          ) where
 
 import Prelude hiding ( id, (.), ($), curry, uncurry
-                      , Functor(..), Monad(..), (=<<), mapM, mapM_, sequence )
+                      , Functor(..), Monad(..), (=<<)
+                      , mapM, mapM_, sequence, sequence_ )
 
 import Control.Category.Constrained hiding (ConstrainedMorphism)
 import Control.Functor.Constrained
