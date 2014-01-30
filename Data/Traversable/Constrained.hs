@@ -17,7 +17,7 @@
 module Data.Traversable.Constrained
            ( module Control.Applicative.Constrained 
            , Traversable(..)
-           , sequence, mapM
+           , sequence, mapM, forM
            ) where
 
 
@@ -40,11 +40,6 @@ import Data.Monoid
 
 
 
--- forM_ :: (Monad m k, Function k, Object k a, Object k b, Object k (m b), Object k ())
---         => [a] -> a `k` m b -> m ()
--- forM_ [] f = pure ()
--- forM_ (x:xs) f = (f $ x) >> forM_ xs f
--- 
 class (Category k, Category l, Functor s l l, Functor t k k) 
       => Traversable s t k l | s k l -> t, t k l -> s, s t k -> l, s t l -> k where
   traverse :: ( Monoidal f k l, Object l a, Object l (s a)
@@ -69,6 +64,10 @@ instance (Arrow k (->), Function k, Functor Maybe k k)
    where mM Nothing = constPure Nothing `inCategoryOf` f $ mempty
          mM (Just x) = fmap (arr Just) . f $ x
 
+-- data Stupid a = Stupid a
+-- instance Functor Stupid (ConstrainedCategory (->) Num) (->) where
+--   fmap (Stupid (ConstrainedMorphism f)) (Stupid a) = Stupid (f a)
+-- 
 
 -- | 'traverse', restricted to endofunctors.
 mapM :: ( Traversable t t k k, Monoidal m k k
@@ -76,5 +75,12 @@ mapM :: ( Traversable t t k k, Monoidal m k k
         ) => a `k` m b -> t a `k` m (t b)
 mapM = traverse
 
+-- | Flipped version of 'traverse' / 'mapM'.
+forM :: forall s t k m a b l . 
+        ( Traversable s t k l, Monoidal m k l, Function l
+        , Object k b, Object k (t b), ObjectPair k b (t b)
+        , Object l a, Object l (s a), ObjectPair l (m b) (m (t b))
+        ) => s a -> (a `l` m b) -> m (t b)
+forM v f = traverse f $ v
 
 

@@ -19,7 +19,7 @@ module Data.Foldable.Constrained
            ( module Control.Category.Constrained 
            , Foldable(..)
            , fold
-           , traverse_, mapM_
+           , traverse_, mapM_, forM_
            ) where
 
 
@@ -120,7 +120,7 @@ instance ( Foldable f s t, Arrow s (->), Arrow t (->)
 -- | Despite the ridiculous-looking signature, this is in fact equivalent
 --   to 'Data.Foldable.traverse_' within Hask.
 traverse_ :: forall t k l o f a uk ul .
-           ( Foldable t k l, Arrow k (->), Arrow l (->)
+           ( Foldable t k l, PreArrow k, Arrow l (->)
            , Monoidal f l l, Monoidal f k k
            , ObjectPair l (f ul) (t a), ObjectPair k (f ul) a
            , ObjectPair l ul (t a), ObjectPair l (t a) ul
@@ -143,9 +143,17 @@ mapM_ :: forall t k o f a u .
            , ObjectPair k (f u) (f u), ObjectPair k u u
            ) => a `k` f u -> t a `k` f u
 mapM_ = traverse_
---   -- mapM_ f = arr runMonoidal . foldMap (arr Monoidal . f)
---   mapM_ (ConstrainedMorphism f) = arr mM_
---    where mM_ [] = pure `inCategoryOf` f $ mempty
---          mM_ (x:xs) = fzipWith (arr $ uncurry mappend) `inCategoryOf` f 
---                                                 $ (f $ x, mM_ xs)
--- 
+       
+
+
+forM_ :: forall t k l f a uk ul .
+          ( Foldable t k l, Monoidal f l l, Monoidal f k k
+          , Function l, PreArrow k, Arrow l (->), ul ~ UnitObject l
+          , uk ~ UnitObject k, uk ~ ul
+          , ObjectPair l ul ul, ObjectPair l (f ul) (f ul)
+          , ObjectPair l (f ul) (t a), ObjectPair l ul (t a)
+          , ObjectPair l (t a) ul, ObjectPair l (f ul) a
+          , ObjectPair k uk uk, ObjectPair k (f uk) a, ObjectPair k (f uk) (f uk)
+          ) => t a -> a `k` f ul -> f uk
+forM_ v f = traverse_ f $ v
+  

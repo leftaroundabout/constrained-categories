@@ -17,7 +17,7 @@
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
                                 -- * Monads                                
                                 , Monad(..), (>>=), (=<<), (>>)
-                                , mapM, mapM_
+                                , mapM, mapM_, forM, forM_
                                 -- * Kleisli arrows
                                 , Kleisli(..)
                                 -- * Monoid-Monads
