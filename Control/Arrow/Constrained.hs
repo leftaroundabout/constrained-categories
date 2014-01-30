@@ -13,9 +13,17 @@
 {-# LANGUAGE FlexibleInstances            #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE UndecidableInstances         #-}
+{-# LANGUAGE TypeOperators                #-}
 
 
-module Control.Arrow.Constrained where
+module Control.Arrow.Constrained (
+    -- * The Arrow type class
+      Arrow(..), PreArrow(..)
+    -- * Alternative composition notation
+    , (>>>), (<<<)
+    -- * Conditionals
+    , choose, ifThenElse
+    ) where
 
 import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<))
 import Control.Category.Constrained
@@ -81,6 +89,21 @@ instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) wh
   
 instance (Arrow a k, o (UnitObject a)) => Arrow (ConstrainedCategory a o) k where
   arr = constrainedArr arr 
+
+
+
+
+-- | Basically 'ifThenElse' with inverted argument order.
+choose :: (Arrow f (->), Object f Bool, Object f a)
+     => a  -- ^ \"'False'\" value
+     -> a  -- ^ \"'True'\" value
+     -> Bool `f` a
+choose fv tv = arr $ \c -> if c then tv else fv
+
+ifThenElse :: ( Arrow f (->), Function f
+              , Object f Bool, Object f a, Object f (f a a), Object f (f a (f a a))
+              ) => Bool `f` (a `f` (a `f` a))
+ifThenElse = arr $ \c -> arr $ \tv -> arr $ \fv -> if c then tv else fv
 
  
   

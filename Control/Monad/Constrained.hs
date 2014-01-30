@@ -17,12 +17,14 @@
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
                                 -- * Monads                                
                                 , Monad(..), (>>=), (=<<), (>>)
-                                , mapM, mapM_, forM, forM_
                                 -- * Kleisli arrows
                                 , Kleisli(..)
                                 -- * Monoid-Monads
                                 , MonadZero(..), MonadPlus(..), mplus
                                 , MonadFail(..)
+                                -- * Utility
+                                , mapM, mapM_, forM, forM_
+                                , when
                                 ) where
 
 
@@ -185,5 +187,12 @@ kleisliFanout  (Kleisli f) (Kleisli g)
   where monadOut :: a (m c, m c') (m (c, c'))
         monadOut = fzipWith (arr $ uncurry(,)) 
 
+
+
+when :: ( Monad m k, u ~ UnitObject k
+        ) => Bool -> m u `k` m u
+when True = id
+when False = join . fmap pureUnit
+    
  
 
