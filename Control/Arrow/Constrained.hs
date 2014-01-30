@@ -23,6 +23,8 @@ module Control.Arrow.Constrained (
     , (>>>), (<<<)
     -- * Conditionals
     , choose, ifThenElse
+    -- * Misc utility
+    , discard
     ) where
 
 import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<))
@@ -106,5 +108,11 @@ ifThenElse :: ( Arrow f (->), Function f
 ifThenElse = arr $ \c -> arr $ \tv -> arr $ \fv -> if c then tv else fv
 
  
+
+
+discard :: ( Arrow f (->), Curry f, ObjectPair f x u, u ~ UnitObject f )
+     => f x u
+discard = arr snd . attachUnit
+     
   
 
