@@ -189,10 +189,11 @@ kleisliFanout  (Kleisli f) (Kleisli g)
 
 
 
-when :: ( Monad m k, u ~ UnitObject k
+when :: ( Monad m k, Arrow k (->), u ~ UnitObject k
+        , ObjectPair k (m u) u
         ) => Bool -> m u `k` m u
 when True = id
-when False = join . fmap pureUnit
+when False = return . discard
     
  
 
