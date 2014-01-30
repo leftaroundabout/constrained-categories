@@ -72,7 +72,7 @@ showMainWindow = do
 
 showByCommandArgs :: [String] -> IO ()
 showByCommandArgs strs = do
-    when (elem strs [["-h"],["--help"]]) $ do
+    elem strs [["-h"],["--help"]] `when` do
        mapM_ putStrLn [
           "Usage: charmapM_ [option] [charmap] ..."
         , "Show character maps as small gtk+ palettes."
@@ -97,7 +97,7 @@ showByCommandArgs strs = do
                       "--favourites" -> fmap (:[]) . favourites . read $ strs!!1
                       "-e"      -> return . map(map (:[]) . read) $ tail strs
                       "--escape-seqs" ->  return . map(map (:[]) . read) $ tail strs
-                      fstr      -> return $ map(map (:[])) strs
+                      fstr      -> return ( map(map (:[])) strs )
     windows <- mapM charmapWindow chrmapArgs
     mapM_ (flip onDestroy mainQuit) windows
     mainGUI
