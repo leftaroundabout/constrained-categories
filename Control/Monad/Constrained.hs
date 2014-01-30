@@ -18,6 +18,7 @@ module Control.Monad.Constrained( module Control.Applicative.Constrained
                                 -- * Monads                                
                                 , Monad(..), (>>=), (=<<), (>>)
                                 -- * Kleisli arrows
+                                , (>=>), (<=<)
                                 , Kleisli(..)
                                 -- * Monoid-Monads
                                 , MonadZero(..), MonadPlus(..), mplus
@@ -39,7 +40,6 @@ import Prelude hiding (
    , mapM, mapM_, sequence, sequence_
    )
 import qualified Control.Category.Hask as Hask
-import qualified Control.Arrow as A
 
 import Control.Arrow.Constrained
 
@@ -67,12 +67,11 @@ infixl 1 >>=
 g >>= h = (=<<) h $ g
 
 infixl 1 >>
-(>>) :: ( Function f, A.Arrow f, Monad m f, Object f a, Object f b
+(>>) :: ( Function f, Arrow f (->), Monad m f, Object f a, Object f b
          , Object f (m a), Object f (m b), Object f (m (m b)) ) 
             => m a -> f (m b) (m b)
 (>>) a = result
-  where result = A.arr $ \b -> (join . fmap (A.arr $ const b)) `asTypeOf` catDummy $ a
-        catDummy = undefined . result . undefined -- Just to get in the right category
+  where result = arr $ \b -> (join . fmap (arr $ const b)) `inCategoryOf` result $ a
 
 
 instance (Hask.Applicative m, Hask.Monad m) => Monad m (->) where
@@ -110,6 +109,14 @@ instance (Hask.MonadPlus m, Hask.Applicative m) => MonadFail m (->) where
   
 
 
+(>=>) :: ( Monad m k, Object k a, Object k b, Object k c
+         , Object k (m b), Object k (m c), Object k (m (m c)))
+       => a `k` m b -> b `k` m c -> a `k` m c
+f >=> g = join . fmap g . f
+(<=<) :: ( Monad m k, Object k a, Object k b, Object k c
+         , Object k (m b), Object k (m c), Object k (m (m c)))
+       => b `k` m c -> a `k` m b -> a `k` m c
+f <=< g = join . fmap f . g
 
 newtype Kleisli m k a b = Kleisli { runKleisli :: k a (m b) }
 
@@ -189,11 +196,36 @@ kleisliFanout  (Kleisli f) (Kleisli g)
 
 
 
+guard ::( MonadPlus m k, Arrow k (->), Function k
+        , UnitObject k ~ (), Object k Bool
+        ) => Bool `k` m ()
+guard = i . choose mzero (return `inCategoryOf` i $ ())
+ where i = id
+
+
 when :: ( Monad m k, Arrow k (->), u ~ UnitObject k
         , ObjectPair k (m u) u
         ) => Bool -> m u `k` m u
 when True = id
 when False = return . discard
+unless :: ( Monad m k, Arrow k (->), u ~ UnitObject k
+        , ObjectPair k (m u) u
+        ) => Bool -> m u `k` m u
+unless False = id
+unless True = return . discard
     
+
+
+forever :: ( Monad m k, Function k, Arrow k (->), Object k a, Object k b 
+           , Object k (m a), Object k (m (m a)), Object k (m b), Object k (m (m b))
+           ) => m a `k` m b
+forever = i . arr loop 
+    where loop a = (join . fmap (arr . const $ loop a)) `inCategoryOf` i $ a
+          i = id
+
+void :: ( Monad m k, Arrow k (->)
+        , Object k a, Object k (m a), ObjectPair k a u, u ~ UnitObject k 
+        ) => m a `k` m (UnitObject k)
+void = fmap discard
  
 
