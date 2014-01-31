@@ -4,6 +4,7 @@
 -- {-# LANGUAGE Arrows                      #-}
 {-# LANGUAGE RebindableSyntax            #-}
 
+import Prelude ()
 import Control.Category.Constrained.Prelude
 import qualified Control.Category.Hask as Hask
   

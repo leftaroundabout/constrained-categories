@@ -8,7 +8,7 @@
 -- 
 --   To prove the point best: this program was originally /not/ written as an example
 --   but as an independent little utility application, before constrained-categories
---   was ever thought of. It includes some not-too-well-written or sophisticaten, 
+--   was ever thought of. It includes some not-too-well-written or sophisticated, 
 --   but realistic and useful IO and GUI interaction. It is not very idiomatic
 --   Haskell, but should be representative enough for our purpose.
 --   
@@ -20,6 +20,7 @@
 
 module Main (main) where
 
+import Prelude ()
 import Control.Category.Constrained.Prelude hiding (readFile)
 import qualified Control.Category.Hask as Hask
   
