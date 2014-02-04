@@ -150,12 +150,13 @@ instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
 
   
 
-instance (Monad m a, Arrow a (->), Function a, Curry a) => Arrow (Kleisli m a) (->) where
+instance (Monad m a, Arrow a (->), Function a, Curry a) => EnhancedCat (Kleisli m a) (->) where
   arr f = Kleisli $ return . arr f
-instance (Monad m a, Arrow a (->), Function a, Curry a) => PreArrow (Kleisli m a) where
+instance (Monad m a, Arrow a (->), Function a, Curry a) => Morphism (Kleisli m a) where
   first = kleisliFirst
   second = kleisliSecond
   (***) = kleisliSplit
+instance (Monad m a, Arrow a (->), Function a, Curry a) => PreArrow (Kleisli m a) where
   (&&&) = kleisliFanout
 
 kleisliFirst :: forall m a k b c d .

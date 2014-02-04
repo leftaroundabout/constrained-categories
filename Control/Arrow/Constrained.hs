@@ -4,6 +4,18 @@
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
 -- 
+-- Haskell's 'Arr.Arrow's, going back to [Hughes 2000], combine multiple ideas from
+-- category theory:
+-- 
+-- * They expand upon cartesian categories, by offering ways to combine arrows between
+--   simple objects to composite ones working on tuples (i.e. /products/) thereof.
+-- 
+-- * They constitute a \"profunctor\" interface, allowing to \"@fmap@\" both covariantly
+--   over the second parameter, as well as contravariantly over the first. As in case
+--   of "Control.Functor.Constrained", we wish the underlying category to fmap from
+--   not to be limited to /Hask/, so 'Arrow' also has an extra parameter.
+-- 
+-- To facilitate these somewhat divergent needs, 'Arrow' is split up in three classes.
 
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
@@ -17,8 +29,8 @@
 
 
 module Control.Arrow.Constrained (
-    -- * The Arrow type class
-      Arrow(..), PreArrow(..)
+    -- * The Arrow type classes
+      Arrow, Morphism(..), PreArrow(..), EnhancedCat(..)
     -- * Alternative composition notation
     , (>>>), (<<<)
     -- * Conditionals
@@ -43,26 +55,36 @@ infixr 3 &&&, ***
              => k b c -> k a b -> k a c
 (<<<) = (.)
 
-class (Category a, Curry a) => PreArrow a where
+class (Category a, Curry a) => Morphism a where
   first :: (Object a b, Object a c, PairObject a b d, PairObject a c d) 
          => a b c -> a (b, d) (c, d)
   second :: (Object a b, Object a c, PairObject a d b, PairObject a d c) 
          => a b c -> a (d, b) (d, c)
-  (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
-         => a b c -> a b c' -> a b (c,c')
   (***) :: ( Object a b, Object a c, Object a b', Object a c'
            , PairObject a b b', PairObject a c c' )
          => a b c -> a b' c' -> a (b,b') (c,c')
-class (PreArrow a, Category k) => Arrow a k where
+-- | Unlike 'first', 'second', '***' and 'arr', '&&&' has an intrinsic notion
+--   of \"direction\": it is basically equivalent to precomposing the result
+--   of '***' with a @b -> (b,b)@, but that is in general only available
+--   for arrows that generalise ordinary functions, in their native direction.
+--   (@(b,b) ->b@ is specific to semigroups.) It is for this reason the only constituent
+--   class of 'Arrow' that actually has \"arrow\" in its name.
+class (Morphism a) => PreArrow a where
+  (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
+         => a b c -> a b c' -> a b (c,c')
+class (Category k) => EnhancedCat a k where
   arr :: (Object k b, Object k c, Object a b, Object a c)
          => k b c -> a b c
 
-instance PreArrow (->) where
+type Arrow a k = (PreArrow a, EnhancedCat a k)
+
+instance Morphism (->) where
   first = Arr.first
   second = Arr.second
-  (&&&) = (Arr.&&&)
   (***) = (Arr.***)
-instance Arrow (->) (->) where
+instance PreArrow (->) where
+  (&&&) = (Arr.&&&)
+instance EnhancedCat (->) (->) where
   arr = Arr.arr
 
 constrainedArr :: (Category k, Category a, o b, o c )
@@ -83,13 +105,15 @@ constrainedSecond :: ( Category a, Curry a, o b, o c, o d
 constrainedSecond sn = ConstrainedMorphism . sn . unconstrained
 
 
-instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) where
+instance (Morphism a, o (UnitObject a)) => Morphism (ConstrainedCategory a o) where
   first = constrainedFirst first
   second = constrainedSecond second
-  ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
   ConstrainedMorphism a *** ConstrainedMorphism b = ConstrainedMorphism $ a *** b
   
-instance (Arrow a k, o (UnitObject a)) => Arrow (ConstrainedCategory a o) k where
+instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) where
+  ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
+  
+instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) k where
   arr = constrainedArr arr 
 
 
@@ -102,7 +126,7 @@ choose :: (Arrow f (->), Object f Bool, Object f a)
      -> Bool `f` a
 choose fv tv = arr $ \c -> if c then tv else fv
 
-ifThenElse :: ( Arrow f (->), Function f
+ifThenElse :: ( EnhancedCat f (->), Function f
               , Object f Bool, Object f a, Object f (f a a), Object f (f a (f a a))
               ) => Bool `f` (a `f` (a `f` a))
 ifThenElse = arr $ \c -> arr $ \tv -> arr $ \fv -> if c then tv else fv
@@ -110,7 +134,7 @@ ifThenElse = arr $ \c -> arr $ \tv -> arr $ \fv -> if c then tv else fv
  
 
 
-discard :: ( Arrow f (->), Curry f, ObjectPair f x u, u ~ UnitObject f )
+discard :: ( EnhancedCat f (->), Curry f, ObjectPair f x u, u ~ UnitObject f )
      => f x u
 discard = arr snd . attachUnit
      

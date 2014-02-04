@@ -31,16 +31,16 @@ import qualified Control.Arrow as Arr
              => k b c -> k a b -> k a c
 (<<<) = (.)
 
-class (Category a, Curry a) => PreArrow a where
+class (Category a, Curry a) => Morphism a where
   first :: (Object a b, Object a c, PairObject a b d, PairObject a c d) 
          => a b c -> a (b, d) (c, d)
   second :: (Object a b, Object a c, PairObject a d b, PairObject a d c) 
          => a b c -> a (d, b) (d, c)
-class (PreArrow a, Category k) => Arrow a k where
+class (Morphism a, Category k) => Arrow a k where
   arr :: (Object k b, Object k c, Object a b, Object a c)
          => k b c -> a b c
 
-instance PreArrow (->) where
+instance Morphism (->) where
   first = Arr.first
   second = Arr.second
 instance Arrow (->) (->) where
@@ -63,7 +63,7 @@ constrainedSecond :: ( Category a, Curry a, o b, o c, o d
      -> ConstrainedCategory a o b c -> ConstrainedCategory a o (d, b) (d, c)
 constrainedSecond sn = ConstrainedMorphism . sn . unconstrained
 
-instance (PreArrow a) => PreArrow (ConstrainedCategory a o) where
+instance (Morphism a) => Morphism (ConstrainedCategory a o) where
   first = constrainedFirst first
   second = constrainedSecond second
   
@@ -94,7 +94,7 @@ instance (Monad m a, Arrow a (->), Function a) => Curry (Kleisli m a) where
 
 instance (Monad m a, Arrow a (->), Function a, Curry a) => Arrow (Kleisli m a) (->) where
   arr f = Kleisli $ return . arr f
-instance (Monad m a, Arrow a (->), Function a, Curry a) => PreArrow (Kleisli m a) where
+instance (Monad m a, Arrow a (->), Function a, Curry a) => Morphism (Kleisli m a) where
   first = kleisliFirst
   second = kleisliSecond
 
