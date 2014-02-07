@@ -21,7 +21,7 @@ module Control.Applicative.Constrained (
             -- * Helper for constrained categories
           , constrainedFZipWith
             -- * Utility functions
-          , constPure, (<**>), liftA, liftA2, liftA3
+          , constPure, fzip, (<**>), liftA, liftA2, liftA3
           ) where
 
 
@@ -41,6 +41,9 @@ constPure :: (Arrow r (->), Monoidal f r t, Object r a, Object t (f a) )
        => a -> t (UnitObject t) (f a)
 constPure a = fmap (arr $ const a) . pureUnit
 
+fzip :: (Monoidal f r t, ObjectPair r a b, PairObject t (f a) (f b), Object t (f (a,b)))
+        => t (f a, f b) (f (a,b))
+fzip = fzipWith id
 
 class (Monoidal f r t) => Applicative f r t where
   -- ^ Note that this tends to make little sense for non-endofunctors. 
