@@ -1,13 +1,17 @@
-{-# LANGUAGE TypeOperators         #-}
-{-# LANGUAGE FlexibleInstances     #-} 
-{-# LANGUAGE MultiParamTypeClasses #-} 
-{-# LANGUAGE TypeFamilies          #-} 
-{-# LANGUAGE ConstraintKinds       #-} 
-{-# LANGUAGE FlexibleContexts      #-} 
-{-# LANGUAGE TupleSections         #-} 
-{-# LANGUAGE LambdaCase            #-} 
+{-# LANGUAGE TypeOperators          #-}
+{-# LANGUAGE FlexibleInstances      #-} 
+{-# LANGUAGE MultiParamTypeClasses  #-} 
+{-# LANGUAGE FunctionalDependencies #-} 
+{-# LANGUAGE TypeFamilies           #-} 
+{-# LANGUAGE ConstraintKinds        #-} 
+{-# LANGUAGE FlexibleContexts       #-} 
+{-# LANGUAGE TupleSections          #-} 
+{-# LANGUAGE LambdaCase             #-} 
 
 
+-- | A rather naïve excercise on invertible functions.
+--   Tried with simple numeric expressions, this does actually
+--   work in a way, but not really for nontrivial stuff. 
 
 
 
@@ -19,12 +23,18 @@ import Control.Arrow.Constrained
 
 import Data.Monoid
 
+import Data.VectorSpace
+
   
 main :: IO ()
 main = do
    mapM_ (\(capt, solve) -> putStrLn $ capt ++ ":   x = " ++ show solve) 
-     [ ( "            x² = 2", 2 != \x -> x**2              )
-     , ( "e^(x³ - 4) - 5 = 7", 7 != \x -> exp(x**3 - 4) - 5 )
+     [ ( "            x² =  2",  2 != \x -> x**2              )
+     , ( "e^(x³ - 4) - 5 =  7",  7 != \x -> exp(x**3 - 4) - 5 )
+     , ( " (x,1) · (1,0) =  3",  3 != \x -> (x ^++^ 1) <.> (1 ^++^ 0 
+                                         :: BackResult Double (Double, Double)) )
+     , ( " (7,π) · (3,x) = -2", -2 != \x -> (7 ^++^ pi) <.> (3 ^++^ x
+                                         :: BackResult Double (Double, Double)) )
      ]
 
 data a <-> b = Invertible { fwd :: a->b 
@@ -136,6 +146,10 @@ infix 4 !=
 instance Functor (BackResult a) (<->) (-->) where
   fmap f = arr (BackResult f .)
            
+-- | This is sort of reasonable, but not quite correct in fact:
+--   combining with a constant and inverse-matching with a disagreeing
+--   value should really fail, here it is just ignored.
+--   Its very possible we're actually violating the monoidal-functor laws here.
 instance Monoidal (BackResult a) (<->) (-->) where
   pureUnit = arr $ const (Constant ())
   fzipWith (Invertible f fi) = arr bq 
@@ -148,6 +162,32 @@ instance Monoidal (BackResult a) (<->) (-->) where
                                           ( \y -> let (_,d)=fi y in hi d )
          bq (g, h) = Noninvertible $ \x -> f (g $ x, h $ x)
 
+
+
+instance (AdditiveGroup b) => AdditiveGroup (BackResult a b) where
+  zeroV = Constant zeroV
+  Constant a ^+^ Constant b = Constant $ a^+^b
+  Constant o ^+^ n = fmap (Invertible (o^+^) (^-^o)) $ n
+  n ^+^ Constant o = fmap (Invertible (^+^o) (^-^o)) $ n
+  a ^+^ b = Noninvertible $ \x -> (a$x) ^+^ (b$x)
+  negateV x = arr (Invertible negateV negateV) . x
+
+instance (InnerSpace b, Fractional (Scalar b)) => VectorSpace (BackResult a b) where
+  type Scalar (BackResult a b) = BackResult a (Scalar b)
+  
+  Constant a *^ Constant b = Constant $ a*^b
+  Constant o *^ v = fmap (Invertible (o*^) (^/o)) $ v
+  -- n *^ Constant v = fmap (Invertible (*^v) (recip . (<.>v))) $ n
+  a *^ b = Noninvertible $ \x -> (a$x) *^ (b$x)
+
+instance (InnerSpace b, Fractional (Scalar b)) => InnerSpace (BackResult a b) where
+  Constant v <.> Constant w = Constant $ v<.>w
+  -- Constant v <.> w = fmap (Invertible (<.>v) ((*^v) . recip)) $ w
+  -- v <.> Constant w = fmap (Invertible (w<.>) ((*^w) . recip)) $ v
+  a <.> b = Noninvertible $ \x -> (a$x) <.> (b$x)
+  
+  
+  
 instance (Fractional b) => Num (BackResult a b) where
   fromInteger = Constant . fromInteger
   
@@ -196,5 +236,15 @@ instance (Floating b, Ord b) => Floating (BackResult a b) where
   atanh x = arr atanh . x
   
   
+  
 
+class (AdditiveGroup a, AdditiveGroup b, AdditiveGroup s)
+   => DirectSum a b s | s -> a b where
+  (^++^) :: a -> b -> s
 
+instance (AdditiveGroup a, AdditiveGroup b) => DirectSum a b (a,b) where 
+  (^++^) = (,)
+
+instance (InnerSpace a, InnerSpace b, Floating (Scalar a), Scalar a ~ (Scalar b)) 
+     => DirectSum (BackResult x a) (BackResult x b) (BackResult x (a,b)) where
+  a^++^b = fzipWith (Invertible id id) $ (a,b)
