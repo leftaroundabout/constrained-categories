@@ -1,3 +1,10 @@
+-- |
+-- Copyright   :  (c) 2013 Justus Sagemüller
+-- License     :  GPL v3 (see COPYING)
+-- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
+-- 
+--   Using the constrained category of strict weak ordered types
+--   to treat 'Data.Set' as a monad.
 
 {-# LANGUAGE MultiParamTypeClasses       #-}
 {-# LANGUAGE FlexibleInstances           #-}
@@ -32,7 +39,7 @@ main = do
                     $ Set.fromList [0..2]
    
    putStr "Kleisli:  "
-   let k :: Kleisli Set Preorder Double Char
+   let k :: Kleisli Set Ranking Double Char
        k = arr show >>> Kleisli (arr Set.fromList)
    print $ runKleisli k $ pi
    
@@ -40,26 +47,26 @@ main = do
    print $ inOrd (traverse $ ordd Set.fromList) $ (\s -> [s, s>>=show.fromEnum]) "seq"
    
 
-type Preorder = ConstrainedCategory (->) Ord
+type Ranking = ConstrainedCategory (->) Ord
 
-ordd :: (Ord a, Ord b) => (a -> b) -> Preorder a b
+ordd :: (Ord a, Ord b) => (a -> b) -> Ranking a b
 ordd = constrained
 
-inOrd :: Preorder a b -> Preorder a b
+inOrd :: Ranking a b -> Ranking a b
 inOrd = id
 
-instance Functor Set Preorder Preorder where
+instance Functor Set Ranking Ranking where
   fmap = constrainedFmap Set.map
 
-instance Monoidal Set Preorder Preorder where
+instance Monoidal Set Ranking Ranking where
   pureUnit = arr Set.singleton
   fzipWith = constrainedFZipWith $
        \zp (s1,s2) -> Set.unions [ Set.map (curry zp a) s2 | a <- Set.toList s1 ]
   
-instance Applicative Set Preorder Preorder where
+instance Applicative Set Ranking Ranking where
   pure = arr Set.singleton
 
-instance Monad Set Preorder where
+instance Monad Set Ranking where
   join = arr $ Set.unions . Set.toList
   
 

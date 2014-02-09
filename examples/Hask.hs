@@ -1,5 +1,9 @@
-
--- | This example shows the backwards-compatilility of the constrained-categories
+-- |
+-- Copyright   :  (c) 2013 Justus Sagemüller
+-- License     :  GPL v3 (see COPYING)
+-- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
+-- 
+--   This example shows the backwards-compatilility of the constrained-categories
 --   framework with existing Haskell code. All the familiar monadic etc. functions
 --   come not as usual from the Prelude / from 'Control.Monad', but from this
 --   package's modules. Even though they have quite notably different signatures
@@ -17,6 +21,7 @@
 --   its text is copied to the X clipboard (Windows etc. not supported).
 
 {-# LANGUAGE RebindableSyntax #-}
+{-# LANGUAGE PackageImports   #-}
 
 module Main (main) where
 
@@ -26,7 +31,7 @@ import qualified Control.Category.Hask as Hask
   
   
 
-import Graphics.UI.Gtk hiding (on)
+import "gtk" Graphics.UI.Gtk hiding (on)
 import qualified System.Glib.Signals (on) -- clashes with 'Data.Function.on'
 
 import Numeric(showHex)

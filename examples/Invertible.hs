@@ -1,3 +1,12 @@
+-- |
+-- Copyright   :  (c) 2013 Justus Sagemüller
+-- License     :  GPL v3 (see COPYING)
+-- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
+-- 
+--   A rather naïve excercise on invertible functions.
+--   Tried with simple numeric expressions, this does actually
+--   work in a way, but not really for nontrivial stuff. 
+
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE FlexibleInstances      #-} 
 {-# LANGUAGE MultiParamTypeClasses  #-} 
@@ -7,11 +16,8 @@
 {-# LANGUAGE FlexibleContexts       #-} 
 {-# LANGUAGE TupleSections          #-} 
 {-# LANGUAGE LambdaCase             #-} 
+{-# LANGUAGE PackageImports         #-}
 
-
--- | A rather naïve excercise on invertible functions.
---   Tried with simple numeric expressions, this does actually
---   work in a way, but not really for nontrivial stuff. 
 
 
 
@@ -23,7 +29,7 @@ import Control.Arrow.Constrained
 
 import Data.Monoid
 
-import Data.VectorSpace
+import "vector-space" Data.VectorSpace
 
   
 main :: IO ()

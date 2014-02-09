@@ -1,4 +1,12 @@
 
+-- |
+-- Copyright   :  (c) 2013 Justus Sagemüller
+-- License     :  GPL v3 (see COPYING)
+-- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
+-- 
+--   Simple implementation of Vect /k/, the category of vector spaces
+--   over the field /k/, with linear maps as morphisms.
+
 
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE FlexibleInstances      #-} 
@@ -11,11 +19,8 @@
 {-# LANGUAGE TupleSections          #-} 
 {-# LANGUAGE GADTs                  #-} 
 {-# LANGUAGE ScopedTypeVariables    #-} 
+{-# LANGUAGE PackageImports         #-}
 
-
--- | A rather naïve excercise on invertible functions.
---   Tried with simple numeric expressions, this does actually
---   work in a way, but not really for nontrivial stuff. 
 
 
 
@@ -27,25 +32,25 @@ import Control.Arrow.Constrained
 
 import Data.Monoid
 
-import Data.VectorSpace
+import "vector-space" Data.VectorSpace
 import Data.Basis
 import Data.MemoTrie
 import Data.LinearMap
 
 import Data.Void
 
-import Numeric.LinearAlgebra hiding ((<.>), (<>))
+import "hmatrix" Numeric.LinearAlgebra hiding ((<.>), (<>))
 
-type R = Double
-type R² = (R, R)
-type GL² = Lin R R² R²
+type ℝ = Double
+type ℝ² = (ℝ, ℝ)
+type GLℝ² = Lin ℝ ℝ² ℝ²
 
 main :: IO ()
 main = do
    putStr " 45° ↺  (1,0):  "
    print $ let ϑ = pi/4 
            in  ( fromMatList [ cos ϑ, sin ϑ
-                             ,-sin ϑ, cos ϑ ]  :: GL²) $ (1, 0) 
+                             ,-sin ϑ, cos ϑ ]  :: GLℝ²) $ (1, 0) 
 
 
 type CountablySpanned v = (HasBasis v, HasTrie (Basis v))
