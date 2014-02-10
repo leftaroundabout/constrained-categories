@@ -21,6 +21,10 @@ module Control.Category.Constrained (
             -- * Function-like categories
           , Function (..)
           , Curry (..)
+            -- * Global-element proxies
+          , HasProxy (..)
+          , genericAlg, genericProxyMap
+          , GenericProxy (..)
             -- * Utility
           , inCategoryOf
           , ObjectPair
@@ -200,7 +204,6 @@ class ( Category k
                       => k (a, (b, c)) ((a, b), c)
 
 
-
 type ObjectPair k a b = ( Category k, Object k a, Object k b
                         , PairObject k a b, Object k (a,b)   )
   
@@ -229,4 +232,45 @@ instance (Curry f, o (UnitObject f)) => Curry (ConstrainedCategory f o) where
   detachUnit = ConstrainedMorphism detachUnit
   regroup = ConstrainedMorphism regroup
                                                                      
+
+
+infixr 0 $~
+
+-- | A proxy value is a \"general representation\" of a category's
+--   values, i.e. /global elements/. This is useful to define certain
+--   morphisms (including ones that can't just \"inherit\" from '->'
+--   with 'Control.Arrow.Constrained.arr') in ways other than point-free
+--   composition pipelines. Instead, you can write algebraic expressions
+--   much as if dealing with actual values of your category's objects,
+--   but using the proxy type which is restricted so any function
+--   defined as such a lambda-expression qualifies as a morphism 
+--   of that category.
+class (Category k) => HasProxy k where
+  type ProxyVal k a v :: *
+  type ProxyVal k a v = GenericProxy k a v
+  alg :: ( Object k a, Object k b
+         -- , Object k (ProxyVal k a a), Object k (ProxyVal k a b)
+         ) => (ProxyVal k a a -> ProxyVal k a b) -> k a b
+  ($~) :: ( Object k a, Object k b, Object k c 
+          -- , Object k (ProxyVal k a b), Object k (ProxyVal k a c)
+          ) => k b c -> ProxyVal k a b -> ProxyVal k a c
+
+data GenericProxy k a v = GenericProxy { runGenericProxy :: k a v }
+
+genericAlg :: ( HasProxy k, Object k a, Object k b )
+        => (GenericProxy k a a -> GenericProxy k a b) -> k a b
+genericAlg f = runGenericProxy . f $ GenericProxy id
+
+genericProxyMap :: ( HasProxy k, Object k a, Object k b, Object k c )
+        => k b c -> GenericProxy k a b -> GenericProxy k a c
+genericProxyMap m (GenericProxy v) = GenericProxy $ m . v
+
+
+
+instance HasProxy (->) where
+  type ProxyVal (->) a b = b
+  alg = id
+  ($~) = ($)
+
+
 

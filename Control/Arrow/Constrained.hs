@@ -37,6 +37,7 @@ module Control.Arrow.Constrained (
     , choose, ifThenElse
     -- * Misc utility
     , discard
+    , genericProxyCombine, genericUnit
     ) where
 
 import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<))
@@ -56,9 +57,9 @@ infixr 3 &&&, ***
 (<<<) = (.)
 
 class (Category a, Curry a) => Morphism a where
-  first :: (Object a b, Object a c, PairObject a b d, PairObject a c d) 
+  first :: (Object a b, Object a c, Object a d, PairObject a b d, PairObject a c d) 
          => a b c -> a (b, d) (c, d)
-  second :: (Object a b, Object a c, PairObject a d b, PairObject a d c) 
+  second :: (Object a b, Object a c, Object a d, PairObject a d b, PairObject a d c) 
          => a b c -> a (d, b) (d, c)
   (***) :: ( Object a b, Object a c, Object a b', Object a c'
            , PairObject a b b', PairObject a c c' )
@@ -72,6 +73,8 @@ class (Category a, Curry a) => Morphism a where
 class (Morphism a) => PreArrow a where
   (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
          => a b c -> a b c' -> a b (c,c')
+  terminal :: ( Object a b ) => a b (UnitObject a)
+
 class (Category k) => EnhancedCat a k where
   arr :: (Object k b, Object k c, Object a b, Object a c)
          => k b c -> a b c
@@ -84,6 +87,7 @@ instance Morphism (->) where
   (***) = (Arr.***)
 instance PreArrow (->) where
   (&&&) = (Arr.&&&)
+  terminal = const ()
 instance EnhancedCat (->) (->) where
   arr = Arr.arr
 
@@ -112,6 +116,7 @@ instance (Morphism a, o (UnitObject a)) => Morphism (ConstrainedCategory a o) wh
   
 instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) where
   ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
+  terminal = ConstrainedMorphism terminal
   
 instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) k where
   arr = constrainedArr arr 
@@ -138,5 +143,13 @@ discard :: ( EnhancedCat f (->), Curry f, ObjectPair f x u, u ~ UnitObject f )
      => f x u
 discard = arr snd . attachUnit
      
+genericProxyCombine :: ( HasProxy k, PreArrow k
+                       , Object k a, ObjectPair k b c, Object k d )
+     => k (b,c) d -> GenericProxy k a b -> GenericProxy k a c -> GenericProxy k a d
+genericProxyCombine m (GenericProxy v) (GenericProxy w)
+       = GenericProxy $ m . (v &&& w)
   
+genericUnit :: ( PreArrow k, HasProxy k, Object k a )
+        => GenericProxy k a (UnitObject k)
+genericUnit = GenericProxy terminal
 

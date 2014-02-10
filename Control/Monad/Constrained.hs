@@ -158,10 +158,11 @@ instance (Monad m a, Arrow a (->), Function a, Curry a) => Morphism (Kleisli m a
   (***) = kleisliSplit
 instance (Monad m a, Arrow a (->), Function a, Curry a) => PreArrow (Kleisli m a) where
   (&&&) = kleisliFanout
+  terminal = Kleisli $ return . terminal
 
 kleisliFirst :: forall m a k b c d .
                 ( Monad m a, Arrow a (->), Function a, k ~ Kleisli m a, Curry k
-                , Object k b, Object k c, PairObject k b d, PairObject k c d ) 
+                , Object k b, Object k c, Object k d, PairObject k b d, PairObject k c d ) 
              => k b c -> k (b, d) (c, d)
 kleisliFirst (Kleisli f) = Kleisli $ arr monadOut . first f 
  where monadOut :: (m c, d) -> m (c, d)
@@ -170,7 +171,7 @@ kleisliFirst (Kleisli f) = Kleisli $ arr monadOut . first f
               dPost = arr (, d)
 kleisliSecond :: forall m a k b c d .
                 ( Arrow a (->), Monad m a, Function a, k ~ Kleisli m a, Curry k
-                , Object k b, Object k c, PairObject k d b, PairObject k d c ) 
+                , Object k b, Object k c, Object k d, PairObject k d b, PairObject k d c ) 
              => k b c -> k (d, b) (d, c)
 kleisliSecond (Kleisli f) = Kleisli $ arr monadOut . second f 
  where monadOut :: (d, m c) -> m (d, c)

@@ -47,10 +47,13 @@ type GLℝ² = Lin ℝ ℝ² ℝ²
 
 main :: IO ()
 main = do
-   putStr " 45° ↺  (1,0):  "
+   putStr "45° ↺  (1,0):  "
    print $ let ϑ = pi/4 
            in  ( fromMatList [ cos ϑ, sin ϑ
                              ,-sin ϑ, cos ϑ ]  :: GLℝ²) $ (1, 0) 
+   putStr "\\v → v + v  :  "
+   print . asMatrix $ ( alg (\v -> v ^+^ v )
+                                       :: GLℝ² )
 
 
 type CountablySpanned v = (HasBasis v, HasTrie (Basis v))
@@ -98,6 +101,34 @@ instance Curry (Lin k) where
   detachUnit = Lin . linear $ \(a, Origin) -> a
   regroup = Lin . linear $ \(a,(b,c)) -> ((a,b),c)
 
+instance Morphism (Lin k) where
+  first (Lin l) = Lin $ firstL l
+  second l = Lin . linear $ \(u,v) -> (u, l $ v)
+  m *** n = Lin . linear $ (m$) *** (n$)
+instance PreArrow (Lin k) where
+  m &&& n = Lin . linear $ (m$) &&& (n$)
+  terminal = Lin . linear $ const Origin
+  
+
+instance HasProxy (Lin k) where
+  alg = genericAlg
+  ($~) = genericProxyMap
+
+instance ( HasProxy (Lin k), ProxyVal (Lin k) a b ~ GenericProxy (Lin k) a b
+         , Object (Lin k) a, Object (Lin k) b
+         ) => AdditiveGroup (GenericProxy (Lin k) a b) where
+  zeroV = Lin (linear $ \Origin -> zeroV) $~ genericUnit
+  negateV v = Lin (linear negateV) $~ v
+  (^+^) = genericProxyCombine . Lin . linear $ uncurry (^+^)
+
+instance ( HasProxy (Lin k), ProxyVal (Lin k) a b ~ GenericProxy (Lin k) a b
+         , Object (Lin k) a, Object (Lin k) b
+         ) => VectorSpace (GenericProxy (Lin k) a b) where
+  type Scalar (GenericProxy (Lin k) a b) = k
+  x*^v = Lin (linear $ (x*^)) $~ v
+
+
+
 
 asMatrix :: (FinitelySpanned u, FinitelySpanned v, Element k)
       => Lin k u v -> Matrix k
@@ -119,6 +150,17 @@ fromMatList = fromMatrix . (dv><du)
 
 
   
+
+
+class (AdditiveGroup a, AdditiveGroup b, AdditiveGroup s)
+   => DirectSum a b s | s -> a b where
+  (^++^) :: a -> b -> s
+
+instance (AdditiveGroup a, AdditiveGroup b) => DirectSum a b (a,b) where 
+  (^++^) = (,)
+
+
+
 
 data ZeroDim k = Origin
 instance AdditiveGroup (ZeroDim k) where 
