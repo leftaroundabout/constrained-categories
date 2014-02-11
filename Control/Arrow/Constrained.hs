@@ -16,6 +16,17 @@
 --   not to be limited to /Hask/, so 'Arrow' also has an extra parameter.
 -- 
 -- To facilitate these somewhat divergent needs, 'Arrow' is split up in three classes.
+-- These do not even form an ordinary hierarchy, to allow categories to implement
+-- only one /or/ the other aspect.
+-- 
+-- That's not the only significant difference of this module, compared to "Control.Arrow":
+-- 
+-- * Kleisli arrows are not defined here, but in "Control.Monad.Constrained".
+--   Monads are really a much more specific concept than category arrows.
+-- 
+-- * Some extra utilities are included that don't apparently have much to
+--   do with 'Arrow' at all, but require the expanded cartesian-category tools
+--   and are therefore not in "Control.Category.Constrained".
 
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
@@ -33,14 +44,15 @@ module Control.Arrow.Constrained (
       Arrow, Morphism(..), PreArrow(..), EnhancedCat(..)
     -- * Alternative composition notation
     , (>>>), (<<<)
-    -- * Conditionals
-    , choose, ifThenElse
+    -- * Proxies for cartesian categories
+    , CartesianProxy(..)
+    , genericProxyCombine, genericUnit, genericAlg2
     -- * Misc utility
-    , discard
-    , genericProxyCombine, genericUnit
+    -- ** Conditionals
+    , choose, ifThenElse
     ) where
 
-import Prelude hiding (id, (.), ($), Functor(..), Monad(..), (=<<))
+import Prelude hiding (id, fst, snd, (.), ($), Functor(..), Monad(..), (=<<))
 import Control.Category.Constrained
 import qualified Control.Category.Hask as Hask
 
@@ -64,16 +76,26 @@ class (Category a, Curry a) => Morphism a where
   (***) :: ( Object a b, Object a c, Object a b', Object a c'
            , PairObject a b b', PairObject a c c' )
          => a b c -> a b' c' -> a (b,b') (c,c')
+
 -- | Unlike 'first', 'second', '***' and 'arr', '&&&' has an intrinsic notion
 --   of \"direction\": it is basically equivalent to precomposing the result
 --   of '***' with a @b -> (b,b)@, but that is in general only available
 --   for arrows that generalise ordinary functions, in their native direction.
 --   (@(b,b) ->b@ is specific to semigroups.) It is for this reason the only constituent
 --   class of 'Arrow' that actually has \"arrow\" in its name.
+-- 
+--   In terms of category theory, this \"direction\" reflects the distinction
+--   between /initial-/ and /terminal objects/. The latter are more interesting,
+--   basically what 'UnitObject' is useful for. It gives rise to the tuple
+--   selector morphisms as well.
 class (Morphism a) => PreArrow a where
   (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
          => a b c -> a b c' -> a b (c,c')
   terminal :: ( Object a b ) => a b (UnitObject a)
+  fst :: (ObjectPair a x y, ObjectPair a x (UnitObject a)) => a (x,y) x
+  fst = detachUnit . second terminal
+  snd :: (ObjectPair a x y, ObjectPair a y x, ObjectPair a y (UnitObject a)) => a (x,y) y
+  snd = fst . swap
 
 class (Category k) => EnhancedCat a k where
   arr :: (Object k b, Object k c, Object a b, Object a c)
@@ -139,10 +161,6 @@ ifThenElse = arr $ \c -> arr $ \tv -> arr $ \fv -> if c then tv else fv
  
 
 
-discard :: ( EnhancedCat f (->), Curry f, ObjectPair f x u, u ~ UnitObject f )
-     => f x u
-discard = arr snd . attachUnit
-     
 genericProxyCombine :: ( HasProxy k, PreArrow k
                        , Object k a, ObjectPair k b c, Object k d )
      => k (b,c) d -> GenericProxy k a b -> GenericProxy k a c -> GenericProxy k a d
@@ -152,4 +170,16 @@ genericProxyCombine m (GenericProxy v) (GenericProxy w)
 genericUnit :: ( PreArrow k, HasProxy k, Object k a )
         => GenericProxy k a (UnitObject k)
 genericUnit = GenericProxy terminal
+
+
+class (Morphism k, HasProxy k) => CartesianProxy k where
+  alg2 :: ( ObjectPair k a b, Object k c
+          ) => (ProxyVal k (a,b) a -> ProxyVal k (a,b) b -> ProxyVal k (a,b) c)
+               -> k (a,b) c
+
+genericAlg2 :: ( PreArrow k, u ~ UnitObject k
+               , ObjectPair k a u, ObjectPair k a b, ObjectPair k b u, ObjectPair k b a
+               ) => (GenericProxy k (a,b) a -> GenericProxy k (a,b) b -> GenericProxy k (a,b) c )
+               -> k (a,b) c
+genericAlg2 f = runGenericProxy $ f (GenericProxy fst) (GenericProxy snd)
 

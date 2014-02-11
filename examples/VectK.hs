@@ -43,6 +43,7 @@ import "hmatrix" Numeric.LinearAlgebra hiding ((<.>), (<>))
 
 type ℝ = Double
 type ℝ² = (ℝ, ℝ)
+type ℝ⁴ = (ℝ², ℝ²)
 type GLℝ² = Lin ℝ ℝ² ℝ²
 
 main :: IO ()
@@ -54,6 +55,12 @@ main = do
    putStr "\\v → v + v  :  "
    print . asMatrix $ ( alg (\v -> v ^+^ v )
                                        :: GLℝ² )
+   putStr "\\v → v ⊕ v  :  "
+   print . asMatrix $ ( alg (\v -> v ^++^ v )
+                                       :: Lin ℝ ℝ² ℝ⁴ )
+   putStr "\\v w → v + w:  "
+   print . asMatrix $ ( alg2 (\v w -> v ^+^ w )
+                                       :: Lin ℝ ℝ⁴ ℝ² )
 
 
 type CountablySpanned v = (HasBasis v, HasTrie (Basis v))
@@ -114,6 +121,9 @@ instance HasProxy (Lin k) where
   alg = genericAlg
   ($~) = genericProxyMap
 
+instance CartesianProxy (Lin k) where
+  alg2 = genericAlg2
+
 instance ( HasProxy (Lin k), ProxyVal (Lin k) a b ~ GenericProxy (Lin k) a b
          , Object (Lin k) a, Object (Lin k) b
          ) => AdditiveGroup (GenericProxy (Lin k) a b) where
@@ -158,6 +168,14 @@ class (AdditiveGroup a, AdditiveGroup b, AdditiveGroup s)
 
 instance (AdditiveGroup a, AdditiveGroup b) => DirectSum a b (a,b) where 
   (^++^) = (,)
+
+instance ( CountablySpanned a, CountablySpanned b, CountablySpanned c
+         , Scalar a ~ k, Scalar b ~ k, Scalar c ~ k )
+   => DirectSum ( GenericProxy (Lin k) a b )
+                ( GenericProxy (Lin k) a c )
+                ( GenericProxy (Lin k) a (b,c) ) where
+  (^++^) = genericProxyCombine . Lin . linear $ uncurry (^++^)
+  
 
 
 

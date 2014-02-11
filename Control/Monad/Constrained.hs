@@ -206,16 +206,16 @@ guard = i . choose mzero (return `inCategoryOf` i $ ())
  where i = id
 
 
-when :: ( Monad m k, Arrow k (->), u ~ UnitObject k
+when :: ( Monad m k, PreArrow k, u ~ UnitObject k
         , ObjectPair k (m u) u
         ) => Bool -> m u `k` m u
 when True = id
-when False = return . discard
-unless :: ( Monad m k, Arrow k (->), u ~ UnitObject k
+when False = return . terminal
+unless :: ( Monad m k, PreArrow k, u ~ UnitObject k
         , ObjectPair k (m u) u
         ) => Bool -> m u `k` m u
 unless False = id
-unless True = return . discard
+unless True = return . terminal
     
 
 
@@ -226,9 +226,9 @@ forever = i . arr loop
     where loop a = (join . fmap (arr . const $ loop a)) `inCategoryOf` i $ a
           i = id
 
-void :: ( Monad m k, Arrow k (->)
+void :: ( Monad m k, PreArrow k
         , Object k a, Object k (m a), ObjectPair k a u, u ~ UnitObject k 
         ) => m a `k` m (UnitObject k)
-void = fmap discard
+void = fmap terminal
  
 

@@ -249,10 +249,8 @@ class (Category k) => HasProxy k where
   type ProxyVal k a v :: *
   type ProxyVal k a v = GenericProxy k a v
   alg :: ( Object k a, Object k b
-         -- , Object k (ProxyVal k a a), Object k (ProxyVal k a b)
          ) => (ProxyVal k a a -> ProxyVal k a b) -> k a b
   ($~) :: ( Object k a, Object k b, Object k c 
-          -- , Object k (ProxyVal k a b), Object k (ProxyVal k a c)
           ) => k b c -> ProxyVal k a b -> ProxyVal k a c
 
 data GenericProxy k a v = GenericProxy { runGenericProxy :: k a v }

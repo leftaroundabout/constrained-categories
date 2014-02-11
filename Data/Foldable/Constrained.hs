@@ -105,7 +105,7 @@ instance ( Foldable f s t, Arrow s (->), Arrow t (->)
 -- | Despite the ridiculous-looking signature, this is in fact equivalent
 --   to 'Data.Foldable.traverse_' within Hask.
 traverse_ :: forall t k l o f a b uk ul .
-           ( Foldable t k l, Arrow k (->), Arrow l (->)
+           ( Foldable t k l, PreArrow k, PreArrow l
            , Monoidal f l l, Monoidal f k k
            , ObjectPair l (f ul) (t a), ObjectPair k (f ul) a
            , ObjectPair l ul (t a), ObjectPair l (t a) ul
@@ -115,7 +115,7 @@ traverse_ :: forall t k l o f a b uk ul .
            ) => a `k` f b -> t a `l` f ul
 traverse_ f = ffoldl q . first pureUnit . swap . attachUnit
     where q :: k (f uk, a) (f uk)
-          q = fzipWith detachUnit . second (fmap discard . f)
+          q = fzipWith detachUnit . second (fmap terminal . f)
   
 -- | The distinction between 'mapM_' and 'traverse_' doesn't really make sense
 --   on grounds of 'Monoidal' / 'Applicative' vs 'Monad', but is has in fact its

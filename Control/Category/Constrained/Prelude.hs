@@ -19,7 +19,7 @@ module Control.Category.Constrained.Prelude (
          , module Prelude
          ) where
 
-import Prelude hiding ( id, (.), ($), curry, uncurry
+import Prelude hiding ( id, fst, snd, (.), ($), curry, uncurry
                       , Functor(..), Monad(..), (=<<)
                       , mapM, mapM_, sequence, sequence_ )
 
