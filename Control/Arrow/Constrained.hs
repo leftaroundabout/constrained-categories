@@ -37,6 +37,7 @@
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE UndecidableInstances         #-}
 {-# LANGUAGE TypeOperators                #-}
+{-# LANGUAGE RankNTypes                   #-}
 
 
 module Control.Arrow.Constrained (
@@ -174,12 +175,14 @@ genericUnit = GenericProxy terminal
 
 class (Morphism k, HasProxy k) => CartesianProxy k where
   alg2 :: ( ObjectPair k a b, Object k c
-          ) => (ProxyVal k (a,b) a -> ProxyVal k (a,b) b -> ProxyVal k (a,b) c)
+          ) => (forall q . Object k q
+                 => ProxyVal k q a -> ProxyVal k q b -> ProxyVal k q c )
                -> k (a,b) c
 
 genericAlg2 :: ( PreArrow k, u ~ UnitObject k
                , ObjectPair k a u, ObjectPair k a b, ObjectPair k b u, ObjectPair k b a
-               ) => (GenericProxy k (a,b) a -> GenericProxy k (a,b) b -> GenericProxy k (a,b) c )
+               ) => ( forall q . Object k q
+                      => GenericProxy k q a -> GenericProxy k q b -> GenericProxy k q c )
                -> k (a,b) c
 genericAlg2 f = runGenericProxy $ f (GenericProxy fst) (GenericProxy snd)
 

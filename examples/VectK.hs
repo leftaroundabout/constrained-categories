@@ -46,22 +46,47 @@ type ℝ² = (ℝ, ℝ)
 type ℝ⁴ = (ℝ², ℝ²)
 type GLℝ² = Lin ℝ ℝ² ℝ²
 
+rot :: ℝ -> GLℝ²
+rot ϑ = fromMatList [ cos ϑ, -sin ϑ
+                    , sin ϑ,  cos ϑ ]
+
 main :: IO ()
 main = do
-   putStr "45° ↺  (1,0):  "
-   print $ let ϑ = pi/4 
-           in  ( fromMatList [ cos ϑ, sin ϑ
-                             ,-sin ϑ, cos ϑ ]  :: GLℝ²) $ (1, 0) 
-   putStr "\\v → v + v  :  "
+   putStr "\n45° ↺  (1,0):  "
+   print $ rot (pi/4) $ (1, 0) 
+   
+   putStr "\n\\v → v + v  :  "
    print . asMatrix $ ( alg (\v -> v ^+^ v )
                                        :: GLℝ² )
-   putStr "\\v → v ⊕ v  :  "
+   
+   putStr "\n\\v → v ⊕ v  :  "
    print . asMatrix $ ( alg (\v -> v ^++^ v )
                                        :: Lin ℝ ℝ² ℝ⁴ )
-   putStr "\\v w → v + w:  "
-   print . asMatrix $ ( alg2 (\v w -> v ^+^ w )
+   
+   putStr "\n\\v w → v + 2w:  "
+   print . asMatrix $ ( alg2 (\v w -> v ^+^ 2 *^ w )
                                        :: Lin ℝ ℝ⁴ ℝ² )
-
+   
+   putStr "\n\\v w → w ⊕ (90°↺v):  "
+   print . asMatrix $ ( alg2 (\v w -> w ^++^ (rot (pi/2) $~ v) )
+                                       :: Lin ℝ ℝ⁴ ℝ⁴ )
+   
+   -- Note that alg expressions won't typecheck if they do not correctly
+   -- define a morphism of the desired category. For instance, addition
+   -- of a constant is not a linear operation (it's an affine one). Something 
+   -- like the following will thus rightly fail to even compile:
+-- putStr "\n\\v → (1,0) + v:  "
+-- print . asMatrix $ ( alg (\v -> (1,0) ^+^ v )
+--                                    :: Lin ℝ ℝ² ℝ² )
+   
+   putStr "\nCurried linear mapping:     "
+   print . asMatrix $ curry( fromMatList [ 1, 0
+                                         , 0, 1
+                                         ,-1,-1 ] :: Lin ℝ (ℝ,ℝ²) ℝ² 
+                      ) $ 1
+   
+   
+   
 
 type CountablySpanned v = (HasBasis v, HasTrie (Basis v))
 type FinitelySpanned v = (CountablySpanned v, InnerSpace v, Enum (Basis v), Bounded (Basis v))

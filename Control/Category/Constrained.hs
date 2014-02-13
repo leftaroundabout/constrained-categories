@@ -9,6 +9,7 @@
 {-# LANGUAGE TypeFamilies                 #-}
 {-# LANGUAGE MultiParamTypeClasses        #-}
 {-# LANGUAGE FlexibleContexts             #-}
+{-# LANGUAGE RankNTypes                   #-}
 
 module Control.Category.Constrained ( 
             -- * The category class
@@ -249,14 +250,16 @@ class (Category k) => HasProxy k where
   type ProxyVal k a v :: *
   type ProxyVal k a v = GenericProxy k a v
   alg :: ( Object k a, Object k b
-         ) => (ProxyVal k a a -> ProxyVal k a b) -> k a b
+         ) => (forall q . Object k q
+                 => ProxyVal k q a -> ProxyVal k q b) -> k a b
   ($~) :: ( Object k a, Object k b, Object k c 
           ) => k b c -> ProxyVal k a b -> ProxyVal k a c
 
 data GenericProxy k a v = GenericProxy { runGenericProxy :: k a v }
 
 genericAlg :: ( HasProxy k, Object k a, Object k b )
-        => (GenericProxy k a a -> GenericProxy k a b) -> k a b
+        => ( forall q . Object k q
+             => GenericProxy k q a -> GenericProxy k q b ) -> k a b
 genericAlg f = runGenericProxy . f $ GenericProxy id
 
 genericProxyMap :: ( HasProxy k, Object k a, Object k b, Object k c )
@@ -267,7 +270,7 @@ genericProxyMap m (GenericProxy v) = GenericProxy $ m . v
 
 instance HasProxy (->) where
   type ProxyVal (->) a b = b
-  alg = id
+  alg f = f
   ($~) = ($)
 
 
