@@ -14,6 +14,9 @@
 module Control.Category.Constrained ( 
             -- * The category class
             Category (..)
+            -- * Monoidal categories
+          , Cartesian (..)
+          , Curry (..)
             -- * Isomorphisms
           , Isomorphic (..)
             -- * Constraining a category
@@ -21,7 +24,6 @@ module Control.Category.Constrained (
           , constrained, unconstrained
             -- * Function-like categories
           , Function (..)
-          , Curry (..)
             -- * Global-element proxies
           , HasProxy (..)
           , genericAlg, genericProxyMap
@@ -134,21 +136,21 @@ instance (Function f) => Function (ConstrainedCategory f o) where
 class (Category k) => Isomorphic k a b where
   iso :: k a b
 
-instance (Curry k, Object k a, u ~ UnitObject k, PairObject k a u) => Isomorphic k a (a,u) where
+instance (Cartesian k, Object k a, u ~ UnitObject k, PairObject k a u) => Isomorphic k a (a,u) where
   iso = attachUnit
-instance (Curry k, Object k a, u ~ UnitObject k, PairObject k a u) => Isomorphic k (a,u) a where
+instance (Cartesian k, Object k a, u ~ UnitObject k, PairObject k a u) => Isomorphic k (a,u) a where
   iso = detachUnit
-instance (Curry k, Object k a, u ~ UnitObject k, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
+instance (Cartesian k, Object k a, u ~ UnitObject k, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
               => Isomorphic k a (u,a) where
   iso = swap . attachUnit
-instance (Curry k, Object k a, u ~ UnitObject k, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
+instance (Cartesian k, Object k a, u ~ UnitObject k, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
               => Isomorphic k (u,a) a where
   iso = detachUnit . swap
-instance ( Curry k, Object k a, PairObject k a b, PairObject k b c
+instance ( Cartesian k, Object k a, PairObject k a b, PairObject k b c
          , PairObject k a (b,c), PairObject k (a,b) c, Object k c )
                                        => Isomorphic k (a,(b,c)) ((a,b),c) where
   iso = regroup
-instance ( Curry k, Object k a, Object k b, Object k c, PairObject k a b, PairObject k b c, PairObject k c a
+instance ( Cartesian k, Object k a, Object k b, Object k c, PairObject k a b, PairObject k b c, PairObject k c a
          , PairObject k a (b,c), PairObject k (a,b) c, PairObject k (b, c) a, PairObject k b (c, a), PairObject k (c,a) b, PairObject k c (a,b)
          , Object k (a, (b, c)), Object k ((b,c),a), Object k (b,(c,a)), Object k ((a,b), c), Object k ((c,a),b), Object k (c,(a,b)) )
                                        => Isomorphic k ((a,b),c) (a,(b,c)) where
@@ -160,41 +162,27 @@ instance ( Curry k, Object k a, Object k b, Object k c, PairObject k a b, PairOb
 
 -- | Quite a few categories (/monoidal categories/) will permit pairs of 
 --   objects as objects again, allowing for \"dyadic morphisms\" @(x,y) ~> r@.
---   The notion of a morphism between morphisms on the other hand, seen
---   so often in Haskell type signatures @a->b->c@ but – perhaps for this reason –
---   rather more seldom elsewhere in maths\/science\/programming, generally just
---   does not make much sense within a given category.
 -- 
---   Still, you should make your monoidal categories instances of 'Curry'.
---   The reason being, currying is crucial for \"applicative style\",
---   the standard way of using 'Control.Applicative.Constrained.Monoidal'
---   functors. So for keeping to the well-established class hierarchy 
---   @Functor => Applicative => Monad@ (which is desirable for a number 
---   of reasons), your monads first need some kind of notion about what
---   a curried morphism might be.
--- 
---   To keep this in bounds, both \"pair-object–pairs\" and \"morphism-objects\"
---   can have constraints on their constituent objects.
---   We deviate quite strongly from the mathematical nomenclature at this point, though,
---   in favor of standard Haskell notions. The 'PairObject' constraint should more
---   accurately be an associated type family /monoidal product/, and \"morphism objects\"
---   are better called /exponential types/. Use the @categories@ package if you
---   prefer a more rigorous approach to the one taken here.
+--   Together with a unique 'UnitObject', this makes for a monoidal
+--   structure, with a few natural isomorphisms. Ordinary tuples may not
+--   always be powerful enough to express the product objects; we avoid
+--   making a dedicated associated type for the sake of simplicity,
+--   but allow for an extra constraint to be imposed on objects prior
+--   to consideration of pair-building.
+--   
+--   The name 'Cartesian' is disputable: in category theory that would rather
+--   Imply /cartesian closed category/ (which we represent with 'Curry').
+--   'Monoidal' would make sense, but we reserve that to 'Functors'.
 class ( Category k
       , Monoid (UnitObject k), Object k (UnitObject k)
       -- , PairObject k (UnitObject k) (UnitObject k), Object k (UnitObject k,UnitObject k) 
-      ) => Curry k where
+      ) => Cartesian k where
   type PairObject k a b :: Constraint
   type PairObject k a b = ()
   type MorphObject k b c :: Constraint
   type MorphObject k b c = ()
   type UnitObject k :: *
   type UnitObject k = ()
-  
-  uncurry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c)
-         => k a (k b c) -> k (a, b) c
-  curry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c) 
-         => k (a, b) c -> k a (k b c)
   
   swap :: ( PairObject k a b, PairObject k b a ) => k (a,b) (b,a)
   
@@ -208,30 +196,40 @@ class ( Category k
 type ObjectPair k a b = ( Category k, Object k a, Object k b
                         , PairObject k a b, Object k (a,b)   )
   
+instance Cartesian (->) where
+  swap = \(a,b) -> (b,a)
+  attachUnit = \a -> (a, ())
+  detachUnit = \(a, ()) -> a
+  regroup = \(a, (b, c)) -> ((a, b), c)
+                        
+instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) where
+  type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o a, o b, o (a, b))
+  type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
+  type UnitObject (ConstrainedCategory f o) = UnitObject f
+
+  swap = ConstrainedMorphism swap
+  attachUnit = ConstrainedMorphism attachUnit
+  detachUnit = ConstrainedMorphism detachUnit
+  regroup = ConstrainedMorphism regroup
+
+
+  
+  
+class (Cartesian k) => Curry k where
+  uncurry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c)
+         => k a (k b c) -> k (a, b) c
+  curry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c) 
+         => k (a, b) c -> k a (k b c)
   
 
 instance Curry (->) where
   uncurry = Prelude.uncurry
   curry = Prelude.curry
-  
-  swap = \(a,b) -> (b,a)
-  attachUnit = \a -> (a, ())
-  detachUnit = \(a, ()) -> a
-  regroup = \(a, (b, c)) -> ((a, b), c)
       
 
 instance (Curry f, o (UnitObject f)) => Curry (ConstrainedCategory f o) where
-  type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o a, o b, o (a, b))
-  type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
-  type UnitObject (ConstrainedCategory f o) = UnitObject f
-  
   uncurry (ConstrainedMorphism f) = ConstrainedMorphism $ \(a,b) -> unconstrained (f a) b
   curry (ConstrainedMorphism f) = ConstrainedMorphism $ \a -> ConstrainedMorphism $ \b -> f (a, b)
-  
-  swap = ConstrainedMorphism swap
-  attachUnit = ConstrainedMorphism attachUnit
-  detachUnit = ConstrainedMorphism detachUnit
-  regroup = ConstrainedMorphism regroup
                                                                      
 
 

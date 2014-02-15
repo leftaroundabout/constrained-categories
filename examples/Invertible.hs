@@ -1,5 +1,5 @@
 -- |
--- Copyright   :  (c) 2013 Justus Sagemüller
+-- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
 -- 
@@ -61,16 +61,7 @@ instance Category (<->) where
 instance Function (<->) where
   Invertible f _ $ x = f x
 
-instance Curry (<->) where
-  type MorphObject (<->) b c = (b~()) -- (a · b)^c ≡ a^(c^b) ⇐  b = 1
-  
-  uncurry (Invertible f fi) 
-         = Invertible (uncurry $ fwd . f) 
-                      (\c -> (fi $ Invertible (const c) (const ()), ()))
-  curry (Invertible f fi) 
-         = Invertible (\a -> Invertible (f . (a,)) (const ())) 
-                      (\(Invertible g _) -> fst . fi $ g ())
-  
+instance Cartesian (<->) where
   swap = Invertible swap swap
   attachUnit = Invertible attachUnit detachUnit
   detachUnit = Invertible detachUnit attachUnit
@@ -107,12 +98,7 @@ instance Function BackResult where
   Noninvertible f $ x = f $ x
   Constant c $ _ = c
 
-instance Curry BackResult where
-  uncurry (Constant q) = q . arr snd
-  uncurry f = Noninvertible $ \(a,b) -> (f $ a) $ b
-  curry (Constant c) = Constant $ Constant c
-  curry f = Noninvertible $ \a -> Noninvertible $ \b -> f $ (a,b)
-  
+instance Cartesian BackResult where
   swap = BackResult swap
   attachUnit = BackResult attachUnit
   detachUnit = BackResult detachUnit
@@ -129,6 +115,7 @@ instance Morphism BackResult where
 instance PreArrow BackResult where
   Constant c &&& Constant d = Constant (c,d)
   f &&& g = Noninvertible $ (f$) &&& (g$)
+  terminal = Constant ()
 instance EnhancedCat BackResult (<->) where
   arr = BackResult
 instance EnhancedCat BackResult (->) where

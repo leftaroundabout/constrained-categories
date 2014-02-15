@@ -69,7 +69,7 @@ infixr 3 &&&, ***
              => k b c -> k a b -> k a c
 (<<<) = (.)
 
-class (Category a, Curry a) => Morphism a where
+class (Cartesian a) => Morphism a where
   first :: (Object a b, Object a c, Object a d, PairObject a b d, PairObject a c d) 
          => a b c -> a (b, d) (c, d)
   second :: (Object a b, Object a c, Object a d, PairObject a d b, PairObject a d c) 
@@ -119,13 +119,13 @@ constrainedArr :: (Category k, Category a, o b, o c )
      -> k b c -> ConstrainedCategory a o b c
 constrainedArr ar = constrained . ar
 
-constrainedFirst :: ( Category a, Curry a, o b, o c, o d
+constrainedFirst :: ( Category a, Cartesian a, o b, o c, o d
                     , PairObject a b d, PairObject a c d )
   => ( a b c -> a (b, d) (c, d) )
      -> ConstrainedCategory a o b c -> ConstrainedCategory a o (b, d) (c, d)
 constrainedFirst fs = ConstrainedMorphism . fs . unconstrained
   
-constrainedSecond :: ( Category a, Curry a, o b, o c, o d
+constrainedSecond :: ( Category a, Cartesian a, o b, o c, o d
                     , PairObject a d b, PairObject a d c )
   => ( a b c -> a (d, b) (d, c) )
      -> ConstrainedCategory a o b c -> ConstrainedCategory a o (d, b) (d, c)

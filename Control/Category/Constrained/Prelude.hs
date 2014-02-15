@@ -14,7 +14,7 @@ module Control.Category.Constrained.Prelude (
          , module Control.Functor.Constrained
          , module Control.Applicative.Constrained
          , module Control.Monad.Constrained
-         , ifThenElse
+         , module Control.Arrow.Constrained
           -- * The compatible part of the standard Prelude 
          , module Prelude
          ) where
@@ -28,5 +28,5 @@ import Control.Functor.Constrained
 import Control.Applicative.Constrained
 import Control.Monad.Constrained hiding 
          (MonadPlus(..), MonadZero(..), (>=>), (<=<), guard, forever, void)
-import Control.Arrow.Constrained (ifThenElse)
+import Control.Arrow.Constrained (ifThenElse, fst, snd)
 

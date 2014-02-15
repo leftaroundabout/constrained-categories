@@ -1,5 +1,5 @@
 -- |
--- Copyright   :  (c) 2013 Justus Sagemüller
+-- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
 -- 

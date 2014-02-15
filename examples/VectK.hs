@@ -79,11 +79,6 @@ main = do
 -- print . asMatrix $ ( alg (\v -> (1,0) ^+^ v )
 --                                    :: Lin ℝ ℝ² ℝ² )
    
-   putStr "\nCurried linear mapping:     "
-   print . asMatrix $ curry( fromMatList [ 1, 0
-                                         , 0, 1
-                                         ,-1,-1 ] :: Lin ℝ (ℝ,ℝ²) ℝ² 
-                      ) $ 1
    
    
    
@@ -122,12 +117,10 @@ instance Category (Lin k) where
 instance Function (Lin k) where
   Lin f $ v = lapply f v
 
-instance Curry (Lin k) where
+instance Cartesian (Lin k) where
   type UnitObject (Lin k) = ZeroDim k
   type PairObject (Lin k) u v = (CountablySpanned (u,v), Scalar (u,v) ~ k)
   type MorphObject (Lin k) u v = (FinitelySpanned u)
-  uncurry f = Lin . linear $ \(u,v) -> (f$u)$v
-  curry f = Lin . linear $ \u -> Lin . linear $ \v -> f$(u,v)
   swap = Lin . linear $ \(a,b) -> (b,a)
   attachUnit = Lin . linear $ \a -> (a, Origin)
   detachUnit = Lin . linear $ \(a, Origin) -> a

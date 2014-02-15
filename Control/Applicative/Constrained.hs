@@ -32,7 +32,7 @@ import Prelude hiding (id, (.), ($), Functor(..), curry, uncurry)
 import qualified Control.Category.Hask as Hask
 
 
-class (Functor f r t, Curry r, Curry t) => Monoidal f r t where
+class (Functor f r t, Cartesian r, Cartesian t) => Monoidal f r t where
   pureUnit :: UnitObject t `t` f (UnitObject r)
   fzipWith :: (PairObject r a b, Object r c, PairObject t (f a) (f b), Object t (f c))
               => r (a, b) c -> t (f a, f b) (f c)
@@ -45,7 +45,7 @@ fzip :: (Monoidal f r t, ObjectPair r a b, PairObject t (f a) (f b), Object t (f
         => t (f a, f b) (f (a,b))
 fzip = fzipWith id
 
-class (Monoidal f r t) => Applicative f r t where
+class (Monoidal f r t, Curry r, Curry t) => Applicative f r t where
   -- ^ Note that this tends to make little sense for non-endofunctors. 
   --   Consider using 'constPure' instead.
   pure :: (Object r a, Object t (f a)) => a `t` f a 
