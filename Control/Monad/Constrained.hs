@@ -16,7 +16,7 @@
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
                                 -- * Monads                                
-                                , Monad(..), (>>=), (=<<), (>>)
+                                , Monad(..), (>>=), (=<<), (>>), (<<)
                                 -- * Kleisli arrows
                                 , (>=>), (<=<)
                                 , Kleisli(..)
