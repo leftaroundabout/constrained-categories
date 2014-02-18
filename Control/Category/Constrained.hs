@@ -4,6 +4,9 @@
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
 -- 
+-- 
+-- The most basic category theory tools are included partly in this
+-- module, partly in "Control.Arrow.Constrained".
 
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
@@ -125,7 +128,7 @@ instance (Function f) => Function (ConstrainedCategory f o) where
 --   category (where it makes sense to have tuples and unit @()@ at all), it should be
 --   possible to switch between @a@ and the isomorphic @(a, ())@. 'iso' is
 --   the method for such \"pseudo-identities\", the most basic of which
---   are required as methods of the 'Curry' class.
+--   are required as methods of the 'Cartesian' class.
 --   
 --   Why it is necessary to make these morphisms explicit: they are needed
 --   for a couple of general-purpose category-theory methods, but even though
