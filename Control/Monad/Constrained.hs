@@ -35,7 +35,7 @@ import Data.Foldable.Constrained
 import Data.Traversable.Constrained
 
 import Prelude hiding (
-     id, (.), ($)
+     id, const, (.), ($)
    , Functor(..), Monad(..), (=<<)
    , uncurry, curry
    , mapM, mapM_, sequence, sequence_
@@ -72,7 +72,7 @@ infixl 1 >>
          , Object f (m a), Object f (m b), Object f (m (m b)) ) 
             => m a -> f (m b) (m b)
 (>>) a = result
-  where result = arr $ \b -> (join . fmap (arr $ const b)) `inCategoryOf` result $ a
+  where result = arr $ \b -> (join . fmap (const b)) `inCategoryOf` result $ a
 
 
 instance (Hask.Applicative m, Hask.Monad m) => Monad m (->) where
@@ -224,7 +224,7 @@ forever :: ( Monad m k, Function k, Arrow k (->), Object k a, Object k b
            , Object k (m a), Object k (m (m a)), Object k (m b), Object k (m (m b))
            ) => m a `k` m b
 forever = i . arr loop 
-    where loop a = (join . fmap (arr . const $ loop a)) `inCategoryOf` i $ a
+    where loop a = (join . fmap (const $ loop a)) `inCategoryOf` i $ a
           i = id
 
 void :: ( Monad m k, PreArrow k

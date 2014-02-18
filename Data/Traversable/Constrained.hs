@@ -25,7 +25,7 @@ import Control.Category.Constrained
 import Control.Applicative.Constrained
 
 import Prelude hiding (
-     id, (.), ($)
+     id, const, (.), ($)
    , Functor(..)
    , uncurry, curry
    , mapM, mapM_, sequence
@@ -52,13 +52,14 @@ sequence :: ( Traversable t t k k, Monoidal f k k
             ) => t (f a) `k` f (t a)
 sequence = traverse id
 
-instance (Arrow k (->), Function k, Functor [] k k) => Traversable [] [] k k where
+instance (Arrow k (->), WellPointed k, Function k, Functor [] k k) 
+             => Traversable [] [] k k where
   traverse f = arr mM
    where mM [] = constPure [] `inCategoryOf` f $ mempty
          mM (x:xs) = fzipWith (arr $ uncurry(:)) `inCategoryOf` f 
                                                 $ (f $ x, mM xs)
 
-instance (Arrow k (->), Function k, Functor Maybe k k)
+instance (Arrow k (->), WellPointed k, Function k, Functor Maybe k k)
             => Traversable Maybe Maybe k k where
   traverse f = arr mM 
    where mM Nothing = constPure Nothing `inCategoryOf` f $ mempty

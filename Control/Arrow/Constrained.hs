@@ -42,18 +42,19 @@
 
 module Control.Arrow.Constrained (
     -- * The Arrow type classes
-      Arrow, Morphism(..), PreArrow(..), EnhancedCat(..)
+      Arrow, Morphism(..), PreArrow(..), WellPointed(..), EnhancedCat(..)
     -- * Alternative composition notation
     , (>>>), (<<<)
     -- * Proxies for cartesian categories
     , CartesianProxy(..)
     , genericProxyCombine, genericUnit, genericAlg2
+    , PointProxy(..), genericPoint
     -- * Misc utility
     -- ** Conditionals
     , choose, ifThenElse
     ) where
 
-import Prelude hiding (id, fst, snd, (.), ($), Functor(..), Monad(..), (=<<))
+import Prelude hiding (id, const, fst, snd, (.), ($), Functor(..), Monad(..), (=<<))
 import Control.Category.Constrained
 import qualified Control.Category.Hask as Hask
 
@@ -78,6 +79,9 @@ class (Cartesian a) => Morphism a where
            , PairObject a b b', PairObject a c c' )
          => a b c -> a b' c' -> a (b,b') (c,c')
 
+
+type Terminal a = UnitObject a
+
 -- | Unlike 'first', 'second', '***' and 'arr', '&&&' has an intrinsic notion
 --   of \"direction\": it is basically equivalent to precomposing the result
 --   of '***' with a @b -> (b,b)@, but that is in general only available
@@ -92,11 +96,19 @@ class (Cartesian a) => Morphism a where
 class (Morphism a) => PreArrow a where
   (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
          => a b c -> a b c' -> a b (c,c')
-  terminal :: ( Object a b ) => a b (UnitObject a)
-  fst :: (ObjectPair a x y, ObjectPair a x (UnitObject a)) => a (x,y) x
+  terminal :: ( Object a b ) => a b (Terminal a)
+  fst :: (ObjectPair a x y, ObjectPair a x (Terminal a)) => a (x,y) x
   fst = detachUnit . second terminal
-  snd :: (ObjectPair a x y, ObjectPair a y x, ObjectPair a y (UnitObject a)) => a (x,y) y
+  snd :: (ObjectPair a x y, ObjectPair a y x, ObjectPair a y (Terminal a)) => a (x,y) y
   snd = fst . swap
+
+
+class (PreArrow a) => WellPointed a where
+  globalElement :: (Object a x) => x -> a (Terminal a) x
+  const :: (Object a b, Object a x) 
+            => x -> a b x
+  const x = globalElement x . terminal
+
 
 class (Category k) => EnhancedCat a k where
   arr :: (Object k b, Object k c, Object a b, Object a c)
@@ -104,7 +116,7 @@ class (Category k) => EnhancedCat a k where
 instance (Category k) => EnhancedCat k k where
   arr = id
 
-type Arrow a k = (PreArrow a, EnhancedCat a k)
+type Arrow a k = (WellPointed a, EnhancedCat a k)
 
 instance Morphism (->) where
   first = Arr.first
@@ -113,6 +125,9 @@ instance Morphism (->) where
 instance PreArrow (->) where
   (&&&) = (Arr.&&&)
   terminal = const ()
+instance WellPointed (->) where
+  globalElement = Hask.const
+  const = Hask.const
 
 constrainedArr :: (Category k, Category a, o b, o c )
   => ( k b c                        -> a b c  )
@@ -185,4 +200,13 @@ genericAlg2 :: ( PreArrow k, u ~ UnitObject k
                       => GenericProxy k q a -> GenericProxy k q b -> GenericProxy k q c )
                -> k (a,b) c
 genericAlg2 f = runGenericProxy $ f (GenericProxy fst) (GenericProxy snd)
+
+
+class (HasProxy k, ProxyVal k a x ~ p a x) 
+           => PointProxy p k a x | p -> k where
+  point :: (Object k a, Object k x) => x -> p a x
+
+genericPoint :: ( WellPointed k, Object k a, Object k x )
+       => x -> GenericProxy k a x
+genericPoint x = GenericProxy $ const x
 

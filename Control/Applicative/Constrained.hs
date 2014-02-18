@@ -28,7 +28,7 @@ module Control.Applicative.Constrained (
 import Control.Functor.Constrained
 import Control.Arrow.Constrained
 
-import Prelude hiding (id, (.), ($), Functor(..), curry, uncurry)
+import Prelude hiding (id, const, (.), ($), Functor(..), curry, uncurry)
 import qualified Control.Category.Hask as Hask
 
 
@@ -37,9 +37,9 @@ class (Functor f r t, Cartesian r, Cartesian t) => Monoidal f r t where
   fzipWith :: (PairObject r a b, Object r c, PairObject t (f a) (f b), Object t (f c))
               => r (a, b) c -> t (f a, f b) (f c)
 
-constPure :: (Arrow r (->), Monoidal f r t, Object r a, Object t (f a) )
+constPure :: (WellPointed r, Monoidal f r t, Object r a, Object t (f a) )
        => a -> t (UnitObject t) (f a)
-constPure a = fmap (arr $ const a) . pureUnit
+constPure a = fmap (const a) . pureUnit
 
 fzip :: (Monoidal f r t, ObjectPair r a b, PairObject t (f a) (f b), Object t (f (a,b)))
         => t (f a, f b) (f (a,b))
