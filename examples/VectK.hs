@@ -5,7 +5,9 @@
 -- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
 -- 
 --   Simple implementation of Vect /k/, the category of vector spaces
---   over the field /k/, with linear maps as morphisms.
+--   over the field /k/, with linear maps as morphisms. Furthermore, the
+--   category of the same vector spaces, but with more general
+--   /affine/ mappings.
 
 
 {-# LANGUAGE TypeOperators          #-}
@@ -76,9 +78,13 @@ main = do
    -- of a constant is not a linear operation (it's an affine one). Something 
    -- like the following will thus rightly fail to even compile:
 -- putStr "\n\\v → (1,0) + v:  "
--- print . asMatrix $ ( alg (\v -> (1,0) ^+^ v )
---                                    :: Lin ℝ ℝ² ℝ² )
-   
+-- print . asMatrix $ ( alg (\v -> (1,0) ^+^ v ) :: Lin ℝ ℝ² ℝ² )
+   -- (compare this to @linear $ \v -> (1,0) ^+^ v@ from the vector-space library,
+   -- which happily compiles, yielding wrong results.)
+   -- 
+   -- On the other hand, going explicitly to affine morphisms does the trick:
+   putStr "\n\\v → (1,0) + v:  "
+   print $ ( alg (\v -> point(1,0) ^+^ v ) :: Affin ℝ ℝ² ℝ² )
    
    
    
@@ -90,6 +96,10 @@ data Lin k u v where
   Lin :: (CountablySpanned u, VectorSpace v, Scalar u ~ k, Scalar v ~ k) 
           => u:-*v -> Lin k u v
 
+data Affin k u v = Lin k u v :->+ v
+
+
+
 instance (CountablySpanned u, VectorSpace v, Scalar u ~ k, Scalar v ~ k)
                                              => AdditiveGroup (Lin k u v) where
   zeroV = Lin zeroV
@@ -98,6 +108,18 @@ instance (CountablySpanned u, VectorSpace v, Scalar u ~ k, Scalar v ~ k)
 instance (AdditiveGroup (Lin k u v)) => VectorSpace (Lin k u v) where
   type Scalar (Lin k u v) = k
   a *^ Lin f = Lin $ a *^ f
+  
+instance (CountablySpanned u, VectorSpace v, Scalar u ~ k, Scalar v ~ k)
+                          => AdditiveGroup (Affin k u v) where
+  zeroV = zeroV :->+ zeroV
+  (f :->+ u) ^+^ (g :->+ v) = (f ^+^ g) :->+ (u ^+^ v)
+  negateV (f :->+ v) = negateV f :->+ negateV v
+instance (CountablySpanned u, VectorSpace v, Scalar u ~ k, Scalar v ~ k) 
+                         => VectorSpace (Affin k u v) where
+  type Scalar (Affin k u v) = k
+  a *^ (f :->+ v) = (a *^ f) :->+ (a *^ v)
+
+
 instance ( InnerSpace u, FinitelySpanned u, Scalar u ~ k 
          , CountablySpanned v, Scalar v ~ k
          )      => HasBasis (Lin k u v) where
@@ -107,15 +129,36 @@ instance ( InnerSpace u, FinitelySpanned u, Scalar u ~ k
                       | j<-[minBound .. maxBound]
                       , (i,a) <- decompose (f `atBasis` j) ]
   decompose' (Lin f) (i,j) = decompose' (f `atBasis` j) i
+
+instance ( HasBasis (Lin k u v)
+         , CountablySpanned u, HasBasis v, Scalar u ~ k, Scalar v ~ k
+         ) => HasBasis (Affin k u v) where
+  type Basis (Affin k u v) = Either (Basis (Lin k u v)) (Basis v) 
+  basisValue (Left i) = basisValue i :->+ zeroV
+  basisValue (Right j) = zeroV :->+ basisValue j
+  decompose (f :->+ v) = decompose (f,v)
+  decompose' (f :->+ v) = decompose' (f,v)
   
 
 instance Category (Lin k) where
   type Object (Lin k) v = (CountablySpanned v, Scalar v ~ k)
   id = Lin idL
   Lin f . Lin g = Lin $ f *.* g
+instance Category (Affin k) where
+  type Object (Affin k) v = Object (Lin k) v
+  id = id :->+ zeroV
+  (f :->+ u) . (g :->+ v) = (f . g) :->+ ((f $ v) ^+^ u)
+
+fromLin :: ( EnhancedCat q c, Object q a, Object c a, Object q b, Object c b
+           , c a b ~ Lin k a b)      => c a b -> q a b
+fromLin = arr
+instance EnhancedCat (Affin k) (Lin k) where
+  arr f = f :->+ zeroV
 
 instance Function (Lin k) where
   Lin f $ v = lapply f v
+instance Function (Affin k) where
+  f :->+ u $ v = (f $ v) ^+^ u
 
 instance Cartesian (Lin k) where
   type UnitObject (Lin k) = ZeroDim k
@@ -126,6 +169,14 @@ instance Cartesian (Lin k) where
   detachUnit = Lin . linear $ \(a, Origin) -> a
   regroup = Lin . linear $ \(a,(b,c)) -> ((a,b),c)
 
+instance Cartesian (Affin k) where
+  type UnitObject (Affin k) = ZeroDim k
+  type PairObject (Affin k) u v = PairObject (Lin k) u v
+  type MorphObject (Affin k) u v = MorphObject (Lin k) u v
+  swap = fromLin swap; regroup = fromLin regroup
+  attachUnit = fromLin attachUnit; detachUnit = fromLin detachUnit
+
+
 instance Morphism (Lin k) where
   first (Lin l) = Lin $ firstL l
   second l = Lin . linear $ \(u,v) -> (u, l $ v)
@@ -133,6 +184,24 @@ instance Morphism (Lin k) where
 instance PreArrow (Lin k) where
   m &&& n = Lin . linear $ (m$) &&& (n$)
   terminal = Lin . linear $ const Origin
+  fst = Lin $ linear fst; snd = Lin $ linear snd
+
+instance Morphism (Affin k) where
+  first (f :->+ v) = first f :->+ (v, zeroV)
+  second (f :->+ v) = second f :->+ (zeroV, v)
+  (f :->+ u) *** (g :->+ v) = (f *** g) :->+ (u,v)
+instance PreArrow (Affin k) where
+  (f :->+ u) &&& (g :->+ v) = (f &&& g) :->+ (u,v)
+  terminal = fromLin terminal
+  fst = fromLin fst; snd = fromLin snd
+instance Curry (Affin k) where
+  curry (f :->+ v) = Lin (linear $ \u -> zeroV :->+ (f $ u^++^zeroV) ) :->+ (zeroV :->+ v)
+  uncurry (f :->+ (g :->+ u)) 
+     = Lin (linear $ \(v,w) -> let (h :->+ x) = f $ v in (h $ w) ^+^ x ) :->+ u
+instance WellPointed (Affin k) where
+  globalElement x = zeroV :->+ x
+  const x = zeroV :->+ x
+  
   
 
 instance HasProxy (Lin k) where
@@ -142,19 +211,39 @@ instance HasProxy (Lin k) where
 instance CartesianProxy (Lin k) where
   alg2 = genericAlg2
 
-instance ( HasProxy (Lin k), ProxyVal (Lin k) a b ~ GenericProxy (Lin k) a b
-         , Object (Lin k) a, Object (Lin k) b
+instance ( Object (Lin k) a, Object (Lin k) b
          ) => AdditiveGroup (GenericProxy (Lin k) a b) where
   zeroV = Lin (linear $ \Origin -> zeroV) $~ genericUnit
   negateV v = Lin (linear negateV) $~ v
   (^+^) = genericProxyCombine . Lin . linear $ uncurry (^+^)
 
-instance ( HasProxy (Lin k), ProxyVal (Lin k) a b ~ GenericProxy (Lin k) a b
-         , Object (Lin k) a, Object (Lin k) b
+instance ( Object (Lin k) a, Object (Lin k) b
          ) => VectorSpace (GenericProxy (Lin k) a b) where
   type Scalar (GenericProxy (Lin k) a b) = k
   x*^v = Lin (linear $ (x*^)) $~ v
 
+
+instance HasProxy (Affin k) where
+  alg = genericAlg
+  ($~) = genericProxyMap
+
+instance CartesianProxy (Affin k) where
+  alg2 = genericAlg2
+
+instance PointProxy (GenericProxy (Affin k)) (Affin k) u v where
+  point = genericPoint
+  
+instance ( Object (Affin k) a, Object (Affin k) b
+         ) => AdditiveGroup (GenericProxy (Affin k) a b) where
+  zeroV = point zeroV
+  negateV v = Lin (linear negateV) :->+ zeroV $~ v
+  (^+^) = genericProxyCombine . (:->+ zeroV) . Lin . linear $ uncurry (^+^)
+
+instance ( Object (Affin k) a, Object (Affin k) b
+         ) => VectorSpace (GenericProxy (Affin k) a b) where
+  type Scalar (GenericProxy (Affin k) a b) = k
+  x*^v = Lin (linear $ (x*^)) :->+ zeroV $~ v
+  
 
 
 
@@ -165,17 +254,24 @@ asMatrix (Lin f)
 
 
 
-fromMatList :: forall u v k 
-       . ( FinitelySpanned u, FinitelySpanned v
+fromMatList :: forall m u v k 
+       . ( EnhancedCat m (Lin k), Object m u, Object m v
+         , FinitelySpanned u, FinitelySpanned v
          , Numeric.LinearAlgebra.Product k, Scalar u ~ k, Scalar v ~ k )
-      => [k] -> Lin k u v
-fromMatList = fromMatrix . (dv><du)
+      => [k] -> m u v
+fromMatList = arr . fromMatrix . (dv><du)
  where dv = fromEnum (maxBound :: Basis v) - fromEnum (minBound :: Basis v) + 1
        du = fromEnum (maxBound :: Basis u) - fromEnum (minBound :: Basis u) + 1
        fromMatrix m = Lin . linear $ 
              \u -> let v =  m `mXv` (fromList . map snd $ decompose u)
                    in recompose . zip [minBound .. maxBound] $ toList v
 
+instance (Show k, FinitelySpanned u, FinitelySpanned v, Element k)
+         => Show (Lin k u v) where
+  show f = "fromMatrix " ++ show (asMatrix f)
+instance (Show v, Show k, FinitelySpanned u, FinitelySpanned v, Element k)
+         => Show (Affin k u v) where
+  show (f :->+ v) = "(" ++ show f ++ ") :->+ " ++ show v
 
   
 
