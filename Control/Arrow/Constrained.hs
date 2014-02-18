@@ -101,6 +101,8 @@ class (Morphism a) => PreArrow a where
 class (Category k) => EnhancedCat a k where
   arr :: (Object k b, Object k c, Object a b, Object a c)
          => k b c -> a b c
+instance (Category k) => EnhancedCat k k where
+  arr = id
 
 type Arrow a k = (PreArrow a, EnhancedCat a k)
 
@@ -111,8 +113,6 @@ instance Morphism (->) where
 instance PreArrow (->) where
   (&&&) = (Arr.&&&)
   terminal = const ()
-instance EnhancedCat (->) (->) where
-  arr = Arr.arr
 
 constrainedArr :: (Category k, Category a, o b, o c )
   => ( k b c                        -> a b c  )
