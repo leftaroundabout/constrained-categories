@@ -144,7 +144,7 @@ instance Functor (BackResult a) (<->) (-->) where
 --   value should really fail, here it is just ignored.
 --   Its very possible we're actually violating the monoidal-functor laws here.
 instance Monoidal (BackResult a) (<->) (-->) where
-  pureUnit = arr $ const (Constant ())
+  pureUnit = const (Constant ())
   fzipWith (Invertible f fi) = arr bq 
    where bq (Constant c, Constant d) = Constant $ f(c, d)
          bq (BackResult (Invertible g gi), Constant d)

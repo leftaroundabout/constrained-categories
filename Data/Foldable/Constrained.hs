@@ -96,7 +96,7 @@ instance Foldable Maybe (->) (->) where
   ffoldl f (i,Just a) = f(i,a)
 
 
-instance ( Foldable f s t, Arrow s (->), Arrow t (->)
+instance ( Foldable f s t, WellPointed s, WellPointed t
          , Functor f (ConstrainedCategory s o) (ConstrainedCategory t o) 
          ) => Foldable f (ConstrainedCategory s o) (ConstrainedCategory t o) where
   foldMap (ConstrainedMorphism f) = ConstrainedMorphism $ foldMap f
@@ -122,7 +122,7 @@ traverse_ f = ffoldl q . first pureUnit . swap . attachUnit
 --   benefits to restrict this to endofunctors, to make the constraint list
 --   at least somewhat shorter.
 mapM_ :: forall t k o f a b u .
-           ( Foldable t k k, Arrow k (->), Monoidal f k k
+           ( Foldable t k k, WellPointed k, Monoidal f k k
            , u ~ UnitObject k
            , ObjectPair k (f u) (t a), ObjectPair k (f u) a
            , ObjectPair k u (t a), ObjectPair k (t a) u

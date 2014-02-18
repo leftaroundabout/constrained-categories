@@ -35,7 +35,7 @@ import Data.Foldable.Constrained
 import Data.Traversable.Constrained
 
 import Prelude hiding (
-     id, const, (.), ($)
+     id, const, fst, snd, (.), ($)
    , Functor(..), Monad(..), (=<<)
    , uncurry, curry
    , mapM, mapM_, sequence, sequence_
@@ -67,12 +67,21 @@ infixl 1 >>=
              => m a -> f a (m b) -> m b
 g >>= h = (=<<) h $ g
 
+infixr 1 <<
+(<<) :: ( Monad m k, WellPointed k
+        , Object k a, Object k b, Object k (m a), Object k (m b), Object k (m (m b))
+        ) => m b -> k (m a) (m b)
+(<<) b = join . fmap (const b)
+
 infixl 1 >>
-(>>) :: ( Function f, Arrow f (->), Monad m f, Object f a, Object f b
-         , Object f (m a), Object f (m b), Object f (m (m b)) ) 
-            => m a -> f (m b) (m b)
-(>>) a = result
-  where result = arr $ \b -> (join . fmap (const b)) `inCategoryOf` result $ a
+(>>) :: ( WellPointed k, Monad m k, Object k a, Object k b
+        , Object k (m a), Object k (m b), Object k (m (m b)), Object k (a,b) 
+        , ObjectPair k b (UnitObject k), ObjectPair k (m b) (UnitObject k)
+        , ObjectPair k (UnitObject k) (m b), ObjectPair k b a
+        , PairObject k a b, Object k (m (a,b)), ObjectPair k (m a) (m b)
+        ) => m a -> k (m b) (m b)
+(>>) a = fmap snd . fzip . first (globalElement a) . swap . attachUnit
+  -- where result = arr $ \b -> (join . fmap (const b)) `inCategoryOf` result $ a
 
 
 instance (Hask.Applicative m, Hask.Monad m) => Monad m (->) where
@@ -126,7 +135,7 @@ instance (Monad m k) => Category (Kleisli m k) where
   id = Kleisli return
   Kleisli a . Kleisli b = Kleisli $ join . fmap a . b
 
-instance ( Monad m a, Arrow a (->), Function a ) => Cartesian (Kleisli m a) where
+instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
   type PairObject (Kleisli m a) b c 
           = ( Object a (b, c), Object a (m (b, c)), Object a (m b, c), Object a (b, m c)
             , Object a (m b, m c), Object a (m (m b, m c)), Object a (m (m (m b, m c)))
@@ -151,52 +160,17 @@ instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
 
   
 
-instance (Monad m a, Arrow a (->), Function a, Curry a) => EnhancedCat (Kleisli m a) (->) where
+instance (Monad m a, Arrow a q, Cartesian a) => EnhancedCat (Kleisli m a) q where
   arr f = Kleisli $ return . arr f
-instance (Monad m a, Arrow a (->), Function a, Curry a) => Morphism (Kleisli m a) where
-  first = kleisliFirst
-  second = kleisliSecond
-  (***) = kleisliSplit
-instance (Monad m a, Arrow a (->), Function a, Curry a) => PreArrow (Kleisli m a) where
-  (&&&) = kleisliFanout
+instance (Monad m a, Morphism a, Curry a) => Morphism (Kleisli m a) where
+  first (Kleisli f) = Kleisli $ fzip . (f *** return)
+  second (Kleisli f) = Kleisli $ fzip . (return *** f)
+  Kleisli f *** Kleisli g = Kleisli $ fzip . (f *** g)
+instance (Monad m a, PreArrow a, Curry a) => PreArrow (Kleisli m a) where
+  Kleisli f &&& Kleisli g = Kleisli $ fzip . (f &&& g)
   terminal = Kleisli $ return . terminal
-
-kleisliFirst :: forall m a k b c d .
-                ( Monad m a, Arrow a (->), Function a, k ~ Kleisli m a, Curry k
-                , Object k b, Object k c, Object k d, PairObject k b d, PairObject k c d ) 
-             => k b c -> k (b, d) (c, d)
-kleisliFirst (Kleisli f) = Kleisli $ arr monadOut . first f 
- where monadOut :: (m c, d) -> m (c, d)
-       monadOut (mc, d) = fmap dPost $ mc
-        where dPost :: a c (c, d)
-              dPost = arr (, d)
-kleisliSecond :: forall m a k b c d .
-                ( Arrow a (->), Monad m a, Function a, k ~ Kleisli m a, Curry k
-                , Object k b, Object k c, Object k d, PairObject k d b, PairObject k d c ) 
-             => k b c -> k (d, b) (d, c)
-kleisliSecond (Kleisli f) = Kleisli $ arr monadOut . second f 
- where monadOut :: (d, m c) -> m (d, c)
-       monadOut (d, mc) = fmap dPre $ mc
-        where dPre :: a c (d, c)
-              dPre = arr (d,)
-kleisliSplit :: forall m a k b b' c c' .
-                ( Arrow a (->), Monad m a, Function a, k ~ Kleisli m a, Curry k
-                , Object k b, Object k c, Object k b', Object k c'
-                , PairObject k b b', PairObject k c c', Object k (m c, m c') )
-             => k b c -> k b' c' -> k (b, b') (c, c')
-kleisliSplit  (Kleisli f) (Kleisli g) 
-    = Kleisli $ monadOut . (f *** g)
-  where monadOut :: a (m c, m c') (m (c, c'))
-        monadOut = fzipWith (arr $ uncurry(,)) 
-kleisliFanout :: forall m a k b b' c c' .
-                ( Arrow a (->), Monad m a, Function a, k ~ Kleisli m a, Curry k
-                , Object k b, Object k c, Object k c'
-                , PairObject k c c', Object k (m c, m c') )
-             => k b c -> k b c' -> k b (c, c')
-kleisliFanout  (Kleisli f) (Kleisli g) 
-    = Kleisli $ monadOut . (f &&& g)
-  where monadOut :: a (m c, m c') (m (c, c'))
-        monadOut = fzipWith (arr $ uncurry(,)) 
+instance (Monad m a, WellPointed a) => WellPointed (Kleisli m a) where
+  globalElement x = Kleisli $ fmap (globalElement x) . pureUnit
 
 
 

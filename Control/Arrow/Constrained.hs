@@ -155,6 +155,10 @@ instance (Morphism a, o (UnitObject a)) => Morphism (ConstrainedCategory a o) wh
 instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) where
   ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
   terminal = ConstrainedMorphism terminal
+
+instance (WellPointed a, o (UnitObject a)) => WellPointed (ConstrainedCategory a o) where
+  globalElement x = ConstrainedMorphism $ globalElement x
+  const x = ConstrainedMorphism $ const x
   
 instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) k where
   arr = constrainedArr arr 
