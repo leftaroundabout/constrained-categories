@@ -28,5 +28,5 @@ import Control.Functor.Constrained
 import Control.Applicative.Constrained
 import Control.Monad.Constrained hiding 
          (MonadPlus(..), MonadZero(..), (>=>), (<=<), guard, forever, void)
-import Control.Arrow.Constrained (ifThenElse, fst, snd)
+import Control.Arrow.Constrained (ifThenElse, fst, snd, const)
 

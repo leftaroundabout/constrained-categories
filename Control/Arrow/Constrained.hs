@@ -80,7 +80,6 @@ class (Cartesian a) => Morphism a where
          => a b c -> a b' c' -> a (b,b') (c,c')
 
 
-type Terminal a = UnitObject a
 
 -- | Unlike 'first', 'second', '***' and 'arr', '&&&' has an intrinsic notion
 --   of \"direction\": it is basically equivalent to precomposing the result
@@ -96,18 +95,25 @@ type Terminal a = UnitObject a
 class (Morphism a) => PreArrow a where
   (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
          => a b c -> a b c' -> a b (c,c')
-  terminal :: ( Object a b ) => a b (Terminal a)
-  fst :: (ObjectPair a x y, ObjectPair a x (Terminal a)) => a (x,y) x
+  terminal :: ( Object a b ) => a b (UnitObject a)
+  fst :: (ObjectPair a x y, ObjectPair a x (UnitObject a)) => a (x,y) x
   fst = detachUnit . second terminal
-  snd :: (ObjectPair a x y, ObjectPair a y x, ObjectPair a y (Terminal a)) => a (x,y) y
+  snd :: (ObjectPair a x y, ObjectPair a y x, ObjectPair a y (UnitObject a)) => a (x,y) y
   snd = fst . swap
 
 
 class (PreArrow a) => WellPointed a where
-  globalElement :: (Object a x) => x -> a (Terminal a) x
+  globalElement :: (Object a x) => x -> a (UnitObject a) x
+  unit :: a b c -> UnitObject a
   const :: (Object a b, Object a x) 
             => x -> a b x
   const x = globalElement x . terminal
+
+value :: forall f x . (WellPointed f, Function f, Object f x)
+           => f (UnitObject f) x -> x
+value f = f $ unit q
+ where q :: f (UnitObject f) (UnitObject f)
+       q = id
 
 
 class (Category k) => EnhancedCat a k where
@@ -127,6 +133,7 @@ instance PreArrow (->) where
   terminal = const ()
 instance WellPointed (->) where
   globalElement = Hask.const
+  unit _ = ()
   const = Hask.const
 
 constrainedArr :: (Category k, Category a, o b, o c )
@@ -158,6 +165,7 @@ instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) wh
 
 instance (WellPointed a, o (UnitObject a)) => WellPointed (ConstrainedCategory a o) where
   globalElement x = ConstrainedMorphism $ globalElement x
+  unit (ConstrainedMorphism f) = unit f
   const x = ConstrainedMorphism $ const x
   
 instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) k where
@@ -166,12 +174,13 @@ instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) 
 
 
 
--- | Basically 'ifThenElse' with inverted argument order.
-choose :: (Arrow f (->), Object f Bool, Object f a)
-     => a  -- ^ \"'False'\" value
-     -> a  -- ^ \"'True'\" value
-     -> Bool `f` a
-choose fv tv = arr $ \c -> if c then tv else fv
+-- | Basically 'ifThenElse' with inverted argument order, and
+--   \"morphismised\" arguments.
+choose :: (Arrow f (->), Function f, Object f Bool, Object f a)
+     => UnitObject f `f` a  -- ^ \"'False'\" value
+     -> UnitObject f `f` a  -- ^ \"'True'\" value
+     -> Bool         `f` a
+choose fv tv = arr $ \c -> if c then value tv else value fv
 
 ifThenElse :: ( EnhancedCat f (->), Function f
               , Object f Bool, Object f a, Object f (f a a), Object f (f a (f a a))

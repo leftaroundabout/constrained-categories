@@ -96,17 +96,20 @@ instance (Hask.Applicative m, Hask.Monad m) => Monad m (->) where
 --   notation) a mathematically reasonable superclass.
 --   
 --   Consider these classes provisorial, avoid relying on them explicitly.
-class MonadZero m a where
-  mzero :: m a
+class (Monad m k) => MonadZero m k where
+  fmzero :: (Object k a, Object k (m a)) => UnitObject k `k` m a
 
-class (Monad m k, MonadZero m (UnitObject k)) => MonadPlus m k where
-  fmplus :: (MonadZero m a) => k (m a, m a) (m a)
+mzero :: (MonadZero m (->)) => m a
+mzero = fmzero ()
 
-mplus :: (MonadPlus m (->), MonadZero m a) => m a -> m a -> m a
+class (MonadZero m k) => MonadPlus m k where
+  fmplus :: (ObjectPair k (m a) (m a)) => k (m a, m a) (m a)
+
+mplus :: (MonadPlus m (->)) => m a -> m a -> m a
 mplus = curry fmplus
   
-instance (Hask.MonadPlus m) => MonadZero m () where
-  mzero = Hask.mzero
+instance (Hask.MonadPlus m, Hask.Applicative m) => MonadZero m (->) where
+  fmzero = const Hask.mzero
 instance (Hask.MonadPlus m, Hask.Applicative m) => MonadPlus m (->) where
   fmplus = uncurry Hask.mplus
 
@@ -171,13 +174,14 @@ instance (Monad m a, PreArrow a, Curry a) => PreArrow (Kleisli m a) where
   terminal = Kleisli $ return . terminal
 instance (Monad m a, WellPointed a) => WellPointed (Kleisli m a) where
   globalElement x = Kleisli $ fmap (globalElement x) . pureUnit
+  unit (Kleisli f) = unit f
 
 
 
 guard ::( MonadPlus m k, Arrow k (->), Function k
         , UnitObject k ~ (), Object k Bool
         ) => Bool `k` m ()
-guard = i . choose mzero (return `inCategoryOf` i $ ())
+guard = i . choose fmzero return
  where i = id
 
 
