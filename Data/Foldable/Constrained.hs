@@ -20,6 +20,7 @@ module Data.Foldable.Constrained
            , Foldable(..)
            , fold
            , traverse_, mapM_, forM_, sequence_
+           , concatMap
            ) where
 
 
@@ -31,7 +32,7 @@ import Prelude hiding (
      id, (.), ($)
    , Functor(..)
    , uncurry, curry
-   , mapM_, sequence_
+   , mapM_, sequence_, concatMap
    )
 import Data.Monoid
 
@@ -157,4 +158,10 @@ sequence_ :: forall t k l m a b uk ul .
              , ObjectPair k (m uk) (m a)
              ) => t (m a) `l` m uk
 sequence_ = traverse_ id 
---   
+
+
+
+concatMap :: (Foldable f k l, Object k a, Object k [b], Object l (f a), Object l [b])
+               => a `k` [b] -> f a `l` [b]
+concatMap = foldMap
+

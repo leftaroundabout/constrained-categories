@@ -21,7 +21,7 @@ module Control.Monad.Constrained( module Control.Applicative.Constrained
                                 , (>=>), (<=<)
                                 , Kleisli(..)
                                 -- * Monoid-Monads
-                                , MonadZero(..), MonadPlus(..), mplus
+                                , MonadZero(..), mzero, MonadPlus(..), mplus
                                 , MonadFail(..)
                                 -- * Utility
                                 , mapM, mapM_, forM, forM_, sequence, sequence_
