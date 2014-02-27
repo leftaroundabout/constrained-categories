@@ -144,11 +144,6 @@ instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
             , Object a (m b, m c), Object a (m (m b, m c)), Object a (m (m (m b, m c)))
             , PairObject a b c
             , PairObject a (m b) c, PairObject a b (m c), PairObject a (m b) (m c) )
-  type MorphObject (Kleisli m a) c d
-          = ( Object a c, Object a d, Object a (m d), Object a (m (m d))
-            , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
-            , Object a (a c (m d))
-            , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
   type UnitObject (Kleisli m a) = UnitObject a
   swap = Kleisli $ return . swap
   attachUnit = Kleisli $ return . attachUnit
@@ -156,6 +151,11 @@ instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
   regroup = Kleisli $ return . regroup
   
 instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
+  type MorphObject (Kleisli m a) c d
+          = ( Object a c, Object a d, Object a (m d), Object a (m (m d))
+            , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
+            , Object a (a c (m d))
+            , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
   curry (Kleisli fUnc) = Kleisli $ return . arr Kleisli . curry fUnc
   uncurry (Kleisli fCur) = Kleisli . arr $ 
                \(b,c) -> join . fmap (arr $ ($c) . runKleisli) . fCur $ b

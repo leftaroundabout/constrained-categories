@@ -182,8 +182,6 @@ class ( Category k
       ) => Cartesian k where
   type PairObject k a b :: Constraint
   type PairObject k a b = ()
-  type MorphObject k b c :: Constraint
-  type MorphObject k b c = ()
   type UnitObject k :: *
   type UnitObject k = ()
   
@@ -207,7 +205,6 @@ instance Cartesian (->) where
                         
 instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) where
   type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o a, o b, o (a, b))
-  type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
   type UnitObject (ConstrainedCategory f o) = UnitObject f
 
   swap = ConstrainedMorphism swap
@@ -219,6 +216,8 @@ instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) 
   
   
 class (Cartesian k) => Curry k where
+  type MorphObject k b c :: Constraint
+  type MorphObject k b c = ()
   uncurry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c)
          => k a (k b c) -> k (a, b) c
   curry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c) 
@@ -231,6 +230,7 @@ instance Curry (->) where
       
 
 instance (Curry f, o (UnitObject f)) => Curry (ConstrainedCategory f o) where
+  type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
   uncurry (ConstrainedMorphism f) = ConstrainedMorphism $ \(a,b) -> unconstrained (f a) b
   curry (ConstrainedMorphism f) = ConstrainedMorphism $ \a -> ConstrainedMorphism $ \b -> f (a, b)
                                                                      
