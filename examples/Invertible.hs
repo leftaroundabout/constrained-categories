@@ -58,8 +58,8 @@ instance Category (<->) where
   id = Invertible id id
   Invertible f fi . Invertible g gi = Invertible (f.g) (gi.fi)
 
-instance Function (<->) where
-  Invertible f _ $ x = f x
+instance EnhancedCat (->) (<->) where
+  Invertible f _ `arr` x = f x
 
 instance Cartesian (<->) where
   swap = Invertible swap swap
@@ -93,10 +93,10 @@ instance Category BackResult where
   Noninvertible f . BackResult (Invertible g _) = Noninvertible $ f . g
   Noninvertible f . Constant c = Constant $ f c
   Constant c . _ = Constant c
-instance Function BackResult where
-  BackResult f $ x = f $ x
-  Noninvertible f $ x = f $ x
-  Constant c $ _ = c
+instance EnhancedCat (->) BackResult where
+  BackResult f `arr` x = f $ x
+  Noninvertible f `arr` x = f $ x
+  Constant c `arr` _ = c
 
 instance Cartesian BackResult where
   swap = BackResult swap

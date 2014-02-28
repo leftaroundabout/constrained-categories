@@ -25,8 +25,6 @@ module Control.Category.Constrained (
             -- * Constraining a category
           , ConstrainedCategory (ConstrainedMorphism)
           , constrained, unconstrained
-            -- * Function-like categories
-          , Function (..)
             -- * Global-element proxies
           , HasProxy (..)
           , genericAlg, genericProxyMap
@@ -36,7 +34,7 @@ module Control.Category.Constrained (
           , ObjectPair
           ) where
 
-import Prelude hiding (id, (.), ($), curry, uncurry)
+import Prelude hiding (id, (.), curry, uncurry)
 import qualified Prelude
 import GHC.Exts (Constraint)
 import Data.Monoid
@@ -100,27 +98,6 @@ instance (Category k) => Category (ConstrainedCategory k isObj) where
   type Object (ConstrainedCategory k isObj) o = (Object k o, isObj o)
   id = ConstrainedMorphism id
   ConstrainedMorphism f . ConstrainedMorphism g = ConstrainedMorphism $ f . g
-
-
-
-infixr 0 $
-
--- | Many categories have as morphisms essentially /functions with extra properties/:
---   group homomorphisms, linear maps, continuous functions...
--- 
---   It makes sense to generalise the notion of function application to these
---   morphisms; we can't do that for the simple juxtaposition writing @f x@,
---   but it is possible for the function-application operator @$@.
--- 
---   This is particularly useful for 'ConstrainedCategory' versions of Hask,
---   where after all the morphisms are /nothing but functions/.
-class (Category k) => Function k where
-  ($) :: (Object k a, Object k b) => k a b -> a -> b
-
-instance Function (->) where ($) = (Prelude.$)
-
-instance (Function f) => Function (ConstrainedCategory f o) where
-  ConstrainedMorphism q $ x = q $ x
 
 
 -- | Apart from /the/ identity morphism, 'id', there are other morphisms that

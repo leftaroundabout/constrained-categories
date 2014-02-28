@@ -155,10 +155,10 @@ fromLin = arr
 instance EnhancedCat (Affin k) (Lin k) where
   arr f = f :->+ zeroV
 
-instance Function (Lin k) where
-  Lin f $ v = lapply f v
-instance Function (Affin k) where
-  f :->+ u $ v = (f $ v) ^+^ u
+instance EnhancedCat (->) (Lin k) where
+  Lin f `arr` v = lapply f v
+instance EnhancedCat (->) (Affin k) where
+  f :->+ u `arr` v = (f $ v) ^+^ u
 
 instance Cartesian (Lin k) where
   type UnitObject (Lin k) = ZeroDim k

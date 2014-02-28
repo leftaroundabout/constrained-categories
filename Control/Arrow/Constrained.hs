@@ -43,6 +43,8 @@
 module Control.Arrow.Constrained (
     -- * The Arrow type classes
       Arrow, Morphism(..), PreArrow(..), WellPointed(..), EnhancedCat(..)
+    -- * Function-like categories
+    , Function, ($)
     -- * Alternative composition notation
     , (>>>), (<<<)
     -- * Proxies for cartesian categories
@@ -122,6 +124,27 @@ class (Category k) => EnhancedCat a k where
 instance (Category k) => EnhancedCat k k where
   arr = id
 
+
+-- | Many categories have as morphisms essentially /functions with extra properties/:
+--   group homomorphisms, linear maps, continuous functions...
+-- 
+--   It makes sense to generalise the notion of function application to these
+--   morphisms; we can't do that for the simple juxtaposition writing @f x@,
+--   but it is possible for the function-application operator @$@.
+-- 
+--   This is particularly useful for 'ConstrainedCategory' versions of Hask,
+--   where after all the morphisms are /nothing but functions/.
+type Function f = EnhancedCat (->) f
+
+infixr 0 $
+($) :: (Function f, Object f a, Object f b) => f a b -> a -> b
+f $ x = arr f x
+
+instance (Function f) => EnhancedCat (->) (ConstrainedCategory f o) where
+  arr (ConstrainedMorphism q) = arr q
+
+
+
 type Arrow a k = (WellPointed a, EnhancedCat a k)
 
 instance Morphism (->) where
@@ -177,9 +200,9 @@ instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) 
 -- | Basically 'ifThenElse' with inverted argument order, and
 --   \"morphismised\" arguments.
 choose :: (Arrow f (->), Function f, Object f Bool, Object f a)
-     => UnitObject f `f` a  -- ^ \"'False'\" value
-     -> UnitObject f `f` a  -- ^ \"'True'\" value
-     -> Bool         `f` a
+     => f (UnitObject f) a  -- ^ \"'False'\" value
+     -> f (UnitObject f) a  -- ^ \"'True'\" value
+     -> f Bool           a
 choose fv tv = arr $ \c -> if c then value tv else value fv
 
 ifThenElse :: ( EnhancedCat f (->), Function f

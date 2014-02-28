@@ -22,7 +22,7 @@ module Control.Functor.Constrained ( module Control.Category.Constrained
 
 import Control.Category.Constrained
 
-import Prelude hiding (id, (.), ($), Functor(..))
+import Prelude hiding (id, (.), Functor(..))
 import qualified Prelude
 
 
