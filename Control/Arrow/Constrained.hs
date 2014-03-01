@@ -49,7 +49,7 @@ module Control.Arrow.Constrained (
     , (>>>), (<<<)
     -- * Proxies for cartesian categories
     , CartesianProxy(..)
-    , genericProxyCombine, genericUnit, genericAlg2
+    , genericProxyCombine, genericUnit, genericAlg1to2, genericAlg2to1, genericAlg2to2
     , PointProxy(..), genericPoint
     -- * Misc utility
     -- ** Conditionals
@@ -225,17 +225,41 @@ genericUnit = GenericProxy terminal
 
 
 class (Morphism k, HasProxy k) => CartesianProxy k where
-  alg2 :: ( ObjectPair k a b, Object k c
+  alg1to2 :: ( Object k a, ObjectPair k b c
+          ) => (forall q . Object k q
+                 => ProxyVal k q a -> (ProxyVal k q b, ProxyVal k q c) )
+               -> k a (b,c)
+  alg2to1 :: ( ObjectPair k a b, Object k c
           ) => (forall q . Object k q
                  => ProxyVal k q a -> ProxyVal k q b -> ProxyVal k q c )
                -> k (a,b) c
+  alg2to2 :: ( ObjectPair k a b, ObjectPair k c d
+          ) => (forall q . Object k q
+                 => ProxyVal k q a -> ProxyVal k q b -> (ProxyVal k q c, ProxyVal k q d) )
+               -> k (a,b) (c,d)
 
-genericAlg2 :: ( PreArrow k, u ~ UnitObject k
-               , ObjectPair k a u, ObjectPair k a b, ObjectPair k b u, ObjectPair k b a
-               ) => ( forall q . Object k q
+genericAlg1to2 :: ( PreArrow k, u ~ UnitObject k
+                  , Object k a, ObjectPair k b c
+                  ) => ( forall q . Object k q
+                      => GenericProxy k q a -> (GenericProxy k q b, GenericProxy k q c) )
+               -> k a (b,c)
+genericAlg1to2 f = runGenericProxy b &&& runGenericProxy c
+ where (b,c) = f $ GenericProxy id
+genericAlg2to1 :: ( PreArrow k, u ~ UnitObject k
+                  , ObjectPair k a u, ObjectPair k a b, ObjectPair k b u, ObjectPair k b a
+                  ) => ( forall q . Object k q
                       => GenericProxy k q a -> GenericProxy k q b -> GenericProxy k q c )
                -> k (a,b) c
-genericAlg2 f = runGenericProxy $ f (GenericProxy fst) (GenericProxy snd)
+genericAlg2to1 f = runGenericProxy $ f (GenericProxy fst) (GenericProxy snd)
+genericAlg2to2 :: ( PreArrow k, u ~ UnitObject k
+                  , ObjectPair k a u, ObjectPair k a b, ObjectPair k c d
+                  , ObjectPair k b u, ObjectPair k b a
+                  ) => ( forall q . Object k q
+                      => GenericProxy k q a -> GenericProxy k q b 
+                         -> (GenericProxy k q c, GenericProxy k q d) )
+               -> k (a,b) (c,d)
+genericAlg2to2 f = runGenericProxy c &&& runGenericProxy d
+ where (c,d) = f (GenericProxy fst) (GenericProxy snd)
 
 
 class (HasProxy k, ProxyVal k a x ~ p a x) 

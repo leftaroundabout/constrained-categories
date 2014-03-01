@@ -62,15 +62,15 @@ main = do
                                        :: GLℝ² )
    
    putStr "\n\\v → v ⊕ v  :  "
-   print . asMatrix $ ( alg (\v -> v ^++^ v )
+   print . asMatrix $ ( alg1to2 (\v -> (v,v) )
                                        :: Lin ℝ ℝ² ℝ⁴ )
    
-   putStr "\n\\v w → v + 2w:  "
-   print . asMatrix $ ( alg2 (\v w -> v ^+^ 2 *^ w )
+   putStr "\n\\(v⊕w) → v + 2w:  "
+   print . asMatrix $ ( alg2to1 (\v w -> v ^+^ 2 *^ w )
                                        :: Lin ℝ ℝ⁴ ℝ² )
    
-   putStr "\n\\v w → w ⊕ (90°↺v):  "
-   print . asMatrix $ ( alg2 (\v w -> w ^++^ (rot (pi/2) $~ v) )
+   putStr "\n\\(v⊕w) → w ⊕ (90°↺v):  "
+   print . asMatrix $ ( alg2to2 (\v w -> (w, rot (pi/2) $~ v) )
                                        :: Lin ℝ ℝ⁴ ℝ⁴ )
    
    -- Note that alg expressions won't typecheck if they do not correctly
@@ -194,7 +194,7 @@ instance PreArrow (Affin k) where
   fst = fromLin fst; snd = fromLin snd
 instance Curry (Affin k) where
   type MorphObject (Affin k) u v = (FinitelySpanned u)
-  curry (f :->+ v) = Lin (linear $ \u -> zeroV :->+ (f $ u^++^zeroV) ) :->+ (zeroV :->+ v)
+  curry (f :->+ v) = Lin (linear $ \u -> zeroV :->+ (f $ (u,zeroV)) ) :->+ (zeroV :->+ v)
   uncurry (f :->+ (g :->+ u)) 
      = Lin (linear $ \(v,w) -> let (h :->+ x) = f $ v in (h $ w) ^+^ x ) :->+ u
 instance WellPointed (Affin k) where
@@ -209,7 +209,9 @@ instance HasProxy (Lin k) where
   ($~) = genericProxyMap
 
 instance CartesianProxy (Lin k) where
-  alg2 = genericAlg2
+  alg1to2 = genericAlg1to2
+  alg2to1 = genericAlg2to1
+  alg2to2 = genericAlg2to2
 
 instance ( Object (Lin k) a, Object (Lin k) b
          ) => AdditiveGroup (GenericProxy (Lin k) a b) where
@@ -228,7 +230,9 @@ instance HasProxy (Affin k) where
   ($~) = genericProxyMap
 
 instance CartesianProxy (Affin k) where
-  alg2 = genericAlg2
+  alg1to2 = genericAlg1to2
+  alg2to1 = genericAlg2to1
+  alg2to2 = genericAlg2to2
 
 instance PointProxy (GenericProxy (Affin k)) (Affin k) u v where
   point = genericPoint
@@ -276,20 +280,7 @@ instance (Show v, Show k, FinitelySpanned u, FinitelySpanned v, Element k)
   
 
 
-class (AdditiveGroup a, AdditiveGroup b, AdditiveGroup s)
-   => DirectSum a b s | s -> a b where
-  (^++^) :: a -> b -> s
-
-instance (AdditiveGroup a, AdditiveGroup b) => DirectSum a b (a,b) where 
-  (^++^) = (,)
-
-instance ( CountablySpanned a, CountablySpanned b, CountablySpanned c
-         , Scalar a ~ k, Scalar b ~ k, Scalar c ~ k )
-   => DirectSum ( GenericProxy (Lin k) a b )
-                ( GenericProxy (Lin k) a c )
-                ( GenericProxy (Lin k) a (b,c) ) where
-  (^++^) = genericProxyCombine . Lin . linear $ uncurry (^++^)
-  
+ 
 
 
 
