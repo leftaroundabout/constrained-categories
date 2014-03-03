@@ -113,6 +113,8 @@ instance Morphism BackResult where
   Constant c *** Constant d = Constant (c,d)
   f *** g = Noninvertible $ (f$) *** (g$)
 instance PreArrow BackResult where
+  fst = Noninvertible fst
+  snd = Noninvertible snd
   Constant c &&& Constant d = Constant (c,d)
   f &&& g = Noninvertible $ (f$) &&& (g$)
   terminal = Constant ()
