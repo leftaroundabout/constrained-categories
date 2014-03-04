@@ -103,7 +103,7 @@ showByCommandArgs strs = do
                       "--favourites" -> fmap (:[]) . favourites . read $ strs!!1
                       "-e"      -> return . map(map (:[]) . read) $ tail strs
                       "--escape-seqs" ->  return . map(map (:[]) . read) $ tail strs
-                      fstr      -> return ( map(map (:[])) strs )
+                      fstr      -> return $ map(map (:[])) strs
     windows <- mapM charmapWindow chrmapArgs
     mapM_ (flip onDestroy mainQuit) windows
     mainGUI
@@ -150,7 +150,7 @@ createMenuBar descr = do
                      return ()
                    Nothing -> return ()
                 )
-        NonimplementedMenuAction -> onActivateLeaf item (return ())
+        NonimplementedMenuAction -> onActivateLeaf item $ return ()
     menuItemNewWithLabelOrMnemonic name
         | elem '_' name = menuItemNewWithMnemonic name
         | otherwise     = menuItemNewWithLabel name

@@ -16,7 +16,7 @@
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
                                 -- * Monads                                
-                                , Monad(..), (>>=), (=<<), (>>), (<<)
+                                , Monad(..), return, (>>=), (=<<), (>>), (<<)
                                 -- * Kleisli arrows
                                 , (>=>), (<=<)
                                 , Kleisli(..)
@@ -48,10 +48,18 @@ import Control.Arrow.Constrained
 class ( Applicative m k k
       , Object k (m (UnitObject k)), Object k (m (m (UnitObject k)))
       ) => Monad m k where
-  return :: (Object k a, Object k (m a)) => k a (m a)
-  return = pure
   join :: (Object k a, Object k (m a), Object k (m (m a)))
        => m (m a) `k` m a
+
+-- | This is monomorphic in the category /Hask/, thus exactly the same as 'Hask.return'
+--   from the standard prelude. This allows writing expressions like
+--   @'return' '$' case x of ...@, which would always be ambiguous with the more general 
+--   signature @Monad m k => k a (m a)@.
+-- 
+--   Use 'pure' when you want to \"return\" in categories other than @(->)@; this always
+--   works since 'Applicative' is a superclass of 'Monad'.
+return :: Monad m (->) => a -> m a
+return = pure
 
          
 
@@ -85,7 +93,6 @@ infixl 1 >>
 
 
 instance (Hask.Applicative m, Hask.Monad m) => Monad m (->) where
-  return = Hask.return
   join = Hask.join
   
 
@@ -135,7 +142,7 @@ newtype Kleisli m k a b = Kleisli { runKleisli :: k a (m b) }
 
 instance (Monad m k) => Category (Kleisli m k) where
   type Object (Kleisli m k) o = (Object k o, Object k (m o), Object k (m (m o)))
-  id = Kleisli return
+  id = Kleisli pure
   Kleisli a . Kleisli b = Kleisli $ join . fmap a . b
 
 instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
@@ -145,10 +152,10 @@ instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
             , PairObject a b c
             , PairObject a (m b) c, PairObject a b (m c), PairObject a (m b) (m c) )
   type UnitObject (Kleisli m a) = UnitObject a
-  swap = Kleisli $ return . swap
-  attachUnit = Kleisli $ return . attachUnit
-  detachUnit = Kleisli $ return . detachUnit
-  regroup = Kleisli $ return . regroup
+  swap = Kleisli $ pure . swap
+  attachUnit = Kleisli $ pure . attachUnit
+  detachUnit = Kleisli $ pure . detachUnit
+  regroup = Kleisli $ pure . regroup
   
 instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
   type MorphObject (Kleisli m a) c d
@@ -156,7 +163,7 @@ instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
             , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
             , Object a (a c (m d))
             , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
-  curry (Kleisli fUnc) = Kleisli $ return . arr Kleisli . curry fUnc
+  curry (Kleisli fUnc) = Kleisli $ pure . arr Kleisli . curry fUnc
   uncurry (Kleisli fCur) = Kleisli . arr $ 
                \(b,c) -> join . fmap (arr $ ($c) . runKleisli) . fCur $ b
   
@@ -164,16 +171,16 @@ instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
   
 
 instance (Monad m a, Arrow a q, Cartesian a) => EnhancedCat (Kleisli m a) q where
-  arr f = Kleisli $ return . arr f
+  arr f = Kleisli $ pure . arr f
 instance (Monad m a, Morphism a, Curry a) => Morphism (Kleisli m a) where
-  first (Kleisli f) = Kleisli $ fzip . (f *** return)
-  second (Kleisli f) = Kleisli $ fzip . (return *** f)
+  first (Kleisli f) = Kleisli $ fzip . (f *** pure)
+  second (Kleisli f) = Kleisli $ fzip . (pure *** f)
   Kleisli f *** Kleisli g = Kleisli $ fzip . (f *** g)
 instance (Monad m a, PreArrow a, Curry a) => PreArrow (Kleisli m a) where
   Kleisli f &&& Kleisli g = Kleisli $ fzip . (f &&& g)
-  terminal = Kleisli $ return . terminal
-  fst = Kleisli $ return . fst
-  snd = Kleisli $ return . snd
+  terminal = Kleisli $ pure . terminal
+  fst = Kleisli $ pure . fst
+  snd = Kleisli $ pure . snd
 instance (Monad m a, WellPointed a) => WellPointed (Kleisli m a) where
   globalElement x = Kleisli $ fmap (globalElement x) . pureUnit
   unit (Kleisli f) = unit f
@@ -183,7 +190,7 @@ instance (Monad m a, WellPointed a) => WellPointed (Kleisli m a) where
 guard ::( MonadPlus m k, Arrow k (->), Function k
         , UnitObject k ~ (), Object k Bool
         ) => Bool `k` m ()
-guard = i . choose fmzero return
+guard = i . choose fmzero pure
  where i = id
 
 
@@ -191,12 +198,12 @@ when :: ( Monad m k, PreArrow k, u ~ UnitObject k
         , ObjectPair k (m u) u
         ) => Bool -> m u `k` m u
 when True = id
-when False = return . terminal
+when False = pure . terminal
 unless :: ( Monad m k, PreArrow k, u ~ UnitObject k
         , ObjectPair k (m u) u
         ) => Bool -> m u `k` m u
 unless False = id
-unless True = return . terminal
+unless True = pure . terminal
     
 
 

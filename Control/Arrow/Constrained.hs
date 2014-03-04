@@ -98,10 +98,8 @@ class (Morphism a) => PreArrow a where
   (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
          => a b c -> a b c' -> a b (c,c')
   terminal :: ( Object a b ) => a b (UnitObject a)
-  fst :: (ObjectPair a x y, ObjectPair a x (UnitObject a)) => a (x,y) x
-  fst = detachUnit . second terminal
-  snd :: (ObjectPair a x y, ObjectPair a y x, ObjectPair a y (UnitObject a)) => a (x,y) y
-  snd = fst . swap
+  fst :: (ObjectPair a x y) => a (x,y) x
+  snd :: (ObjectPair a x y) => a (x,y) y
 
 
 class (PreArrow a) => WellPointed a where
@@ -153,6 +151,8 @@ instance Morphism (->) where
   (***) = (Arr.***)
 instance PreArrow (->) where
   (&&&) = (Arr.&&&)
+  fst (a,_) = a
+  snd (_,b) = b
   terminal = const ()
 instance WellPointed (->) where
   globalElement = Hask.const
@@ -185,6 +185,8 @@ instance (Morphism a, o (UnitObject a)) => Morphism (ConstrainedCategory a o) wh
 instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) where
   ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
   terminal = ConstrainedMorphism terminal
+  fst = ConstrainedMorphism fst
+  snd = ConstrainedMorphism snd
 
 instance (WellPointed a, o (UnitObject a)) => WellPointed (ConstrainedCategory a o) where
   globalElement x = ConstrainedMorphism $ globalElement x
