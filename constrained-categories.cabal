@@ -33,7 +33,7 @@ Build-Type:          Simple
 Cabal-Version:       >=1.2
 
 Library
-  Build-Depends:     base>=4.5
+  Build-Depends:     base>=4.6
   Extensions:        ConstraintKinds
                      TypeFamilies
                      FlexibleInstances
