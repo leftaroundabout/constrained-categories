@@ -45,8 +45,7 @@ import Control.Arrow.Constrained
 
 
 class (Functor t k l) => Foldable t k l where
-  ffoldl :: ( Object k a, Object k b, PairObject k a b
-            , Object l a, Object l (t b), PairObject l a (t b)
+  ffoldl :: ( ObjectPair k a b, ObjectPair l a (t b)
             ) => k (a,b) a -> l (a,t b) a
   foldMap :: ( Object k a, Object l (t a), Monoid m, Object k m, Object l m )
                => (a `k` m) -> t a `l` m
@@ -63,18 +62,18 @@ newtype Monoidal_ (r :: * -> * -> *) (s :: * -> * -> *) (f :: * -> *) (u :: *)
       = Monoidal { runMonoidal :: f u }
 instance ( Monoidal f k k, Function k
          , u ~ UnitObject k, Monoid u 
-         , PairObject k u u, PairObject k (f u) (f u), Object k (f u,f u)
+         , ObjectPair k u u, ObjectPair k (f u) (f u), Object k (f u,f u)
          ) => Monoid (Monoidal_ k k f u) where
   mempty = memptyMdl
   mappend = mappendMdl
 
 memptyMdl :: forall r s f u v . ( Monoidal f r s, Function s
-                                , PairObject s u u, Monoid v
+                                , ObjectPair s u u, Monoid v
                                 , u~UnitObject r, v~UnitObject s )
                => Monoidal_ r s f u
 memptyMdl = Monoidal ((pureUnit :: s v (f u)) $ mempty)
 mappendMdl :: forall r s f u v . ( Monoidal f r s, Function s
-                                , PairObject r u u, PairObject s (f u) (f u)
+                                , ObjectPair r u u, ObjectPair s (f u) (f u)
                                 , Object s (f u, f u), Monoid v
                                 , u~UnitObject r, v~UnitObject s )
                => Monoidal_ r s f u -> Monoidal_ r s f u -> Monoidal_ r s f u
@@ -152,7 +151,7 @@ sequence_ :: forall t k l m a b uk ul .
              , uk ~ UnitObject k, ul ~ UnitObject l, uk ~ ul
              , Monoidal m k k, Monoidal m l l
              , ObjectPair k a uk, ObjectPair k (t (m a)) uk
-             , ObjectPair k uk uk, ObjectPair k (m uk) (m uk), PairObject k (t (m a)) ul
+             , ObjectPair k uk uk, ObjectPair k (m uk) (m uk), ObjectPair k (t (m a)) ul
              , ObjectPair l (m ul) (t (m a)), ObjectPair l ul (t (m a))
              , ObjectPair l (m uk) (t (m a)), ObjectPair l (t (m a)) ul
              , ObjectPair k (m uk) (m a)

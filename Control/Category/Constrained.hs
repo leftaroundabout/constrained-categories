@@ -116,22 +116,22 @@ instance (Category k) => Category (ConstrainedCategory k isObj) where
 class (Category k) => Isomorphic k a b where
   iso :: k a b
 
-instance (Cartesian k, Object k a, u ~ UnitObject k, PairObject k a u) => Isomorphic k a (a,u) where
+instance (Cartesian k, Object k a, u ~ UnitObject k, ObjectPair k a u) => Isomorphic k a (a,u) where
   iso = attachUnit
-instance (Cartesian k, Object k a, u ~ UnitObject k, PairObject k a u) => Isomorphic k (a,u) a where
+instance (Cartesian k, Object k a, u ~ UnitObject k, ObjectPair k a u) => Isomorphic k (a,u) a where
   iso = detachUnit
-instance (Cartesian k, Object k a, u ~ UnitObject k, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
+instance (Cartesian k, Object k a, u ~ UnitObject k, ObjectPair k a u, ObjectPair k u a, Object k (u, a), Object k (a, u) ) 
               => Isomorphic k a (u,a) where
   iso = swap . attachUnit
-instance (Cartesian k, Object k a, u ~ UnitObject k, PairObject k a u, PairObject k u a, Object k (u, a), Object k (a, u) ) 
+instance (Cartesian k, Object k a, u ~ UnitObject k, ObjectPair k a u, ObjectPair k u a, Object k (u, a), Object k (a, u) ) 
               => Isomorphic k (u,a) a where
   iso = detachUnit . swap
-instance ( Cartesian k, Object k a, PairObject k a b, PairObject k b c
-         , PairObject k a (b,c), PairObject k (a,b) c, Object k c )
+instance ( Cartesian k, Object k a, ObjectPair k a b, ObjectPair k b c
+         , ObjectPair k a (b,c), ObjectPair k (a,b) c, Object k c )
                                        => Isomorphic k (a,(b,c)) ((a,b),c) where
   iso = regroup
-instance ( Cartesian k, Object k a, Object k b, Object k c, PairObject k a b, PairObject k b c, PairObject k c a
-         , PairObject k a (b,c), PairObject k (a,b) c, PairObject k (b, c) a, PairObject k b (c, a), PairObject k (c,a) b, PairObject k c (a,b)
+instance ( Cartesian k, Object k a, Object k b, Object k c, ObjectPair k a b, ObjectPair k b c, ObjectPair k c a
+         , ObjectPair k a (b,c), ObjectPair k (a,b) c, ObjectPair k (b, c) a, ObjectPair k b (c, a), ObjectPair k (c,a) b, ObjectPair k c (a,b)
          , Object k (a, (b, c)), Object k ((b,c),a), Object k (b,(c,a)), Object k ((a,b), c), Object k ((c,a),b), Object k (c,(a,b)) )
                                        => Isomorphic k ((a,b),c) (a,(b,c)) where
   iso = swap . regroup . swap . regroup . swap
@@ -157,22 +157,29 @@ class ( Category k
       , Monoid (UnitObject k), Object k (UnitObject k)
       -- , PairObject k (UnitObject k) (UnitObject k), Object k (UnitObject k,UnitObject k) 
       ) => Cartesian k where
-  type PairObject k a b :: Constraint
-  type PairObject k a b = ()
+  -- | Extra properties two types @a, b@ need to fulfill so @(a,b)@ can be an
+  --   object of the category. This need /not/ take care for @a@ and @b@ themselves 
+  --   being objects, we do that seperately: every function that actually deals
+  --   with @(a,b)@ objects should require the stronger @'ObjectPair' k a b@.
+  --   
+  --   If /any/ two object types of your category make up a pair object, then
+  --   just leave 'PairObjects' at the default (empty constraint).
+  type PairObjects k a b :: Constraint
+  type PairObjects k a b = ()
   type UnitObject k :: *
   type UnitObject k = ()
   
-  swap :: ( PairObject k a b, PairObject k b a ) => k (a,b) (b,a)
+  swap :: ( ObjectPair k a b, ObjectPair k b a ) => k (a,b) (b,a)
   
-  attachUnit  :: ( Object k a, u ~ UnitObject k, PairObject k a u ) => k a (a,u)
-  detachUnit :: ( Object k a, u ~ UnitObject k, PairObject k a u ) => k (a,u) a
-  regroup     :: ( Object k a, Object k c, PairObject k a b, PairObject k b c
-                      , PairObject k a (b,c), PairObject k (a,b) c )
+  attachUnit  :: ( Object k a, u ~ UnitObject k, ObjectPair k a u ) => k a (a,u)
+  detachUnit :: ( Object k a, u ~ UnitObject k, ObjectPair k a u ) => k (a,u) a
+  regroup     :: ( Object k a, Object k c, ObjectPair k a b, ObjectPair k b c
+                      , ObjectPair k a (b,c), ObjectPair k (a,b) c )
                       => k (a, (b, c)) ((a, b), c)
 
 
 type ObjectPair k a b = ( Category k, Object k a, Object k b
-                        , PairObject k a b, Object k (a,b)   )
+                        , PairObjects k a b, Object k (a,b)   )
   
 instance Cartesian (->) where
   swap = \(a,b) -> (b,a)
@@ -181,7 +188,7 @@ instance Cartesian (->) where
   regroup = \(a, (b, c)) -> ((a, b), c)
                         
 instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) where
-  type PairObject (ConstrainedCategory f o) a b = (PairObject f a b, o a, o b, o (a, b))
+  type PairObjects (ConstrainedCategory f o) a b = (PairObjects f a b)
   type UnitObject (ConstrainedCategory f o) = UnitObject f
 
   swap = ConstrainedMorphism swap
@@ -195,9 +202,9 @@ instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) 
 class (Cartesian k) => Curry k where
   type MorphObject k b c :: Constraint
   type MorphObject k b c = ()
-  uncurry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c)
+  uncurry :: (ObjectPair k a b, MorphObject k b c)
          => k a (k b c) -> k (a, b) c
-  curry :: (Object k a, Object k b, Object k c, PairObject k a b, MorphObject k b c) 
+  curry :: (ObjectPair k a b, MorphObject k b c) 
          => k (a, b) c -> k a (k b c)
   
 

@@ -82,11 +82,10 @@ infixr 1 <<
 (<<) b = join . fmap (const b)
 
 infixl 1 >>
-(>>) :: ( WellPointed k, Monad m k, Object k a, Object k b
-        , Object k (m a), Object k (m b), Object k (m (m b)), Object k (a,b) 
+(>>) :: ( WellPointed k, Monad m k
         , ObjectPair k b (UnitObject k), ObjectPair k (m b) (UnitObject k)
         , ObjectPair k (UnitObject k) (m b), ObjectPair k b a
-        , PairObject k a b, Object k (m (a,b)), ObjectPair k (m a) (m b)
+        , ObjectPair k a b, Object k (m (a,b)), ObjectPair k (m a) (m b)
         ) => m a -> k (m b) (m b)
 (>>) a = fmap snd . fzip . first (globalElement a) . swap . attachUnit
   -- where result = arr $ \b -> (join . fmap (const b)) `inCategoryOf` result $ a
@@ -146,11 +145,9 @@ instance (Monad m k) => Category (Kleisli m k) where
   Kleisli a . Kleisli b = Kleisli $ join . fmap a . b
 
 instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
-  type PairObject (Kleisli m a) b c 
-          = ( Object a (b, c), Object a (m (b, c)), Object a (m b, c), Object a (b, m c)
-            , Object a (m b, m c), Object a (m (m b, m c)), Object a (m (m (m b, m c)))
-            , PairObject a b c
-            , PairObject a (m b) c, PairObject a b (m c), PairObject a (m b) (m c) )
+  type PairObjects (Kleisli m a) b c 
+          = ( ObjectPair a b c
+            , ObjectPair a (m b) c, ObjectPair a b (m c), ObjectPair a (m b) (m c) )
   type UnitObject (Kleisli m a) = UnitObject a
   swap = Kleisli $ pure . swap
   attachUnit = Kleisli $ pure . attachUnit

@@ -73,12 +73,11 @@ infixr 3 &&&, ***
 (<<<) = (.)
 
 class (Cartesian a) => Morphism a where
-  first :: (Object a b, Object a c, Object a d, PairObject a b d, PairObject a c d) 
+  first :: ( ObjectPair a b d, ObjectPair a c d )
          => a b c -> a (b, d) (c, d)
-  second :: (Object a b, Object a c, Object a d, PairObject a d b, PairObject a d c) 
+  second :: ( ObjectPair a d b, ObjectPair a d c )
          => a b c -> a (d, b) (d, c)
-  (***) :: ( Object a b, Object a c, Object a b', Object a c'
-           , PairObject a b b', PairObject a c c' )
+  (***) :: ( ObjectPair a b b', ObjectPair a c c' )
          => a b c -> a b' c' -> a (b,b') (c,c')
 
 
@@ -95,7 +94,7 @@ class (Cartesian a) => Morphism a where
 --   basically what 'UnitObject' is useful for. It gives rise to the tuple
 --   selector morphisms as well.
 class (Morphism a) => PreArrow a where
-  (&&&) :: ( Object a b, Object a c, Object a c', PairObject a c c' )
+  (&&&) :: ( Object a b, ObjectPair a c c' )
          => a b c -> a b c' -> a b (c,c')
   terminal :: ( Object a b ) => a b (UnitObject a)
   fst :: (ObjectPair a x y) => a (x,y) x
@@ -164,14 +163,12 @@ constrainedArr :: (Category k, Category a, o b, o c )
      -> k b c -> ConstrainedCategory a o b c
 constrainedArr ar = constrained . ar
 
-constrainedFirst :: ( Category a, Cartesian a, o b, o c, o d
-                    , PairObject a b d, PairObject a c d )
+constrainedFirst :: ( Category a, Cartesian a, ObjectPair a b d, ObjectPair a c d )
   => ( a b c -> a (b, d) (c, d) )
      -> ConstrainedCategory a o b c -> ConstrainedCategory a o (b, d) (c, d)
 constrainedFirst fs = ConstrainedMorphism . fs . unconstrained
   
-constrainedSecond :: ( Category a, Cartesian a, o b, o c, o d
-                    , PairObject a d b, PairObject a d c )
+constrainedSecond :: ( Category a, Cartesian a, ObjectPair a d b, ObjectPair a d c )
   => ( a b c -> a (d, b) (d, c) )
      -> ConstrainedCategory a o b c -> ConstrainedCategory a o (d, b) (d, c)
 constrainedSecond sn = ConstrainedMorphism . sn . unconstrained
