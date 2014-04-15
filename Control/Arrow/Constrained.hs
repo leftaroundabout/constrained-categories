@@ -75,8 +75,10 @@ infixr 3 &&&, ***
 class (Cartesian a) => Morphism a where
   first :: ( ObjectPair a b d, ObjectPair a c d )
          => a b c -> a (b, d) (c, d)
+  first = (***id)
   second :: ( ObjectPair a d b, ObjectPair a d c )
          => a b c -> a (d, b) (d, c)
+  second = (id***)
   (***) :: ( ObjectPair a b b', ObjectPair a c c' )
          => a b c -> a b' c' -> a (b,b') (c,c')
 
