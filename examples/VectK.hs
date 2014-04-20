@@ -162,7 +162,7 @@ instance EnhancedCat (->) (Affin k) where
 
 instance Cartesian (Lin k) where
   type UnitObject (Lin k) = ZeroDim k
-  type PairObject (Lin k) u v = (CountablySpanned (u,v), Scalar (u,v) ~ k)
+  type PairObjects (Lin k) u v = (CountablySpanned (u,v), Scalar (u,v) ~ k)
   swap = Lin . linear $ \(a,b) -> (b,a)
   attachUnit = Lin . linear $ \a -> (a, Origin)
   detachUnit = Lin . linear $ \(a, Origin) -> a
@@ -170,7 +170,7 @@ instance Cartesian (Lin k) where
 
 instance Cartesian (Affin k) where
   type UnitObject (Affin k) = ZeroDim k
-  type PairObject (Affin k) u v = PairObject (Lin k) u v
+  type PairObjects (Affin k) u v = PairObjects (Lin k) u v
   swap = fromLin swap; regroup = fromLin regroup
   attachUnit = fromLin attachUnit; detachUnit = fromLin detachUnit
 
@@ -193,7 +193,7 @@ instance PreArrow (Affin k) where
   terminal = fromLin terminal
   fst = fromLin fst; snd = fromLin snd
 instance Curry (Affin k) where
-  type MorphObject (Affin k) u v = (FinitelySpanned u)
+  type MorphObjects (Affin k) u v = FinitelySpanned u
   curry (f :->+ v) = Lin (linear $ \u -> zeroV :->+ (f $ (u,zeroV)) ) :->+ (zeroV :->+ v)
   uncurry (f :->+ (g :->+ u)) 
      = Lin (linear $ \(v,w) -> let (h :->+ x) = f $ v in (h $ w) ^+^ x ) :->+ u

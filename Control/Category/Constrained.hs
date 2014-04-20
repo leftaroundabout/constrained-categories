@@ -18,8 +18,8 @@ module Control.Category.Constrained (
             -- * The category class
             Category (..)
             -- * Monoidal categories
-          , Cartesian (..)
-          , Curry (..)
+          , Cartesian (..), ObjectPair
+          , Curry (..), ObjectMorphism
             -- * Isomorphisms
           , Isomorphic (..)
             -- * Constraining a category
@@ -31,7 +31,6 @@ module Control.Category.Constrained (
           , GenericProxy (..)
             -- * Utility
           , inCategoryOf
-          , ObjectPair
           ) where
 
 import Prelude hiding (id, (.), curry, uncurry)
@@ -177,7 +176,8 @@ class ( Category k
                       , ObjectPair k a (b,c), ObjectPair k (a,b) c )
                       => k (a, (b, c)) ((a, b), c)
 
-
+-- | Use this constraint to ensure that @a@, @b@ and @(a,b)@ are all \"fully valid\" objects
+--   of your category (meaning, you can use them with the 'Cartesian' combinators).
 type ObjectPair k a b = ( Category k, Object k a, Object k b
                         , PairObjects k a b, Object k (a,b)   )
   
@@ -200,12 +200,16 @@ instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) 
   
   
 class (Cartesian k) => Curry k where
-  type MorphObject k b c :: Constraint
-  type MorphObject k b c = ()
-  uncurry :: (ObjectPair k a b, MorphObject k b c)
+  type MorphObjects k b c :: Constraint
+  type MorphObjects k b c = ()
+  uncurry :: (ObjectPair k a b, ObjectMorphism k b c)
          => k a (k b c) -> k (a, b) c
-  curry :: (ObjectPair k a b, MorphObject k b c) 
+  curry :: (ObjectPair k a b, ObjectMorphism k b c) 
          => k (a, b) c -> k a (k b c)
+
+-- | Analogous to 'ObjectPair': express that @k b c@ be an exponential object
+--   representing the morphism.
+type ObjectMorphism k b c = (Object k b, Object k c, MorphObjects k b c, Object k (k b c))
   
 
 instance Curry (->) where
@@ -214,7 +218,7 @@ instance Curry (->) where
       
 
 instance (Curry f, o (UnitObject f)) => Curry (ConstrainedCategory f o) where
-  type MorphObject (ConstrainedCategory f o) a c = ( MorphObject f a c, f ~ (->) )
+  type MorphObjects (ConstrainedCategory f o) a c = ( MorphObjects f a c, f ~ (->) )
   uncurry (ConstrainedMorphism f) = ConstrainedMorphism $ \(a,b) -> unconstrained (f a) b
   curry (ConstrainedMorphism f) = ConstrainedMorphism $ \a -> ConstrainedMorphism $ \b -> f (a, b)
                                                                      

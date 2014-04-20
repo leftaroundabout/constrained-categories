@@ -77,7 +77,7 @@ g >>= h = (=<<) h $ g
 
 infixr 1 <<
 (<<) :: ( Monad m k, WellPointed k
-        , Object k a, Object k b, Object k (m a), Object k (m b), Object k (m (m b))
+        , Object k a, Object k b, Object k (m a), ObjectPoint k (m b), Object k (m (m b))
         ) => m b -> k (m a) (m b)
 (<<) b = join . fmap (const b)
 
@@ -86,6 +86,7 @@ infixl 1 >>
         , ObjectPair k b (UnitObject k), ObjectPair k (m b) (UnitObject k)
         , ObjectPair k (UnitObject k) (m b), ObjectPair k b a
         , ObjectPair k a b, Object k (m (a,b)), ObjectPair k (m a) (m b)
+        , ObjectPoint k (m a)
         ) => m a -> k (m b) (m b)
 (>>) a = fmap snd . fzip . first (globalElement a) . swap . attachUnit
   -- where result = arr $ \b -> (join . fmap (const b)) `inCategoryOf` result $ a
@@ -155,11 +156,10 @@ instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
   regroup = Kleisli $ pure . regroup
   
 instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
-  type MorphObject (Kleisli m a) c d
-          = ( Object a c, Object a d, Object a (m d), Object a (m (m d))
-            , Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
+  type MorphObjects (Kleisli m a) c d
+          = ( Object a (Kleisli m a c d), Object a (m (Kleisli m a c d))
             , Object a (a c (m d))
-            , MorphObject a c d, MorphObject a c (m d), MorphObject a c (m (m d)) )
+            , ObjectMorphism a c d, ObjectMorphism a c (m d), ObjectMorphism a c (m (m d)) )
   curry (Kleisli fUnc) = Kleisli $ pure . arr Kleisli . curry fUnc
   uncurry (Kleisli fCur) = Kleisli . arr $ 
                \(b,c) -> join . fmap (arr $ ($c) . runKleisli) . fCur $ b
@@ -178,7 +178,9 @@ instance (Monad m a, PreArrow a, Curry a) => PreArrow (Kleisli m a) where
   terminal = Kleisli $ pure . terminal
   fst = Kleisli $ pure . fst
   snd = Kleisli $ pure . snd
-instance (Monad m a, WellPointed a) => WellPointed (Kleisli m a) where
+instance (Monad m a, WellPointed a, ObjectPoint a (m (UnitObject a))) 
+             => WellPointed (Kleisli m a) where
+  type PointObject (Kleisli m a) b = (PointObject a b, PointObject a (m b))
   globalElement x = Kleisli $ fmap (globalElement x) . pureUnit
   unit (Kleisli f) = unit f
 
@@ -205,7 +207,7 @@ unless True = pure . terminal
 
 
 forever :: ( Monad m k, Function k, Arrow k (->), Object k a, Object k b 
-           , Object k (m a), Object k (m (m a)), Object k (m b), Object k (m (m b))
+           , Object k (m a), Object k (m (m a)), ObjectPoint k (m b), Object k (m (m b))
            ) => m a `k` m b
 forever = i . arr loop 
     where loop a = (join . fmap (const $ loop a)) `inCategoryOf` i $ a

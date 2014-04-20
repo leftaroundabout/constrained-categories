@@ -37,7 +37,7 @@ class (Functor f r t, Cartesian r, Cartesian t) => Monoidal f r t where
   fzipWith :: (ObjectPair r a b, Object r c, ObjectPair t (f a) (f b), Object t (f c))
               => r (a, b) c -> t (f a, f b) (f c)
 
-constPure :: (WellPointed r, Monoidal f r t, Object r a, Object t (f a) )
+constPure :: (WellPointed r, Monoidal f r t, ObjectPoint r a, Object t (f a) )
        => a -> t (UnitObject t) (f a)
 constPure a = fmap (const a) . pureUnit
 
@@ -50,17 +50,16 @@ class (Monoidal f r t, Curry r, Curry t) => Applicative f r t where
   --   Consider using 'constPure' instead.
   pure :: (Object r a, Object t (f a)) => a `t` f a 
   
-  (<*>) :: ( MorphObject r a b
-           , MorphObject t (f a) (f b), Object t (t (f a) (f b))
+  (<*>) :: ( ObjectMorphism r a b
+           , ObjectMorphism t (f a) (f b), Object t (t (f a) (f b))
            , ObjectPair r (r a b) a, ObjectPair t (f (r a b)) (f a)
-           , Object r a, Object r b, Object t (f a), Object t (f b))
+           , Object r a, Object r b )
        => f (r a b) `t` t (f a) (f b)
   (<*>) = curry (fzipWith $ uncurry id)
 
 infixl 4 <*>
   
-(<**>) :: ( Applicative f r (->), Object r a, Object r b
-          , MorphObject r a b, ObjectPair r (r a b) a )
+(<**>) :: ( Applicative f r (->), ObjectMorphism r a b, ObjectPair r (r a b) a )
              => f a -> f (r a b) -> f b
 (<**>) = flip $ curry (fzipWith $ uncurry id)
 
@@ -68,18 +67,18 @@ liftA :: (Applicative f r t, Object r a, Object r b, Object t (f a), Object t (f
              => a `r` b -> f a `t` f b
 liftA = fmap
 
-liftA2 :: ( Applicative f r t, Object r c, MorphObject r b c
-          , Object t (f c), MorphObject t (f b) (f c) 
+liftA2 :: ( Applicative f r t, Object r c, ObjectMorphism r b c
+          , Object t (f c), ObjectMorphism t (f b) (f c) 
           , ObjectPair r a b, ObjectPair t (f a) (f b) ) 
              => a `r` (b `r` c) -> f a `t` (f b `t` f c)
 liftA2 = curry . fzipWith . uncurry
 
 liftA3 :: ( Applicative f r t
           , Object r c, Object r d
-          , MorphObject r c d, MorphObject r b (c`r`d), Object r (r c d)
+          , ObjectMorphism r c d, ObjectMorphism r b (c`r`d), Object r (r c d)
           , ObjectPair r a b, ObjectPair r (r c d) c 
           , Object t (f c), Object t (f d), Object t(f a,f b)
-          , MorphObject t (f c)(f d),MorphObject t (f b)(t(f c)(f d)),Object t(t(f c)(f d))
+          , ObjectMorphism t (f c)(f d),ObjectMorphism t (f b)(t(f c)(f d)),Object t(t(f c)(f d))
           , ObjectPair t (f a) (f b), ObjectPair t (t (f c) (f d)) (f c)
           , ObjectPair t (f (r c d)) (f c)
           ) => a `r` (b `r` (c `r` d)) -> f a `t` (f b `t` (f c `t` f d))

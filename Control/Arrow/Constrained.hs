@@ -42,7 +42,7 @@
 
 module Control.Arrow.Constrained (
     -- * The Arrow type classes
-      Arrow, Morphism(..), PreArrow(..), WellPointed(..), EnhancedCat(..)
+      Arrow, Morphism(..), PreArrow(..), WellPointed(..),ObjectPoint, EnhancedCat(..)
     -- * Function-like categories
     , Function, ($)
     -- * Alternative composition notation
@@ -59,6 +59,8 @@ module Control.Arrow.Constrained (
 import Prelude hiding (id, const, fst, snd, (.), ($), Functor(..), Monad(..), (=<<))
 import Control.Category.Constrained
 import qualified Control.Category.Hask as Hask
+
+import GHC.Exts (Constraint)
 
 import qualified Control.Arrow as Arr
 
@@ -103,12 +105,16 @@ class (Morphism a) => PreArrow a where
   snd :: (ObjectPair a x y) => a (x,y) y
 
 
-class (PreArrow a) => WellPointed a where
-  globalElement :: (Object a x) => x -> a (UnitObject a) x
+class (PreArrow a, ObjectPoint a (UnitObject a)) => WellPointed a where
+  type PointObject a x :: Constraint
+  type PointObject a x = ()
+  globalElement :: (ObjectPoint a x) => x -> a (UnitObject a) x
   unit :: a b c -> UnitObject a
-  const :: (Object a b, Object a x) 
+  const :: (Object a b, ObjectPoint a x) 
             => x -> a b x
   const x = globalElement x . terminal
+
+type ObjectPoint k a = (Object k a, PointObject k a)
 
 value :: forall f x . (WellPointed f, Function f, Object f x)
            => f (UnitObject f) x -> x
@@ -188,6 +194,7 @@ instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) wh
   snd = ConstrainedMorphism snd
 
 instance (WellPointed a, o (UnitObject a)) => WellPointed (ConstrainedCategory a o) where
+  type PointObject (ConstrainedCategory a o) x = PointObject a x
   globalElement x = ConstrainedMorphism $ globalElement x
   unit (ConstrainedMorphism f) = unit f
   const x = ConstrainedMorphism $ const x
@@ -267,7 +274,7 @@ class (HasProxy k, ProxyVal k a x ~ p a x)
            => PointProxy p k a x | p -> k where
   point :: (Object k a, Object k x) => x -> p a x
 
-genericPoint :: ( WellPointed k, Object k a, Object k x )
+genericPoint :: ( WellPointed k, Object k a, ObjectPoint k x )
        => x -> GenericProxy k a x
 genericPoint x = GenericProxy $ const x
 
