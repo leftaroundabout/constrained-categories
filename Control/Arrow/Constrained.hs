@@ -38,6 +38,7 @@
 {-# LANGUAGE UndecidableInstances         #-}
 {-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE RankNTypes                   #-}
+{-# LANGUAGE AllowAmbiguousTypes          #-}
 
 
 module Control.Arrow.Constrained (

@@ -13,6 +13,7 @@
 {-# LANGUAGE MultiParamTypeClasses        #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE RankNTypes                   #-}
+{-# LANGUAGE AllowAmbiguousTypes          #-}
 
 module Control.Category.Constrained ( 
             -- * The category class
