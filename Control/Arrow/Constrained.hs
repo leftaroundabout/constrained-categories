@@ -62,6 +62,7 @@ import Control.Category.Constrained
 import qualified Control.Category.Hask as Hask
 
 import GHC.Exts (Constraint)
+import Data.Tagged
 
 import qualified Control.Arrow as Arr
 
@@ -110,7 +111,7 @@ class (PreArrow a, ObjectPoint a (UnitObject a)) => WellPointed a where
   type PointObject a x :: Constraint
   type PointObject a x = ()
   globalElement :: (ObjectPoint a x) => x -> a (UnitObject a) x
-  unit :: a b c -> UnitObject a
+  unit :: CatTagged a (UnitObject a)
   const :: (Object a b, ObjectPoint a x) 
             => x -> a b x
   const x = globalElement x . terminal
@@ -119,9 +120,7 @@ type ObjectPoint k a = (Object k a, PointObject k a)
 
 value :: forall f x . (WellPointed f, Function f, Object f x)
            => f (UnitObject f) x -> x
-value f = f $ unit q
- where q :: f (UnitObject f) (UnitObject f)
-       q = id
+value f = f $ untag(unit :: Tagged (f (UnitObject f) (UnitObject f)) (UnitObject f))
 
 
 class (Category k) => EnhancedCat a k where
@@ -164,7 +163,7 @@ instance PreArrow (->) where
   terminal = const ()
 instance WellPointed (->) where
   globalElement = Hask.const
-  unit _ = ()
+  unit = Hask.pure ()
   const = Hask.const
 
 constrainedArr :: (Category k, Category a, o b, o c )
@@ -197,8 +196,12 @@ instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) wh
 instance (WellPointed a, o (UnitObject a)) => WellPointed (ConstrainedCategory a o) where
   type PointObject (ConstrainedCategory a o) x = PointObject a x
   globalElement x = ConstrainedMorphism $ globalElement x
-  unit (ConstrainedMorphism f) = unit f
+  unit = cstrCatUnit
   const x = ConstrainedMorphism $ const x
+
+cstrCatUnit :: forall a o . (WellPointed a, o (UnitObject a))
+        => CatTagged (ConstrainedCategory a o) (UnitObject a)
+cstrCatUnit = retag (unit :: CatTagged a (UnitObject a))
   
 instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) k where
   arr = constrainedArr arr 

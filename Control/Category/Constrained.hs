@@ -32,11 +32,13 @@ module Control.Category.Constrained (
           , GenericProxy (..)
             -- * Utility
           , inCategoryOf
+          , CatTagged
           ) where
 
 import Prelude hiding (id, (.), curry, uncurry)
 import qualified Prelude
 import GHC.Exts (Constraint)
+import Data.Tagged
 import Data.Monoid
 
 -- | In mathematics, a category is defined as a class of /objects/, plus a class of
@@ -181,6 +183,10 @@ class ( Category k
 --   of your category (meaning, you can use them with the 'Cartesian' combinators).
 type ObjectPair k a b = ( Category k, Object k a, Object k b
                         , PairObjects k a b, Object k (a,b)   )
+
+-- | Tagged type for values that depend on some choice of category, but not on some
+--   particular object / arrow therein.
+type CatTagged k x = Tagged (k (UnitObject k) (UnitObject k)) x
   
 instance Cartesian (->) where
   swap = \(a,b) -> (b,a)

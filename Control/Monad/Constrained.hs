@@ -33,6 +33,7 @@ module Control.Monad.Constrained( module Control.Applicative.Constrained
 import Control.Applicative.Constrained
 import Data.Foldable.Constrained
 import Data.Traversable.Constrained
+import Data.Tagged
 
 import Prelude hiding (
      id, const, fst, snd, (.), ($)
@@ -182,8 +183,11 @@ instance (Monad m a, WellPointed a, ObjectPoint a (m (UnitObject a)))
              => WellPointed (Kleisli m a) where
   type PointObject (Kleisli m a) b = (PointObject a b, PointObject a (m b))
   globalElement x = Kleisli $ fmap (globalElement x) . pureUnit
-  unit (Kleisli f) = unit f
+  unit = kleisliUnit
 
+kleisliUnit :: forall m a . (Monad m a, WellPointed a)
+                    => CatTagged (Kleisli m a) (UnitObject a)
+kleisliUnit = retag (unit :: CatTagged a (UnitObject a))
 
 
 guard ::( MonadPlus m k, Arrow k (->), Function k
