@@ -40,6 +40,7 @@ import Data.MemoTrie
 import Data.LinearMap
 
 import Data.Void
+import Data.Tagged
 
 import "hmatrix" Numeric.LinearAlgebra hiding ((<.>), (<>))
 
@@ -200,7 +201,7 @@ instance Curry (Affin k) where
 instance WellPointed (Affin k) where
   globalElement x = zeroV :->+ x
   const x = zeroV :->+ x
-  unit _ = Origin
+  unit = Tagged Origin
   
   
 
