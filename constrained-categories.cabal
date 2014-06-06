@@ -35,6 +35,7 @@ Cabal-Version:       >=1.2
 Library
   Build-Depends:     base>=4.6
                      , tagged
+                     , void
   Extensions:        ConstraintKinds
                      TypeFamilies
                      FlexibleInstances

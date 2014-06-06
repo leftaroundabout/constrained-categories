@@ -14,6 +14,7 @@
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE RankNTypes                   #-}
 {-# LANGUAGE AllowAmbiguousTypes          #-}
+{-# LANGUAGE TypeOperators                #-}
 
 module Control.Category.Constrained ( 
             -- * The category class
@@ -21,6 +22,9 @@ module Control.Category.Constrained (
             -- * Monoidal categories
           , Cartesian (..), ObjectPair
           , Curry (..), ObjectMorphism
+            -- * Monoidal with coproducts
+          , (+)()
+          , CoCartesian (..), ObjectSum
             -- * Isomorphisms
           , Isomorphic (..)
             -- * Constraining a category
@@ -40,6 +44,7 @@ import qualified Prelude
 import GHC.Exts (Constraint)
 import Data.Tagged
 import Data.Monoid
+import Data.Void
 
 -- | In mathematics, a category is defined as a class of /objects/, plus a class of
 --   /morphisms/ between those objects. In Haskell, one traditionally works in
@@ -133,17 +138,36 @@ instance ( Cartesian k, Object k a, ObjectPair k a b, ObjectPair k b c
                                        => Isomorphic k (a,(b,c)) ((a,b),c) where
   iso = regroup
 instance ( Cartesian k, Object k a, Object k b, Object k c, ObjectPair k a b, ObjectPair k b c, ObjectPair k c a
-         , ObjectPair k a (b,c), ObjectPair k (a,b) c, ObjectPair k (b, c) a, ObjectPair k b (c, a), ObjectPair k (c,a) b, ObjectPair k c (a,b)
+         , ObjectPair k a (b,c), ObjectPair k (a,b) c, ObjectPair k (b,c) a, ObjectPair k b (c,a), ObjectPair k (c,a) b, ObjectPair k c (a,b)
          , Object k (a, (b, c)), Object k ((b,c),a), Object k (b,(c,a)), Object k ((a,b), c), Object k ((c,a),b), Object k (c,(a,b)) )
                                        => Isomorphic k ((a,b),c) (a,(b,c)) where
   iso = swap . regroup . swap . regroup . swap
 
 
-        
+instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u) => Isomorphic k a (a+u) where
+  iso = attachZero
+instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u) => Isomorphic k (a+u) a where
+  iso = detachZero
+instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u, ObjectSum k u a, Object k (u+a), Object k (a+u) ) 
+              => Isomorphic k a (u+a) where
+  iso = coSwap . attachZero
+instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u, ObjectSum k u a, Object k (u+a), Object k (a+u) ) 
+              => Isomorphic k (u+a) a where
+  iso = detachZero . coSwap
+instance ( CoCartesian k, Object k a, ObjectSum k a b, ObjectSum k b c
+         , ObjectSum k a (b+c), ObjectSum k (a+b) c, Object k c )
+                                       => Isomorphic k (a+(b+c)) ((a+b)+c) where
+  iso = coRegroup
+instance ( CoCartesian k, Object k a, Object k b, Object k c, ObjectSum k a b, ObjectSum k b c, ObjectSum k c a
+         , ObjectSum k a (b+c), ObjectSum k (a+b) c, ObjectSum k (b+c) a, ObjectSum k b (c+a), ObjectSum k (c+a) b, ObjectSum k c (a+b)
+         , Object k (a+(b+c)), Object k ((b+c),a), Object k (b+(c+a)), Object k ((a+b)+c), Object k ((c+a)+b), Object k (c+(a+b)) )
+                                       => Isomorphic k ((a+b)+c) (a+(b+c)) where
+  iso = coSwap . coRegroup . coSwap . coRegroup . coSwap        
 
 
--- | Quite a few categories (/monoidal categories/) will permit pairs of 
---   objects as objects again, allowing for \"dyadic morphisms\" @(x,y) ~> r@.
+-- | Quite a few categories (/monoidal categories/) will permit \"products\" of 
+--   objects as objects again – in the Haskell sense those are tuples – allowing
+--   for \"dyadic morphisms\" @(x,y) ~> r@.
 -- 
 --   Together with a unique 'UnitObject', this makes for a monoidal
 --   structure, with a few natural isomorphisms. Ordinary tuples may not
@@ -168,26 +192,24 @@ class ( Category k
   --   just leave 'PairObjects' at the default (empty constraint).
   type PairObjects k a b :: Constraint
   type PairObjects k a b = ()
+  
+  -- | Defaults to '()', and should normally be left at that.
   type UnitObject k :: *
   type UnitObject k = ()
   
   swap :: ( ObjectPair k a b, ObjectPair k b a ) => k (a,b) (b,a)
   
-  attachUnit  :: ( Object k a, u ~ UnitObject k, ObjectPair k a u ) => k a (a,u)
+  attachUnit :: ( Object k a, u ~ UnitObject k, ObjectPair k a u ) => k a (a,u)
   detachUnit :: ( Object k a, u ~ UnitObject k, ObjectPair k a u ) => k (a,u) a
-  regroup     :: ( Object k a, Object k c, ObjectPair k a b, ObjectPair k b c
-                      , ObjectPair k a (b,c), ObjectPair k (a,b) c )
-                      => k (a, (b, c)) ((a, b), c)
+  regroup    :: ( Object k a, Object k c, ObjectPair k a b, ObjectPair k b c
+                , ObjectPair k a (b,c), ObjectPair k (a,b) c
+                ) => k (a, (b, c)) ((a, b), c)
 
 -- | Use this constraint to ensure that @a@, @b@ and @(a,b)@ are all \"fully valid\" objects
 --   of your category (meaning, you can use them with the 'Cartesian' combinators).
 type ObjectPair k a b = ( Category k, Object k a, Object k b
                         , PairObjects k a b, Object k (a,b)   )
 
--- | Tagged type for values that depend on some choice of category, but not on some
---   particular object / arrow therein.
-type CatTagged k x = Tagged (k (UnitObject k) (UnitObject k)) x
-  
 instance Cartesian (->) where
   swap = \(a,b) -> (b,a)
   attachUnit = \a -> (a, ())
@@ -203,6 +225,66 @@ instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) 
   detachUnit = ConstrainedMorphism detachUnit
   regroup = ConstrainedMorphism regroup
 
+
+type (+) = Either
+
+-- | Monoidal categories need not be based on a cartesian product.
+--   The relevant alternative is coproducts.
+--   
+--   The dual notion to 'Cartesian' replaces such products (pairs) with
+--   sums ('Either'), and unit '()' with void types.
+-- 
+--   Basically, the only thing that doesn't mirror 'Cartesian' here
+--   is that we don't require @CoMonoid ('ZeroObject' k)@. Comonoids
+--   do in principle make sense, but not from a Haskell viewpoint
+--   (every type is trivially a comonoid).
+class ( Category k, Object k (ZeroObject k)
+      ) => CoCartesian k where
+  type SumObjects k a b :: Constraint
+  type SumObjects k a b = ()
+  -- | Defaults to 'Void'.
+  type ZeroObject k :: *
+  type ZeroObject k = Void
+  
+  coSwap :: ( ObjectSum k a b, ObjectSum k b a ) => k (a+b) (b+a)
+  
+  attachZero :: ( Object k a, z ~ ZeroObject k, ObjectSum k a z ) => k a (a+z)
+  detachZero :: ( Object k a, z ~ ZeroObject k, ObjectSum k a z ) => k (a+z) a
+  coRegroup  :: ( Object k a, Object k c, ObjectSum k a b, ObjectSum k b c
+                , ObjectSum k a (b+c), ObjectSum k (a+b) c
+                ) => k (a+(b+c)) ((a+b)+c)
+
+type ObjectSum k a b = ( Category k, Object k a, Object k b
+                       , PairObjects k a b, Object k (a+b)  )
+
+
+instance CoCartesian (->) where
+  coSwap (Left a) = Right a
+  coSwap (Right a) = Left a
+  attachZero = Left
+  detachZero (Left a) = a
+  detachZero (Right void) = absurd void
+  coRegroup (Left a) = Left $ Left a
+  coRegroup (Right (Left a)) = Left $ Right a
+  coRegroup (Right (Right a)) = Right a
+                        
+instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (ConstrainedCategory f o) where
+  type SumObjects (ConstrainedCategory f o) a b = (SumObjects f a b)
+  type ZeroObject (ConstrainedCategory f o) = ZeroObject f
+
+  coSwap = ConstrainedMorphism coSwap
+  attachZero = ConstrainedMorphism attachZero
+  detachZero = ConstrainedMorphism detachZero
+  coRegroup = ConstrainedMorphism coRegroup
+  
+
+
+
+
+-- | Tagged type for values that depend on some choice of category, but not on some
+--   particular object / arrow therein.
+type CatTagged k x = Tagged (k (UnitObject k) (UnitObject k)) x
+ 
 
   
   
