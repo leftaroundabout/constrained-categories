@@ -63,6 +63,7 @@ import qualified Control.Category.Hask as Hask
 
 import GHC.Exts (Constraint)
 import Data.Tagged
+import Data.Void
 
 import qualified Control.Arrow as Arr
 
@@ -86,6 +87,17 @@ class (Cartesian a) => Morphism a where
   (***) :: ( ObjectPair a b b', ObjectPair a c c' )
          => a b c -> a b' c' -> a (b,b') (c,c')
 
+-- | Dual to 'Morphism', dealing with sums instead of products.
+class (CoCartesian a) => MorphChoice a where
+  left :: ( ObjectSum a b d, ObjectSum a c d )
+         => a b c -> a (b+d) (c+d)
+  left = (+++id)
+  right :: ( ObjectSum a d b, ObjectSum a d c )
+         => a b c -> a (d+b) (d+c)
+  right = (id+++)
+  (+++) :: ( ObjectSum a b b', ObjectSum a c c' )
+         => a b c -> a b' c' -> a (b+b') (c+c')
+
 
 
 -- | Unlike 'first', 'second', '***' and 'arr', '&&&' has an intrinsic notion
@@ -106,7 +118,32 @@ class (Morphism a) => PreArrow a where
   fst :: (ObjectPair a x y) => a (x,y) x
   snd :: (ObjectPair a x y) => a (x,y) y
 
+-- | Dual to 'PreArrow', this class deals with the vacuous initial (zero) objects,
+--   but also more usefully with choices / sums.
+--   This represents the most part of 'Hask.ArrowChoice'.
+class (MorphChoice k) => PreArrChoice k where
+  (|||) :: ( ObjectSum k b b', Object k b )
+         => k b c -> k b' c -> k (b+b') c
+  -- | This is basically 'absurd'.
+  initial :: ( Object k b ) => k (ZeroObject k) b
+  -- | Perhaps @lft@ and @rgt@ would be more consequent names, but likely more confusing as well.
+  coFst :: (ObjectSum k a b) => k a (a+b)
+  coSnd :: (ObjectSum k a b) => k b (a+b)
 
+
+-- | 'WellPointed' expresses the relation between your category's objects
+--   and the values of the Haskell data types (which is, after all, what objects are
+--   in this library). Specifically, this class allows you to \"point\" on
+--   specific objects, thus making out a value of that type as a point of the object.
+--   
+--   Perhaps easier than thinking about what that's supposed to mean is noting
+--   this class contains 'const'. Thus 'WellPointed' is /almost/ the
+--   traditional 'Hask.Arrow': it lets you express all the natural transformations
+--   and inject constant values, only you can't just promote arbitrary functions
+--   to arrows of the category.
+--   
+--   Unlike with 'Morphism' and 'PreArrow', a literal dual of 'WellPointed' does
+--   not seem useful.
 class (PreArrow a, ObjectPoint a (UnitObject a)) => WellPointed a where
   type PointObject a x :: Constraint
   type PointObject a x = ()
@@ -117,7 +154,19 @@ class (PreArrow a, ObjectPoint a (UnitObject a)) => WellPointed a where
   const x = globalElement x . terminal
 
 type ObjectPoint k a = (Object k a, PointObject k a)
-
+  
+-- -- | 'WellPointed' does not have a useful literal dual.
+-- class (PreArrChoice a, ObjectPoint a (ZeroObject a)) => WellChosen a where
+--   type ChoiceObject a x :: Constraint
+--   type ChoiceObject a x = ()
+--   localElement :: (ObjectChoice a x) => a x (ZeroObject a) -> (x -> b
+--   zero :: CatTagged a (ZeroObject a)
+--   doomed :: (Object a b, ObjectChoice a x) 
+--             => x -> a x b
+--   doomed x = globalElement x . initial
+-- 
+-- type ObjectChoice k a = (Object k a, ChoiceObject k x)
+-- 
 value :: forall f x . (WellPointed f, Function f, Object f x)
            => f (UnitObject f) x -> x
 value f = f $ untag(unit :: Tagged (f (UnitObject f) (UnitObject f)) (UnitObject f))
@@ -151,16 +200,26 @@ instance (Function f) => EnhancedCat (->) (ConstrainedCategory f o) where
 
 
 type Arrow a k = (WellPointed a, EnhancedCat a k)
+type ArrowChoice a k = (WellPointed a, PreArrChoice a, EnhancedCat a k)
 
 instance Morphism (->) where
   first = Arr.first
   second = Arr.second
   (***) = (Arr.***)
+instance MorphChoice (->) where
+  left = Arr.left
+  right = Arr.right
+  (+++) = (Arr.+++)
 instance PreArrow (->) where
   (&&&) = (Arr.&&&)
   fst (a,_) = a
   snd (_,b) = b
   terminal = const ()
+instance PreArrChoice (->) where
+  (|||) = (Arr.|||)
+  coFst a = Left a
+  coSnd b = Right b
+  initial = absurd
 instance WellPointed (->) where
   globalElement = Hask.const
   unit = Hask.pure ()
