@@ -155,6 +155,18 @@ instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
   attachUnit = Kleisli $ pure . attachUnit
   detachUnit = Kleisli $ pure . detachUnit
   regroup = Kleisli $ pure . regroup
+
+instance ( Monad m a, CoCartesian a
+         , Object a (m (ZeroObject a)), Object a (m (m (ZeroObject a)))
+         ) => CoCartesian (Kleisli m a) where
+  type SumObjects (Kleisli m a) b c 
+          = ( ObjectSum a b c
+            , ObjectSum a (m b) c, ObjectSum a b (m c), ObjectSum a (m b) (m c) )
+  type ZeroObject (Kleisli m a) = ZeroObject a
+  coSwap = Kleisli $ pure . coSwap
+  attachZero = Kleisli $ pure . attachZero
+  detachZero = Kleisli $ pure . detachZero
+  coRegroup = Kleisli $ pure . coRegroup
   
 instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
   type MorphObjects (Kleisli m a) c d
