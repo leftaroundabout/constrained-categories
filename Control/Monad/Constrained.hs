@@ -12,6 +12,7 @@
 {-# LANGUAGE FlexibleInstances            #-}
 {-# LANGUAGE ScopedTypeVariables          #-}
 {-# LANGUAGE TupleSections                #-}
+{-# LANGUAGE LambdaCase                   #-}
 
 
 module Control.Monad.Constrained( module Control.Applicative.Constrained 
@@ -196,6 +197,28 @@ instance (Monad m a, WellPointed a, ObjectPoint a (m (UnitObject a)))
   type PointObject (Kleisli m a) b = (PointObject a b, PointObject a (m b))
   globalElement x = Kleisli $ fmap (globalElement x) . pureUnit
   unit = kleisliUnit
+
+
+-- | /Hask/-Kleislis inherit more or less trivially 'Hask.ArrowChoice'; however this
+--   does not generalise greatly well to non-function categories.
+instance ( Monad m k, Arrow k (->), Function k, PreArrChoice k
+         , Object k (m (ZeroObject k)), Object k (m (m (ZeroObject k)))
+         ) => MorphChoice (Kleisli m k) where
+  left (Kleisli f) = Kleisli . arr $ \case { Left x -> fmap coFst . f $ x
+                                           ; Right y-> (pure . coSnd)`inCategoryOf`f $ y }
+  right(Kleisli f) = Kleisli . arr $ \case { Left x -> (pure . coFst)`inCategoryOf`f $ x
+                                           ; Right y-> fmap coSnd . f $ y                }
+  Kleisli f +++ Kleisli g = Kleisli . arr $ \case
+       Left x  -> fmap coFst . f $ x
+       Right y -> fmap coSnd . g $ y
+instance ( Monad m k, Arrow k (->), Function k, PreArrChoice k
+         , Object k (m (ZeroObject k)), Object k (m (m (ZeroObject k)))
+         ) => PreArrChoice (Kleisli m k) where
+  Kleisli f ||| Kleisli g = Kleisli $ f ||| g
+  initial = Kleisli $ pure . initial
+  coFst = Kleisli $ pure . coFst
+  coSnd = Kleisli $ pure . coSnd
+
 
 kleisliUnit :: forall m a . (Monad m a, WellPointed a)
                     => CatTagged (Kleisli m a) (UnitObject a)

@@ -44,6 +44,8 @@
 module Control.Arrow.Constrained (
     -- * The Arrow type classes
       Arrow, Morphism(..), PreArrow(..), WellPointed(..),ObjectPoint, EnhancedCat(..)
+    -- * Dual / "choice" arrows
+    , ArrowChoice, MorphChoice(..), PreArrChoice(..)
     -- * Function-like categories
     , Function, ($)
     -- * Alternative composition notation
@@ -266,6 +268,28 @@ instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) 
   arr = constrainedArr arr 
 
 
+constrainedLeft :: ( CoCartesian k, ObjectSum k b d, ObjectSum k c d )
+  => ( k b c -> k (b+d) (c+d) )
+     -> ConstrainedCategory k o b c -> ConstrainedCategory k o (b+d) (c+d)
+constrainedLeft fs = ConstrainedMorphism . fs . unconstrained
+  
+constrainedRight :: ( CoCartesian k, ObjectSum k b c, ObjectSum k b d )
+  => ( k c d -> k (b+c) (b+d) )
+     -> ConstrainedCategory k o c d -> ConstrainedCategory k o (b+c) (b+d)
+constrainedRight fs = ConstrainedMorphism . fs . unconstrained
+
+instance (MorphChoice k, o (ZeroObject k)) => MorphChoice (ConstrainedCategory k o) where
+  left = constrainedLeft left
+  right = constrainedRight right
+  ConstrainedMorphism a +++ ConstrainedMorphism b = ConstrainedMorphism $ a +++ b
+  
+instance (PreArrChoice k, o (ZeroObject k)) => PreArrChoice (ConstrainedCategory k o) where
+  ConstrainedMorphism a ||| ConstrainedMorphism b = ConstrainedMorphism $ a ||| b
+  initial = ConstrainedMorphism initial
+  coFst = ConstrainedMorphism coFst
+  coSnd = ConstrainedMorphism coSnd
+
+  
 
 
 -- | Basically 'ifThenElse' with inverted argument order, and
