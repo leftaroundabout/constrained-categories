@@ -118,7 +118,7 @@ traverse_ f = ffoldl q . first pureUnit . swap . attachUnit
           q = fzipWith detachUnit . second (fmap terminal . f)
   
 -- | The distinction between 'mapM_' and 'traverse_' doesn't really make sense
---   on grounds of 'Monoidal' / 'Applicative' vs 'Monad', but is has in fact its
+--   on grounds of 'Monoidal' / 'Applicative' vs 'Monad', but it has in fact some
 --   benefits to restrict this to endofunctors, to make the constraint list
 --   at least somewhat shorter.
 mapM_ :: forall t k o f a b u .

@@ -30,24 +30,25 @@ Author:              Justus Sagemüller
 Maintainer:          (@) sagemuej $ smail.uni-koeln.de
 Homepage:            https://github.com/leftaroundabout/constrained-categories
 Build-Type:          Simple
-Cabal-Version:       >=1.2
+Cabal-Version:       >=1.10
 
 Library
-  Build-Depends:     base>=4.6
-                     , tagged
-                     , void
-  Extensions:        ConstraintKinds
-                     TypeFamilies
-                     FlexibleInstances
-                     UndecidableInstances
-                     Trustworthy
-  Exposed-modules:   Control.Category.Constrained
-                     Control.Functor.Constrained
-                     Control.Applicative.Constrained
-                     Control.Arrow.Constrained
-                     Control.Monad.Constrained
-                     Control.Category.Hask
-                     Control.Category.Constrained.Prelude
-                     Data.Foldable.Constrained
-                     Data.Traversable.Constrained
+  Default-Language:   Haskell2010
+  Build-Depends:      base>=4.6
+                      , tagged
+                      , void
+  Default-Extensions: ConstraintKinds
+                      TypeFamilies
+                      FlexibleInstances
+                      UndecidableInstances
+                      Trustworthy
+  Exposed-modules:    Control.Category.Constrained
+                      Control.Functor.Constrained
+                      Control.Applicative.Constrained
+                      Control.Arrow.Constrained
+                      Control.Monad.Constrained
+                      Control.Category.Hask
+                      Control.Category.Constrained.Prelude
+                      Data.Foldable.Constrained
+                      Data.Traversable.Constrained
                      

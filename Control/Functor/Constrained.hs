@@ -40,9 +40,10 @@ class ( Category r, Category t, Object t (f (UnitObject r)) )
 instance (Prelude.Functor f) => Functor f (->) (->) where
   fmap = Prelude.fmap
 
--- | It is fairly common for (typically, container-like) functors to map 'Either'
+-- | It is fairly common for functors (typically, container-like) to map 'Either'
 --   to tuples in a natural way, thus \"separating the variants\".
---   This is related to 'Data.Foldable.Constrained.Foldable', but rather simpler.
+--   This is related to 'Data.Foldable.Constrained.Foldable'
+--   (with list and tuple monoids), but rather more effective.
 class ( CoCartesian r, Cartesian t, Functor f r t, Object t (f (ZeroObject r)) )
            => SumToProduct f r t where
   -- | @
