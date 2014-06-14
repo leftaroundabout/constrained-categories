@@ -124,7 +124,7 @@ class (Morphism a) => PreArrow a where
 --   but also more usefully with choices / sums.
 --   This represents the most part of 'Hask.ArrowChoice'.
 class (MorphChoice k) => PreArrChoice k where
-  (|||) :: ( ObjectSum k b b', Object k b )
+  (|||) :: ( ObjectSum k b b', Object k c )
          => k b c -> k b' c -> k (b+b') c
   -- | This is basically 'absurd'.
   initial :: ( Object k b ) => k (ZeroObject k) b
