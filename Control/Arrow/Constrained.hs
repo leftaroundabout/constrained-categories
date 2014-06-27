@@ -120,6 +120,7 @@ class (Morphism a) => PreArrow a where
   fst :: (ObjectPair a x y) => a (x,y) x
   snd :: (ObjectPair a x y) => a (x,y) y
 
+infixr 2 |||
 -- | Dual to 'PreArrow', this class deals with the vacuous initial (zero) objects,
 --   but also more usefully with choices / sums.
 --   This represents the most part of 'Hask.ArrowChoice'.
