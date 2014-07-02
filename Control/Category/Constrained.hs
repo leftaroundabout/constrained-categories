@@ -238,6 +238,10 @@ type (+) = Either
 --   is that we don't require @CoMonoid ('ZeroObject' k)@. Comonoids
 --   do in principle make sense, but not from a Haskell viewpoint
 --   (every type is trivially a comonoid).
+--   
+--   Haskell of course uses sum types, /variants/, most often without
+--   'Either' appearing. But variants are generally isomorphic to sums;
+--   the most important (sums of unit) are methods here.
 class ( Category k, Object k (ZeroObject k)
       ) => CoCartesian k where
   type SumObjects k a b :: Constraint
@@ -253,6 +257,15 @@ class ( Category k, Object k (ZeroObject k)
   coRegroup  :: ( Object k a, Object k c, ObjectSum k a b, ObjectSum k b c
                 , ObjectSum k a (b+c), ObjectSum k (a+b) c
                 ) => k (a+(b+c)) ((a+b)+c)
+  
+  maybeAsSum :: ( ObjectSum k u a, u ~ UnitObject k, Object k (Maybe a) )
+      => k (Maybe a) (u + a)
+  maybeFromSum :: ( ObjectSum k u a, u ~ UnitObject k, Object k (Maybe a) )
+      => k (u + a) (Maybe a)
+  boolAsSum :: ( ObjectSum k u u, u ~ UnitObject k, Object k Bool )
+      => k Bool (u + u)
+  boolFromSum :: ( ObjectSum k u u, u ~ UnitObject k, Object k Bool )
+      => k (u + u) Bool
 
 type ObjectSum k a b = ( Category k, Object k a, Object k b
                        , PairObjects k a b, Object k (a+b)  )
@@ -267,6 +280,14 @@ instance CoCartesian (->) where
   coRegroup (Left a) = Left $ Left a
   coRegroup (Right (Left a)) = Left $ Right a
   coRegroup (Right (Right a)) = Right a
+  maybeAsSum Nothing = Left ()
+  maybeAsSum (Just x) = Right x
+  maybeFromSum (Left ()) = Nothing
+  maybeFromSum (Right x) = Just x
+  boolAsSum False = Left ()
+  boolAsSum True = Right ()
+  boolFromSum (Left ()) = False
+  boolFromSum (Right ()) = True
                         
 instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (ConstrainedCategory f o) where
   type SumObjects (ConstrainedCategory f o) a b = (SumObjects f a b)
@@ -276,6 +297,10 @@ instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (ConstrainedCategory f
   attachZero = ConstrainedMorphism attachZero
   detachZero = ConstrainedMorphism detachZero
   coRegroup = ConstrainedMorphism coRegroup
+  maybeAsSum = ConstrainedMorphism maybeAsSum
+  maybeFromSum = ConstrainedMorphism maybeFromSum
+  boolAsSum = ConstrainedMorphism boolAsSum
+  boolFromSum = ConstrainedMorphism boolFromSum
   
 
 

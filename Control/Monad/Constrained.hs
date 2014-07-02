@@ -157,17 +157,22 @@ instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
   detachUnit = Kleisli $ pure . detachUnit
   regroup = Kleisli $ pure . regroup
 
-instance ( Monad m a, CoCartesian a
-         , Object a (m (ZeroObject a)), Object a (m (m (ZeroObject a)))
-         ) => CoCartesian (Kleisli m a) where
-  type SumObjects (Kleisli m a) b c 
-          = ( ObjectSum a b c
-            , ObjectSum a (m b) c, ObjectSum a b (m c), ObjectSum a (m b) (m c) )
-  type ZeroObject (Kleisli m a) = ZeroObject a
+instance ( Monad m k, CoCartesian k
+         , Object k (m (ZeroObject k)), Object k (m (m (ZeroObject k)))
+         ) => CoCartesian (Kleisli m k) where
+  type SumObjects (Kleisli m k) b c 
+          = ( ObjectSum k b c
+            , ObjectSum k (m b) c, ObjectSum k b (m c), ObjectSum k (m b) (m c) )
+  type ZeroObject (Kleisli m k) = ZeroObject k
   coSwap = Kleisli $ pure . coSwap
   attachZero = Kleisli $ pure . attachZero
   detachZero = Kleisli $ pure . detachZero
   coRegroup = Kleisli $ pure . coRegroup
+  
+  maybeAsSum = Kleisli $ pure . maybeAsSum
+  maybeFromSum = Kleisli $ pure . maybeFromSum
+  boolAsSum = Kleisli $ pure . boolAsSum
+  boolFromSum = Kleisli $ pure . boolFromSum
   
 instance ( Monad m a, Arrow a (->), Function a ) => Curry (Kleisli m a) where
   type MorphObjects (Kleisli m a) c d
