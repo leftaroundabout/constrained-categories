@@ -136,6 +136,11 @@ class (MorphChoice k) => PreArrChoice k where
   coSnd :: (ObjectSum k a b) => k b (a+b)
 
 
+-- | Like in arithmetics, the distributive law
+--   @a &#x22c5; (b + c) &#x2248; (a &#x22c5; b) + (a &#x22c5; c)@
+--   holds for Haskell types &#x2013; in the usual isomorphism sense. But like many such
+--   isomorphisms that are trivial to inline in /Hask/, this is not necessarily the case
+--   for general categories.
 class (PreArrow k, PreArrChoice k) => SPDistribute k where
   distribute :: ( ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
                 , SumObjects k b c, PairObjects k a b, PairObjects k a c )
@@ -147,6 +152,26 @@ class (PreArrow k, PreArrChoice k) => SPDistribute k where
   boolFromSwitch :: ( ObjectSum k a a, ObjectPair k Bool a ) => k (a+a) (Bool,a)
 -- boolFromSwitch = (boolFromSum <<< terminal +++ terminal) &&& (id ||| id)
 
+instance ( SPDistribute k 
+         , ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
+         , SumObjects k b c, PairObjects k a b, PairObjects k a c
+         ) => Isomorphic k (a, b+c) ((a,b)+(a,c)) where
+  iso = distribute
+instance ( SPDistribute k 
+         , ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
+         , SumObjects k b c, PairObjects k a b, PairObjects k a c
+         ) => Isomorphic k ((a,b)+(a,c)) (a, b+c) where
+  iso = unDistribute
+instance ( SPDistribute k 
+         , ObjectSum k a a, ObjectPair k Bool a
+         ) => Isomorphic k (Bool, a) (a+a) where
+  iso = boolAsSwitch
+instance ( SPDistribute k 
+         , ObjectSum k a a, ObjectPair k Bool a
+         ) => Isomorphic k (a+a) (Bool, a) where
+  iso = boolFromSwitch
+
+ 
 
 -- | 'WellPointed' expresses the relation between your category's objects
 --   and the values of the Haskell data types (which is, after all, what objects are

@@ -120,6 +120,7 @@ instance (Category k) => Category (ConstrainedCategory k isObj) where
 --   For instance, for vector spaces, the baseis of @(a, (b,c))@ and @((a,b), c)@
 --   are sure enough structurally equivalent, but not in the same way the spaces
 --   themselves are (sum vs. product types).
+{-# DEPRECATED iso "This generic method, while looking nicely uniform, relies on OverlappingInstances and is therefore probably a bad idea. Use the specialised methods in classes like 'SPDistribute' instead." #-}
 class (Category k) => Isomorphic k a b where
   iso :: k a b
 
