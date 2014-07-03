@@ -46,6 +46,8 @@ module Control.Arrow.Constrained (
       Arrow, Morphism(..), PreArrow(..), WellPointed(..),ObjectPoint, EnhancedCat(..)
     -- * Dual / "choice" arrows
     , ArrowChoice, MorphChoice(..), PreArrChoice(..)
+    -- * Distributive law between sum- and product objects
+    , SPDistribute(..) 
     -- * Function-like categories
     , Function, ($)
     -- * Alternative composition notation
@@ -132,6 +134,18 @@ class (MorphChoice k) => PreArrChoice k where
   -- | Perhaps @lft@ and @rgt@ would be more consequent names, but likely more confusing as well.
   coFst :: (ObjectSum k a b) => k a (a+b)
   coSnd :: (ObjectSum k a b) => k b (a+b)
+
+
+class (PreArrow k, PreArrChoice k) => SPDistribute k where
+  distribute :: ( ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
+                , SumObjects k b c, PairObjects k a b, PairObjects k a c )
+         => k (a, b+c) ((a,b)+(a,c))
+  unDistribute :: ( ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
+                  , SumObjects k b c, PairObjects k a b, PairObjects k a c )
+         => k ((a,b)+(a,c)) (a, b+c)
+  boolAsSwitch :: ( ObjectSum k a a, ObjectPair k Bool a ) => k (Bool,a) (a+a)
+  boolFromSwitch :: ( ObjectSum k a a, ObjectPair k Bool a ) => k (a+a) (Bool,a)
+-- boolFromSwitch = (boolFromSum <<< terminal +++ terminal) &&& (id ||| id)
 
 
 -- | 'WellPointed' expresses the relation between your category's objects
@@ -223,6 +237,15 @@ instance PreArrChoice (->) where
   coFst a = Left a
   coSnd b = Right b
   initial = absurd
+instance SPDistribute (->) where
+  distribute (a, Left b) = Left (a,b)
+  distribute (a, Right c) = Right (a,c)
+  unDistribute (Left (a,b)) = (a, Left b)
+  unDistribute (Right (a,c)) = (a, Right c)
+  boolAsSwitch (False, a) = Left a
+  boolAsSwitch (True, a) = Right a
+  boolFromSwitch (Left a) = (False, a)
+  boolFromSwitch (Right a) = (True, a)
 instance WellPointed (->) where
   globalElement = Hask.const
   unit = Hask.pure ()
@@ -290,6 +313,12 @@ instance (PreArrChoice k, o (ZeroObject k)) => PreArrChoice (ConstrainedCategory
   coFst = ConstrainedMorphism coFst
   coSnd = ConstrainedMorphism coSnd
 
+instance (SPDistribute k, o (ZeroObject k), o (UnitObject k))
+     => SPDistribute (ConstrainedCategory k o) where
+  distribute = ConstrainedMorphism distribute
+  unDistribute = ConstrainedMorphism unDistribute
+  boolAsSwitch = ConstrainedMorphism boolAsSwitch
+  boolFromSwitch = ConstrainedMorphism boolFromSwitch
   
 
 

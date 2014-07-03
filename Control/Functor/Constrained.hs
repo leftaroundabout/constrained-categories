@@ -27,7 +27,7 @@ module Control.Functor.Constrained
 
 import Control.Category.Constrained
 
-import Prelude hiding (id, (.), Functor(..))
+import Prelude hiding (id, (.), Functor(..), filter)
 import qualified Prelude
 
 import Data.Void
@@ -57,6 +57,8 @@ class ( CoCartesian r, Cartesian t, Functor f r t, Object t (f (ZeroObject r)) )
   mapEither :: ( Object r a, ObjectSum r b c
                , Object t (f a), ObjectPair t (f b) (f c) )
        => r a (b+c) -> t (f a) (f b, f c)
+  filter :: ( Object r a, Object r Bool, Object t (f a) )
+       => r a Bool -> t (f a) (f a)
 
 instance SumToProduct [] (->) (->) where
   sum2product [] = ([],[])
@@ -67,6 +69,7 @@ instance SumToProduct [] (->) (->) where
       Left x  -> (x:xs, ys)
       Right y -> (xs ,y:ys)
    where ~(xs,ys) = mapEither f l
+  filter = Prelude.filter
 
 (<$>) :: (Functor f r (->), Object r a, Object r b)
      => r a b -> f a -> f b
@@ -86,6 +89,7 @@ instance (o (), o [()], o Void, o [Void]) => SumToProduct []
      (ConstrainedCategory (->) o) (ConstrainedCategory (->) o) where
   sum2product = ConstrainedMorphism sum2product
   mapEither (ConstrainedMorphism f) = ConstrainedMorphism $ mapEither f
+  filter (ConstrainedMorphism f) = ConstrainedMorphism $ filter f
 
   
 

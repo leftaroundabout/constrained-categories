@@ -197,6 +197,12 @@ instance (Monad m a, PreArrow a, Curry a) => PreArrow (Kleisli m a) where
   terminal = Kleisli $ pure . terminal
   fst = Kleisli $ pure . fst
   snd = Kleisli $ pure . snd
+instance (SPDistribute k, Monad m k, PreArrow (Kleisli m k), PreArrChoice (Kleisli m k)) 
+             => SPDistribute (Kleisli m k) where
+  distribute = Kleisli $ pure . distribute
+  unDistribute = Kleisli $ pure . unDistribute
+  boolAsSwitch = Kleisli $ pure . boolAsSwitch
+  boolFromSwitch = Kleisli $ pure . boolFromSwitch
 instance (Monad m a, WellPointed a, ObjectPoint a (m (UnitObject a))) 
              => WellPointed (Kleisli m a) where
   type PointObject (Kleisli m a) b = (PointObject a b, PointObject a (m b))

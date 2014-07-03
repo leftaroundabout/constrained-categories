@@ -268,7 +268,7 @@ class ( Category k, Object k (ZeroObject k)
       => k (u + u) Bool
 
 type ObjectSum k a b = ( Category k, Object k a, Object k b
-                       , PairObjects k a b, Object k (a+b)  )
+                       , SumObjects k a b, Object k (a+b)  )
 
 
 instance CoCartesian (->) where
@@ -288,7 +288,11 @@ instance CoCartesian (->) where
   boolAsSum True = Right ()
   boolFromSum (Left ()) = False
   boolFromSum (Right ()) = True
-                        
+--   boolAsSwitch (False,x) = Left x
+--   boolAsSwitch (True,x) = Right x
+--   boolFromSwitch (Left x) = (False,x)
+--   boolFromSwitch (Right x) = (True,x)
+--                         
 instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (ConstrainedCategory f o) where
   type SumObjects (ConstrainedCategory f o) a b = (SumObjects f a b)
   type ZeroObject (ConstrainedCategory f o) = ZeroObject f
@@ -301,6 +305,8 @@ instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (ConstrainedCategory f
   maybeFromSum = ConstrainedMorphism maybeFromSum
   boolAsSum = ConstrainedMorphism boolAsSum
   boolFromSum = ConstrainedMorphism boolFromSum
+--   boolAsSwitch = ConstrainedMorphism boolAsSwitch
+--   boolFromSwitch = ConstrainedMorphism boolFromSwitch
   
 
 
