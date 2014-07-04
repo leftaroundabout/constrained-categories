@@ -143,10 +143,10 @@ class (MorphChoice k) => PreArrChoice k where
 --   for general categories.
 class (PreArrow k, PreArrChoice k) => SPDistribute k where
   distribute :: ( ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
-                , SumObjects k b c, PairObjects k a b, PairObjects k a c )
+                , ObjectSum k b c, PairObjects k a b, PairObjects k a c )
          => k (a, b+c) ((a,b)+(a,c))
   unDistribute :: ( ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
-                  , SumObjects k b c, PairObjects k a b, PairObjects k a c )
+                  , ObjectSum k b c, PairObjects k a b, PairObjects k a c )
          => k ((a,b)+(a,c)) (a, b+c)
   boolAsSwitch :: ( ObjectSum k a a, ObjectPair k Bool a ) => k (Bool,a) (a+a)
   boolFromSwitch :: ( ObjectSum k a a, ObjectPair k Bool a ) => k (a+a) (Bool,a)
@@ -154,12 +154,12 @@ class (PreArrow k, PreArrChoice k) => SPDistribute k where
 
 instance ( SPDistribute k 
          , ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
-         , SumObjects k b c, PairObjects k a b, PairObjects k a c
+         , ObjectSum k b c, PairObjects k a b, PairObjects k a c
          ) => Isomorphic k (a, b+c) ((a,b)+(a,c)) where
   iso = distribute
 instance ( SPDistribute k 
          , ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
-         , SumObjects k b c, PairObjects k a b, PairObjects k a c
+         , ObjectSum k b c, PairObjects k a b, PairObjects k a c
          ) => Isomorphic k ((a,b)+(a,c)) (a, b+c) where
   iso = unDistribute
 instance ( SPDistribute k 
