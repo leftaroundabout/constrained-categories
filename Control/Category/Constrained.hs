@@ -325,8 +325,12 @@ class (Cartesian k) => Curry k where
   type MorphObjects k b c = ()
   uncurry :: (ObjectPair k a b, ObjectMorphism k b c)
          => k a (k b c) -> k (a, b) c
+  -- uncurry f = apply . (f &&& id)
   curry :: (ObjectPair k a b, ObjectMorphism k b c) 
          => k (a, b) c -> k a (k b c)
+  apply :: (ObjectMorphism k a b, ObjectPair k (k a b) a)
+         => k (k a b, a) b
+  apply = uncurry id
 
 -- | Analogous to 'ObjectPair': express that @k b c@ be an exponential object
 --   representing the morphism.
@@ -336,6 +340,7 @@ type ObjectMorphism k b c = (Object k b, Object k c, MorphObjects k b c, Object 
 instance Curry (->) where
   uncurry = Prelude.uncurry
   curry = Prelude.curry
+  apply (f,x) = f x
       
 
 instance (Curry f, o (UnitObject f)) => Curry (ConstrainedCategory f o) where
