@@ -138,11 +138,10 @@ instance ( Cartesian k, Object k a, ObjectPair k a b, ObjectPair k b c
          , ObjectPair k a (b,c), ObjectPair k (a,b) c, Object k c )
                                        => Isomorphic k (a,(b,c)) ((a,b),c) where
   iso = regroup
-instance ( Cartesian k, Object k a, Object k b, Object k c, ObjectPair k a b, ObjectPair k b c, ObjectPair k c a
-         , ObjectPair k a (b,c), ObjectPair k (a,b) c, ObjectPair k (b,c) a, ObjectPair k b (c,a), ObjectPair k (c,a) b, ObjectPair k c (a,b)
-         , Object k (a, (b, c)), Object k ((b,c),a), Object k (b,(c,a)), Object k ((a,b), c), Object k ((c,a),b), Object k (c,(a,b)) )
+instance ( Cartesian k, Object k a, ObjectPair k a b, ObjectPair k b c
+         , ObjectPair k a (b,c), ObjectPair k (a,b) c, Object k c )
                                        => Isomorphic k ((a,b),c) (a,(b,c)) where
-  iso = swap . regroup . swap . regroup . swap
+  iso = regroup'
 
 
 instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u) => Isomorphic k a (a+u) where
@@ -159,11 +158,10 @@ instance ( CoCartesian k, Object k a, ObjectSum k a b, ObjectSum k b c
          , ObjectSum k a (b+c), ObjectSum k (a+b) c, Object k c )
                                        => Isomorphic k (a+(b+c)) ((a+b)+c) where
   iso = coRegroup
-instance ( CoCartesian k, Object k a, Object k b, Object k c, ObjectSum k a b, ObjectSum k b c, ObjectSum k c a
-         , ObjectSum k a (b+c), ObjectSum k (a+b) c, ObjectSum k (b+c) a, ObjectSum k b (c+a), ObjectSum k (c+a) b, ObjectSum k c (a+b)
-         , Object k (a+(b+c)), Object k ((b+c),a), Object k (b+(c+a)), Object k ((a+b)+c), Object k ((c+a)+b), Object k (c+(a+b)) )
+instance ( CoCartesian k, Object k a, ObjectSum k a b, ObjectSum k b c
+         , ObjectSum k a (b+c), ObjectSum k (a+b) c, Object k c )
                                        => Isomorphic k ((a+b)+c) (a+(b+c)) where
-  iso = coSwap . coRegroup . coSwap . coRegroup . coSwap        
+  iso = coRegroup'
 
 
 -- | Quite a few categories (/monoidal categories/) will permit \"products\" of 
@@ -205,6 +203,9 @@ class ( Category k
   regroup    :: ( Object k a, Object k c, ObjectPair k a b, ObjectPair k b c
                 , ObjectPair k a (b,c), ObjectPair k (a,b) c
                 ) => k (a, (b, c)) ((a, b), c)
+  regroup'    :: ( Object k a, Object k c, ObjectPair k a b, ObjectPair k b c
+                , ObjectPair k a (b,c), ObjectPair k (a,b) c
+                ) => k ((a, b), c) (a, (b, c))
 
 -- | Use this constraint to ensure that @a@, @b@ and @(a,b)@ are all \"fully valid\" objects
 --   of your category (meaning, you can use them with the 'Cartesian' combinators).
@@ -216,6 +217,7 @@ instance Cartesian (->) where
   attachUnit = \a -> (a, ())
   detachUnit = \(a, ()) -> a
   regroup = \(a, (b, c)) -> ((a, b), c)
+  regroup' = \((a, b), c) -> (a, (b, c))
                         
 instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) where
   type PairObjects (ConstrainedCategory f o) a b = (PairObjects f a b)
@@ -225,6 +227,7 @@ instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) 
   attachUnit = ConstrainedMorphism attachUnit
   detachUnit = ConstrainedMorphism detachUnit
   regroup = ConstrainedMorphism regroup
+  regroup' = ConstrainedMorphism regroup'
 
 
 type (+) = Either
@@ -258,6 +261,9 @@ class ( Category k, Object k (ZeroObject k)
   coRegroup  :: ( Object k a, Object k c, ObjectSum k a b, ObjectSum k b c
                 , ObjectSum k a (b+c), ObjectSum k (a+b) c
                 ) => k (a+(b+c)) ((a+b)+c)
+  coRegroup'  :: ( Object k a, Object k c, ObjectSum k a b, ObjectSum k b c
+                , ObjectSum k a (b+c), ObjectSum k (a+b) c
+                ) => k ((a+b)+c) (a+(b+c))
   
   maybeAsSum :: ( ObjectSum k u a, u ~ UnitObject k, Object k (Maybe a) )
       => k (Maybe a) (u + a)
@@ -281,6 +287,9 @@ instance CoCartesian (->) where
   coRegroup (Left a) = Left $ Left a
   coRegroup (Right (Left a)) = Left $ Right a
   coRegroup (Right (Right a)) = Right a
+  coRegroup' (Left (Left a)) = Left a
+  coRegroup' (Left (Right a)) = Right $ Left a
+  coRegroup' (Right a) = Right $ Right a
   maybeAsSum Nothing = Left ()
   maybeAsSum (Just x) = Right x
   maybeFromSum (Left ()) = Nothing
@@ -302,6 +311,7 @@ instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (ConstrainedCategory f
   attachZero = ConstrainedMorphism attachZero
   detachZero = ConstrainedMorphism detachZero
   coRegroup = ConstrainedMorphism coRegroup
+  coRegroup' = ConstrainedMorphism coRegroup'
   maybeAsSum = ConstrainedMorphism maybeAsSum
   maybeFromSum = ConstrainedMorphism maybeFromSum
   boolAsSum = ConstrainedMorphism boolAsSum

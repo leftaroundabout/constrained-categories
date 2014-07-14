@@ -156,6 +156,7 @@ instance ( Monad m a, Cartesian a ) => Cartesian (Kleisli m a) where
   attachUnit = Kleisli $ pure . attachUnit
   detachUnit = Kleisli $ pure . detachUnit
   regroup = Kleisli $ pure . regroup
+  regroup' = Kleisli $ pure . regroup'
 
 instance ( Monad m k, CoCartesian k
          , Object k (m (ZeroObject k)), Object k (m (m (ZeroObject k)))
@@ -168,6 +169,7 @@ instance ( Monad m k, CoCartesian k
   attachZero = Kleisli $ pure . attachZero
   detachZero = Kleisli $ pure . detachZero
   coRegroup = Kleisli $ pure . coRegroup
+  coRegroup' = Kleisli $ pure . coRegroup'
   
   maybeAsSum = Kleisli $ pure . maybeAsSum
   maybeFromSum = Kleisli $ pure . maybeFromSum

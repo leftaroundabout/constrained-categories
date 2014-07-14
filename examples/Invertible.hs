@@ -65,7 +65,8 @@ instance Cartesian (<->) where
   swap = Invertible swap swap
   attachUnit = Invertible attachUnit detachUnit
   detachUnit = Invertible detachUnit attachUnit
-  regroup = Invertible iso iso
+  regroup = Invertible regroup regroup'
+  regroup' = Invertible regroup' regroup
 
 instance Morphism (<->) where
   first (Invertible f fi) = Invertible (first f) (first fi)
@@ -103,6 +104,7 @@ instance Cartesian BackResult where
   attachUnit = BackResult attachUnit
   detachUnit = BackResult detachUnit
   regroup = BackResult regroup
+  regroup' = BackResult regroup'
   
 instance Morphism BackResult where
   first (BackResult f) = BackResult $ first f
