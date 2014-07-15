@@ -130,6 +130,7 @@ instance (Hask.MonadPlus m, Hask.Applicative m) => MonadFail m (->) where
   fail = Hask.fail
   
 
+infixr 1 >=>, <=<
 
 (>=>) :: ( Monad m k, Object k a, Object k b, Object k c
          , Object k (m b), Object k (m c), Object k (m (m c)))
