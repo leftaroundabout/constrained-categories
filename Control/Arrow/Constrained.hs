@@ -187,9 +187,11 @@ instance ( SPDistribute k
 --   Unlike with 'Morphism' and 'PreArrow', a literal dual of 'WellPointed' does
 --   not seem useful.
 class (PreArrow a, ObjectPoint a (UnitObject a)) => WellPointed a where
+  {-# MINIMAL unit, (globalElement | const) #-}
   type PointObject a x :: Constraint
   type PointObject a x = ()
   globalElement :: (ObjectPoint a x) => x -> a (UnitObject a) x
+  globalElement = const
   unit :: CatTagged a (UnitObject a)
   const :: (Object a b, ObjectPoint a x) 
             => x -> a b x
