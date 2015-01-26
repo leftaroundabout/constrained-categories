@@ -1,7 +1,7 @@
 -- |
 -- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
+-- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
 -- 
 --   A rather naïve excercise on invertible functions.
 --   Tried with simple numeric expressions, this does actually

@@ -2,7 +2,7 @@
 -- Module      :  Control.Category.Hask
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
+-- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
 -- 
 -- Re-exports of all the common category-theory inspired classes from the
 -- "base" package, i.e. basically endofunctors in the Hask category (with

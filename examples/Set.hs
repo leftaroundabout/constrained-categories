@@ -1,7 +1,7 @@
 -- |
 -- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
+-- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
 -- 
 --   Using the constrained category of strict weak ordered types
 --   to treat 'Data.Set' as a monad.

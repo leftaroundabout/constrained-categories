@@ -2,7 +2,7 @@
 -- Module      :  Control.Monad.Constrained
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemuej $ smail.uni-koeln.de
+-- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
 -- 
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}

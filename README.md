@@ -1,4 +1,4 @@
-The introduction of `ConstraintKinds` in GHC has mainly received attention for making on type of issue easy to solve.
+The introduction of `ConstraintKinds` in GHC has mainly received attention for making one type of issue easy to solve.
 
 The perhaps most obvious example, as given in [the original blog post on `ConstraintKinds`](http://blog.omega-prime.co.uk/?p=127), is a monad instance for `Set`:
 
