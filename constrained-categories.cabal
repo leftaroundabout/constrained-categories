@@ -1,7 +1,7 @@
 Name:                constrained-categories
 Version:             0.1.0.0
 Category:            control
-Synopsis:            Constrained versions of the standard category-theory-based type classes, using ConstraintKinds.
+Synopsis:            Constrained clones of the category-theory type classes, using ConstraintKinds.
 Description:         Haskell has, and makes great use of, powerful facilities from category
                      theory – basically various variants of functors.
                      .
@@ -32,9 +32,13 @@ Homepage:            https://github.com/leftaroundabout/constrained-categories
 Build-Type:          Simple
 Cabal-Version:       >=1.10
 
+source-repository head
+  type: git
+  location: git://github.com/leftaroundabout/constrained-categories.git
+
 Library
   Default-Language:   Haskell2010
-  Build-Depends:      base>=4.6
+  Build-Depends:      base>=4.6 && <5
                       , tagged
                       , void
   Default-Extensions: ConstraintKinds
