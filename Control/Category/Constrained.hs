@@ -31,9 +31,9 @@ module Control.Category.Constrained (
           , ConstrainedCategory (ConstrainedMorphism)
           , constrained, unconstrained
             -- * Global-element proxies
-          , HasProxy (..)
-          , genericAlg, genericProxyMap
-          , GenericProxy (..)
+          , HasAgent (..)
+          , genericAlg, genericAgentMap
+          , GenericAgent (..)
             -- * Utility
           , inCategoryOf
           , CatTagged
@@ -362,39 +362,39 @@ instance (Curry f, o (UnitObject f)) => Curry (ConstrainedCategory f o) where
 
 infixr 0 $~
 
--- | A proxy value is a \"general representation\" of a category's
+-- | An agent value is a \"general representation\" of a category's
 --   values, i.e. /global elements/. This is useful to define certain
 --   morphisms (including ones that can't just \"inherit\" from '->'
 --   with 'Control.Arrow.Constrained.arr') in ways other than point-free
 --   composition pipelines. Instead, you can write algebraic expressions
 --   much as if dealing with actual values of your category's objects,
---   but using the proxy type which is restricted so any function
+--   but using the agent type which is restricted so any function
 --   defined as such a lambda-expression qualifies as a morphism 
 --   of that category.
-class (Category k) => HasProxy k where
-  type ProxyVal k a v :: *
-  type ProxyVal k a v = GenericProxy k a v
+class (Category k) => HasAgent k where
+  type AgentVal k a v :: *
+  type AgentVal k a v = GenericAgent k a v
   alg :: ( Object k a, Object k b
          ) => (forall q . Object k q
-                 => ProxyVal k q a -> ProxyVal k q b) -> k a b
+                 => AgentVal k q a -> AgentVal k q b) -> k a b
   ($~) :: ( Object k a, Object k b, Object k c 
-          ) => k b c -> ProxyVal k a b -> ProxyVal k a c
+          ) => k b c -> AgentVal k a b -> AgentVal k a c
 
-data GenericProxy k a v = GenericProxy { runGenericProxy :: k a v }
+data GenericAgent k a v = GenericAgent { runGenericAgent :: k a v }
 
-genericAlg :: ( HasProxy k, Object k a, Object k b )
+genericAlg :: ( HasAgent k, Object k a, Object k b )
         => ( forall q . Object k q
-             => GenericProxy k q a -> GenericProxy k q b ) -> k a b
-genericAlg f = runGenericProxy . f $ GenericProxy id
+             => GenericAgent k q a -> GenericAgent k q b ) -> k a b
+genericAlg f = runGenericAgent . f $ GenericAgent id
 
-genericProxyMap :: ( HasProxy k, Object k a, Object k b, Object k c )
-        => k b c -> GenericProxy k a b -> GenericProxy k a c
-genericProxyMap m (GenericProxy v) = GenericProxy $ m . v
+genericAgentMap :: ( HasAgent k, Object k a, Object k b, Object k c )
+        => k b c -> GenericAgent k a b -> GenericAgent k a c
+genericAgentMap m (GenericAgent v) = GenericAgent $ m . v
 
 
 
-instance HasProxy (->) where
-  type ProxyVal (->) a b = b
+instance HasAgent (->) where
+  type AgentVal (->) a b = b
   alg f = f
   ($~) = ($)
 

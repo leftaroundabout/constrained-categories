@@ -53,9 +53,9 @@ module Control.Arrow.Constrained (
     -- * Alternative composition notation
     , (>>>), (<<<)
     -- * Proxies for cartesian categories
-    , CartesianProxy(..)
-    , genericProxyCombine, genericUnit, genericAlg1to2, genericAlg2to1, genericAlg2to2
-    , PointProxy(..), genericPoint
+    , CartesianAgent(..)
+    , genericAgentCombine, genericUnit, genericAlg1to2, genericAlg2to1, genericAlg2to2
+    , PointAgent(..), genericPoint
     -- * Misc utility
     -- ** Conditionals
     , choose, ifThenElse
@@ -365,60 +365,60 @@ ifThenElse = arr $ \c -> arr $ \tv -> arr $ \fv -> if c then tv else fv
  
 
 
-genericProxyCombine :: ( HasProxy k, PreArrow k
+genericAgentCombine :: ( HasAgent k, PreArrow k
                        , Object k a, ObjectPair k b c, Object k d )
-     => k (b,c) d -> GenericProxy k a b -> GenericProxy k a c -> GenericProxy k a d
-genericProxyCombine m (GenericProxy v) (GenericProxy w)
-       = GenericProxy $ m . (v &&& w)
+     => k (b,c) d -> GenericAgent k a b -> GenericAgent k a c -> GenericAgent k a d
+genericAgentCombine m (GenericAgent v) (GenericAgent w)
+       = GenericAgent $ m . (v &&& w)
   
-genericUnit :: ( PreArrow k, HasProxy k, Object k a )
-        => GenericProxy k a (UnitObject k)
-genericUnit = GenericProxy terminal
+genericUnit :: ( PreArrow k, HasAgent k, Object k a )
+        => GenericAgent k a (UnitObject k)
+genericUnit = GenericAgent terminal
 
 
-class (Morphism k, HasProxy k) => CartesianProxy k where
+class (Morphism k, HasAgent k) => CartesianAgent k where
   alg1to2 :: ( Object k a, ObjectPair k b c
           ) => (forall q . Object k q
-                 => ProxyVal k q a -> (ProxyVal k q b, ProxyVal k q c) )
+                 => AgentVal k q a -> (AgentVal k q b, AgentVal k q c) )
                -> k a (b,c)
   alg2to1 :: ( ObjectPair k a b, Object k c
           ) => (forall q . Object k q
-                 => ProxyVal k q a -> ProxyVal k q b -> ProxyVal k q c )
+                 => AgentVal k q a -> AgentVal k q b -> AgentVal k q c )
                -> k (a,b) c
   alg2to2 :: ( ObjectPair k a b, ObjectPair k c d
           ) => (forall q . Object k q
-                 => ProxyVal k q a -> ProxyVal k q b -> (ProxyVal k q c, ProxyVal k q d) )
+                 => AgentVal k q a -> AgentVal k q b -> (AgentVal k q c, AgentVal k q d) )
                -> k (a,b) (c,d)
 
 genericAlg1to2 :: ( PreArrow k, u ~ UnitObject k
                   , Object k a, ObjectPair k b c
                   ) => ( forall q . Object k q
-                      => GenericProxy k q a -> (GenericProxy k q b, GenericProxy k q c) )
+                      => GenericAgent k q a -> (GenericAgent k q b, GenericAgent k q c) )
                -> k a (b,c)
-genericAlg1to2 f = runGenericProxy b &&& runGenericProxy c
- where (b,c) = f $ GenericProxy id
+genericAlg1to2 f = runGenericAgent b &&& runGenericAgent c
+ where (b,c) = f $ GenericAgent id
 genericAlg2to1 :: ( PreArrow k, u ~ UnitObject k
                   , ObjectPair k a u, ObjectPair k a b, ObjectPair k b u, ObjectPair k b a
                   ) => ( forall q . Object k q
-                      => GenericProxy k q a -> GenericProxy k q b -> GenericProxy k q c )
+                      => GenericAgent k q a -> GenericAgent k q b -> GenericAgent k q c )
                -> k (a,b) c
-genericAlg2to1 f = runGenericProxy $ f (GenericProxy fst) (GenericProxy snd)
+genericAlg2to1 f = runGenericAgent $ f (GenericAgent fst) (GenericAgent snd)
 genericAlg2to2 :: ( PreArrow k, u ~ UnitObject k
                   , ObjectPair k a u, ObjectPair k a b, ObjectPair k c d
                   , ObjectPair k b u, ObjectPair k b a
                   ) => ( forall q . Object k q
-                      => GenericProxy k q a -> GenericProxy k q b 
-                         -> (GenericProxy k q c, GenericProxy k q d) )
+                      => GenericAgent k q a -> GenericAgent k q b 
+                         -> (GenericAgent k q c, GenericAgent k q d) )
                -> k (a,b) (c,d)
-genericAlg2to2 f = runGenericProxy c &&& runGenericProxy d
- where (c,d) = f (GenericProxy fst) (GenericProxy snd)
+genericAlg2to2 f = runGenericAgent c &&& runGenericAgent d
+ where (c,d) = f (GenericAgent fst) (GenericAgent snd)
 
 
-class (HasProxy k, ProxyVal k a x ~ p a x) 
-           => PointProxy p k a x | p -> k where
+class (HasAgent k, AgentVal k a x ~ p a x) 
+           => PointAgent p k a x | p -> k where
   point :: (Object k a, Object k x) => x -> p a x
 
 genericPoint :: ( WellPointed k, Object k a, ObjectPoint k x )
-       => x -> GenericProxy k a x
-genericPoint x = GenericProxy $ const x
+       => x -> GenericAgent k a x
+genericPoint x = GenericAgent $ const x
 
