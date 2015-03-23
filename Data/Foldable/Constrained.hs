@@ -37,6 +37,7 @@ import Prelude hiding (
 import Data.Monoid
 
 import qualified Control.Category.Hask as Hask
+import qualified Data.Foldable as Hask
 import qualified Control.Arrow as A
 
 import Control.Arrow.Constrained
@@ -44,9 +45,25 @@ import Control.Arrow.Constrained
 
 
 
+-- | Foldable class, generalised to use arrows in categories other than 'Hask.->'. This changes the interface
+--   somewhat &#x2013; in particular, 'Hask.foldr' relies on currying and hence can't really be expressed in
+--   a category without exponential objects; however the monoidal folds come out quite nicely. (Of course,
+--   it's debatable how much sense the Hask-'Monoid' class even makes in other categories.)
+--   
+--   Unlike with the 'Functor' classes, there is no derived instance @'Hask.Foldable' f => 'Foldable' f (->) (->)@:
+--   in this case, it would prevent some genarality.
+--   See below for how to define such an instance manually.
 class (Functor t k l) => Foldable t k l where
+  -- |
+  -- @
+  -- 'ffoldl' &#x2261; 'uncurry' . 'Hask.foldl' . 'curry'
+  -- @
   ffoldl :: ( ObjectPair k a b, ObjectPair l a (t b)
             ) => k (a,b) a -> l (a,t b) a
+  -- |
+  -- @
+  -- 'foldMap' &#x2261; 'Hask.foldMap'
+  -- @
   foldMap :: ( Object k a, Object l (t a), Monoid m, Object k m, Object l m )
                => (a `k` m) -> t a `l` m
 
