@@ -28,6 +28,7 @@ module Control.Monad.Constrained( module Control.Applicative.Constrained
                                 , mapM, mapM_, forM, forM_, sequence, sequence_
                                 , guard, when, unless
                                 , forever, void
+                                , filterM
                                 ) where
 
 
@@ -39,7 +40,7 @@ import Data.Tagged
 import Prelude hiding (
      id, const, fst, snd, (.), ($)
    , Functor(..), Monad(..), (=<<)
-   , uncurry, curry
+   , uncurry, curry, filter
    , mapM, mapM_, sequence, sequence_
    )
 import qualified Control.Category.Hask as Hask
@@ -256,6 +257,16 @@ unless :: ( Monad m k, PreArrow k, u ~ UnitObject k
         ) => Bool -> m u `k` m u
 unless False = id
 unless True = pure . terminal
+
+
+filterM :: ( PreArrow k, Monad m k, SumToProduct c k k, EndoTraversable c k
+           , ObjectPair k Bool a, Object k (c a), Object k (m (c a))
+           , ObjectPair k (Bool, a) (c (Bool, a))
+           , ObjectPair k (m Bool) (m a)
+           , ObjectPair k (m (Bool, a)) (m (c (Bool, a)))
+           , PointObject k (c (Bool, a))
+           ) => a `k` m Bool -> c a `k` m (c a)
+filterM pg = fmap (fmap snd <<< filter fst) <<< mapM (fzip <<< pg &&& pure)
     
 
 
