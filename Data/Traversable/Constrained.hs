@@ -17,7 +17,8 @@
 module Data.Traversable.Constrained
            ( module Control.Applicative.Constrained 
            , Traversable(..)
-           , sequence, mapM, forM
+           , sequence, forM
+           , EndoTraversable
            ) where
 
 
@@ -46,6 +47,14 @@ class (Category k, Category l, Functor s l l, Functor t k k)
               , ObjectPair k b (t b), ObjectPair l (f b) (f (t b)) 
               , ObjectPoint k (t b)
               ) => a `l` f b -> s a `l` f (t b)
+  
+  -- | 'traverse', restricted to endofunctors. May be more efficient to implement.
+  mapM :: ( k~l, s~t, Applicative m k k
+          , Object k a, Object k (t a), ObjectPair k b (t b), ObjectPair k (m b) (m (t b))
+          , ObjectPoint k (t b)
+          ) => a `k` m b -> t a `k` m (t b)
+  mapM = traverse
+
 
 sequence :: ( Traversable t t k k, Monoidal f k k
             , ObjectPair k a (t a), ObjectPair k (f a) (f (t a))
@@ -72,13 +81,6 @@ instance (Arrow k (->), WellPointed k, Function k, Functor Maybe k k)
 --   fmap (Stupid (ConstrainedMorphism f)) (Stupid a) = Stupid (f a)
 -- 
 
--- | 'traverse', restricted to endofunctors.
-mapM :: ( Traversable t t k k, Monoidal m k k
-        , Object k a, Object k (t a), ObjectPair k b (t b), ObjectPair k (m b) (m (t b))
-        , ObjectPoint k (t b)
-        ) => a `k` m b -> t a `k` m (t b)
-mapM = traverse
-
 -- | Flipped version of 'traverse' / 'mapM'.
 forM :: forall s t k m a b l . 
         ( Traversable s t k l, Monoidal m k l, Function l
@@ -87,5 +89,9 @@ forM :: forall s t k m a b l .
         , ObjectPoint k (t b)
         ) => s a -> (a `l` m b) -> m (t b)
 forM v f = traverse f $ v
+
+
+-- | A traversable that can be used with 'mapM'.
+type EndoTraversable t k = Traversable t t k k
 
 
