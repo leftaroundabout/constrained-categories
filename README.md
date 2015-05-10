@@ -37,8 +37,9 @@ This allows for some practically useful things like the `Monad` instance of the 
 The solution
 ---
 
+This package attempts to offer a good compromise between the two approaches. It is very similar to [packages/hask](http://hackage.haskell.org/package/hask-0), but actually keeps even closer to the `base` modules.
 
-This package attempts to offer a good compromise between the two approaches. Two crucial changes are made, relative to the established standard classes:
+Two crucial changes are made, relative to the established standard classes:
 
 - Functors are parameterised on the two categories they map between.
   If both are `(->)`, we have an ordinary **Hask**-endofunctor and all works like what we're used to.
@@ -58,6 +59,8 @@ Short HowTo
 
 First on importing the modules. The classes are designed to have good backwards-compatibility, so you basically don't need the `Prelude` versions at all anymore. Here's the recommended import list:
 
+    import Prelude ()
+    
     import Control.Category.Constrained.Prelude
     import qualified Control.Category.Hask as Hask
     
@@ -108,3 +111,22 @@ and want to use it with this library, you need to define a couple of class insta
   - [`SPDistribute`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:SPDistribute) combines the product- and sum-classes in the algebraic sense: it offers the isomorphism _a_ · (_b_ + _c_) = _a_ · _b_ + _a_ · _c_, in Haskell `(a, Either b c) <-> Either (a,b) (a,c)`.
   - [`HasAgent`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Category-Constrained.html#t:HasAgent), [`CartesianAgent`](hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:CartesianAgent) and [`PointAgent`](hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:PointAgent) have little to do with category theory as such; they just offer a useful little eDSL for defining arrows in general categories in a similar way as you would in **Hask**, by “pretending” the “results” of your computation are **Hask** objects. The idea is similar to the syntactic sugar offered by [arrow notation](https://www.haskell.org/arrows/syntax.html).
 
+
+Pros & cons
+---
+
+This project differs in particular from [Hask](http://hackage.haskell.org/package/hask) in that the constraints are used explicitly in all the generic functions which somehow compose morphisms. That, frankly, makes the signatures of even simple generic operations look awful, because they internally use compositions with tuples and functor-applications. For instance,
+
+    guard :: (MonadPlus m k, Arrow k (->), Function k, UnitObject k ~ (), Object k Bool)
+         => Bool `k` m () 
+    
+    forever :: (Monad m k, Function k, Arrow k (->), Object k a, Object k b, Object k (m a), Object k (m (m a)), ObjectPoint k (m b), Object k (m (m b)))
+         => m a `k` m b 
+
+The good thing is that all these constraints can be automatically inferred (and, hopefully, inlined & optimised) by the compiler. For any actual instantiation, you shouldn't need to worry, because these combined constraints are trivially fulfilled if so are the components.
+
+Trying to generalise random existing code to the classes in this package works empirically kind of well (see [this example](https://github.com/leftaroundabout/constrained-categories/blob/master/examples/Hask.hs)), only when writing more generic stuff the compiler will ask for a lot of things along the lines `Could not infer Object k (c (m a, Bool)) from ...`. This can generally be fixed easily, pretty much by pasting the requested constraints in the signature. Obviously though, this isn't altogether nice and scales badly, in terms of code-amount.
+
+In [Hask](http://hackage.haskell.org/package/hask), the `Op` constraint is only required for generating &ldquo;new&rdquo; arrows; the general philosophy seems to be to pack constraints in GADT dictionaries as much a possible. All in all, that is probably the better solution, but off the top it does require more structure (e.g. `observe`) that differs substantially from the standard modules.
+
+So all in all, this project may be seen as a brute-force hack, generalising the traditional base-classes as much as possible without actually changing the interface.
