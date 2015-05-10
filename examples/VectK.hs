@@ -205,48 +205,48 @@ instance WellPointed (Affin k) where
   
   
 
-instance HasProxy (Lin k) where
+instance HasAgent (Lin k) where
   alg = genericAlg
-  ($~) = genericProxyMap
+  ($~) = genericAgentMap
 
-instance CartesianProxy (Lin k) where
+instance CartesianAgent (Lin k) where
   alg1to2 = genericAlg1to2
   alg2to1 = genericAlg2to1
   alg2to2 = genericAlg2to2
 
 instance ( Object (Lin k) a, Object (Lin k) b
-         ) => AdditiveGroup (GenericProxy (Lin k) a b) where
+         ) => AdditiveGroup (GenericAgent (Lin k) a b) where
   zeroV = Lin (linear $ \Origin -> zeroV) $~ genericUnit
   negateV v = Lin (linear negateV) $~ v
-  (^+^) = genericProxyCombine . Lin . linear $ uncurry (^+^)
+  (^+^) = genericAgentCombine . Lin . linear $ uncurry (^+^)
 
 instance ( Object (Lin k) a, Object (Lin k) b
-         ) => VectorSpace (GenericProxy (Lin k) a b) where
-  type Scalar (GenericProxy (Lin k) a b) = k
+         ) => VectorSpace (GenericAgent (Lin k) a b) where
+  type Scalar (GenericAgent (Lin k) a b) = k
   x*^v = Lin (linear $ (x*^)) $~ v
 
 
-instance HasProxy (Affin k) where
+instance HasAgent (Affin k) where
   alg = genericAlg
-  ($~) = genericProxyMap
+  ($~) = genericAgentMap
 
-instance CartesianProxy (Affin k) where
+instance CartesianAgent (Affin k) where
   alg1to2 = genericAlg1to2
   alg2to1 = genericAlg2to1
   alg2to2 = genericAlg2to2
 
-instance PointProxy (GenericProxy (Affin k)) (Affin k) u v where
+instance PointAgent (GenericAgent (Affin k)) (Affin k) u v where
   point = genericPoint
   
 instance ( Object (Affin k) a, Object (Affin k) b
-         ) => AdditiveGroup (GenericProxy (Affin k) a b) where
+         ) => AdditiveGroup (GenericAgent (Affin k) a b) where
   zeroV = point zeroV
   negateV v = Lin (linear negateV) :->+ zeroV $~ v
-  (^+^) = genericProxyCombine . (:->+ zeroV) . Lin . linear $ uncurry (^+^)
+  (^+^) = genericAgentCombine . (:->+ zeroV) . Lin . linear $ uncurry (^+^)
 
 instance ( Object (Affin k) a, Object (Affin k) b
-         ) => VectorSpace (GenericProxy (Affin k) a b) where
-  type Scalar (GenericProxy (Affin k) a b) = k
+         ) => VectorSpace (GenericAgent (Affin k) a b) where
+  type Scalar (GenericAgent (Affin k) a b) = k
   x*^v = Lin (linear $ (x*^)) :->+ zeroV $~ v
   
 
