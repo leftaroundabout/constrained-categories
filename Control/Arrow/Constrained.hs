@@ -104,9 +104,9 @@ class (CoCartesian a) => MorphChoice a where
 
 
 
--- | Unlike 'first', 'second', '***' and 'arr', '&&&' has an intrinsic notion
---   of \"direction\": it is basically equivalent to precomposing the result
---   of '***' with a @b -> (b,b)@, but that is in general only available
+-- | Unlike 'first', 'second', '***' and 'arr', the fanout operation '&&&' has an
+--   intrinsic notion of \"direction\": it is basically equivalent to precomposing
+--   the result of '***' with a @b -> (b,b)@, but that is only available
 --   for arrows that generalise ordinary functions, in their native direction.
 --   (@(b,b) ->b@ is specific to semigroups.) It is for this reason the only constituent
 --   class of 'Arrow' that actually has \"arrow\" in its name.

@@ -1,3 +1,8 @@
+Before browsing [the Hackage documentation](http://hackage.haskell.org/package/constrained-categories) (which looks a bit scary in places), you may want to read this first.
+
+About
+---
+
 The introduction of `ConstraintKinds` in GHC has mainly received attention for making one type of issue easy to solve.
 
 The perhaps most obvious example, as given in [the original blog post on `ConstraintKinds`](http://blog.omega-prime.co.uk/?p=127), is a monad instance for `Set`:
@@ -84,3 +89,22 @@ This would again apply to the `Set` example, where you need the objects in a set
 The `Category` module includes the `ConstrainedCategory` newtype wrapper for this purpose. The functor classes have easy helper functions to facilitate defining instances withing such a constrained class. Look up the [`Set` example](https://github.com/leftaroundabout/constrained-categories/blob/master/examples/Set.hs) to see how to do it.
 
 #### Define categories where the morphisms aren't just Haskell functions but some other type of arrow.
+
+If you have an entirely new category,
+
+    data YourCat a b = ...
+
+and want to use it with this library, you need to define a couple of class instances. The classes in this library form a rather fine hierarchy, much finer than the standard `Arrow`; here's a guide you may use to determine which instances to define and which not, for your category:
+
+- [`Category`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Category-Constrained.html#t:Category) corresponds exactly to the homonymous standard class.
+  - [`Cartesian`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Category-Constrained.html#t:Cartesian) allows to do “obvious” transformations on tuples, like swapping elements. You probably want this for almost all categories you define.
+    - [`Curry`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Category-Constrained.html#t:Curry) does what it says: you can curry and uncurry morphisms. This is actually a pretty strong operation, only possible in [cartesian closed categories](https://en.wikipedia.org/wiki/Cartesian_closed_category). You may want to skip this for the beginning.
+    - [`Morphism`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:Morphism) represents one half of the standard `Arrow` class. This is still almost as basic as `Cartesian`.
+      - [`PreArrow`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:PreArrow) is the other, substantially stronger half. Unlike with `Morphism`, some interesting categories aren't instances of this class, namely all categories which are “information-preserving”, since `PreArrow` allows both duplicating (`&&&`) and “forgetting” (`fst`/`snd`) information. In particular, this class therefore can't contain truely _invertible_ arrows.
+        - [`WellPointed`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:WellPointed) is yet more specific; together with `Curry` it completes _cartesian closedness_.
+  - [`CoCartesian`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Category-Constrained.html#t:CoCartesian), like `Cartesian`, expresses obvious isomorphisms, but on sum types (i.e. [`Either`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Category-Constrained.html#t:-43-)) instead of products (tuples). This also includes booleans and `Maybe`, which Haskell traditionally expresses as separate ADTs, though they are basically just specific instantiations of `Either`.
+    - [`MorphChoice`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:MorphChoice) is dual to `Morphism`.
+      - [`PreArrChoice`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:PreArrChoice) is dual to `PreArrow`. A class that's all of `WellPointed`, `PreArrChoice` and `Curry` is [bicartesian closed](http://ncatlab.org/nlab/show/bicartesian+closed+category), an extremely strong property – such categories can essentially do anything you can do in **Hask**, or generally in lambda calculi.
+  - [`SPDistribute`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:SPDistribute) combines the product- and sum-classes in the algebraic sense: it offers the isomorphism _a_ · (_b_ + _c_) = _a_ · _b_ + _a_ · _c_, in Haskell `(a, Either b c) <-> Either (a,b) (a,c)`.
+  - [`HasAgent`](http://hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Category-Constrained.html#t:HasAgent), [`CartesianAgent`](hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:CartesianAgent) and [`PointAgent`](hackage.haskell.org/package/constrained-categories-0.2.0.0/docs/Control-Arrow-Constrained.html#t:PointAgent) have little to do with category theory as such; they just offer a useful little eDSL for defining arrows in general categories in a similar way as you would in **Hask**, by “pretending” the “results” of your computation are **Hask** objects. The idea is similar to the syntactic sugar offered by [arrow notation](https://www.haskell.org/arrows/syntax.html).
+
