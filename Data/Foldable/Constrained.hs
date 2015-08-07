@@ -36,6 +36,7 @@ import Prelude hiding (
    , Foldable(..)
    )
 import Data.Monoid
+import qualified Data.List as List
 
 import qualified Control.Category.Hask as Hask
 import qualified Data.Foldable as Hask
@@ -105,7 +106,7 @@ mappendMdl (Monoidal x) (Monoidal y)
 instance Foldable [] (->) (->) where
   foldMap _ [] = mempty
   foldMap f (x:xs) = f x <> foldMap f xs
-  ffoldl f = uncurry $ Hask.foldl (curry f)
+  ffoldl f = uncurry $ List.foldl (curry f)
 
 instance Foldable Maybe (->) (->) where
   foldMap f Nothing = mempty
