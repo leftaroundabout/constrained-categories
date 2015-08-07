@@ -28,7 +28,7 @@ module Control.Applicative.Constrained (
 import Control.Functor.Constrained
 import Control.Arrow.Constrained
 
-import Prelude hiding (id, const, (.), ($), Functor(..), curry, uncurry)
+import Prelude hiding (id, const, (.), ($), Functor(..), Applicative(..), curry, uncurry)
 import qualified Control.Category.Hask as Hask
 
 

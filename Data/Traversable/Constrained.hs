@@ -30,6 +30,8 @@ import Prelude hiding (
    , Functor(..)
    , uncurry, curry
    , mapM, mapM_, sequence
+   , Traversable(..)
+   , Applicative(..)
    )
 import qualified Control.Category.Hask as Hask
 import qualified Control.Arrow as A

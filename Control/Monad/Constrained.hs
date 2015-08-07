@@ -39,7 +39,7 @@ import Data.Tagged
 
 import Prelude hiding (
      id, const, fst, snd, (.), ($)
-   , Functor(..), Monad(..), (=<<)
+   , Functor(..), Applicative(..), Monad(..), (=<<)
    , uncurry, curry, filter
    , mapM, mapM_, sequence, sequence_
    )

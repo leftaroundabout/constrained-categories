@@ -27,7 +27,7 @@ module Control.Functor.Constrained
 
 import Control.Category.Constrained
 
-import Prelude hiding (id, (.), Functor(..), filter)
+import Prelude hiding (id, (.), Functor(..), filter, (<$>))
 import qualified Prelude
 
 import Data.Void

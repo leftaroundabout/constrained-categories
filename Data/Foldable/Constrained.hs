@@ -33,6 +33,7 @@ import Prelude hiding (
    , Functor(..)
    , uncurry, curry
    , mapM_, sequence_, concatMap
+   , Foldable(..)
    )
 import Data.Monoid
 
@@ -104,7 +105,7 @@ mappendMdl (Monoidal x) (Monoidal y)
 instance Foldable [] (->) (->) where
   foldMap _ [] = mempty
   foldMap f (x:xs) = f x <> foldMap f xs
-  ffoldl f = uncurry $ foldl (curry f)
+  ffoldl f = uncurry $ Hask.foldl (curry f)
 
 instance Foldable Maybe (->) (->) where
   foldMap f Nothing = mempty
