@@ -16,7 +16,7 @@ where `RMonad` is the `Monad` class plus an added `Constraint` `RMonadCtxt`, whi
 
 This pattern of defining a "constrained version" of some existing type class ad-hoc (with a constrain specifically for types turning up in that class's methods), while applicable, is bound to lead to many incompatible instances. It does not really obey the mathematical concepts from category theory.
 
-With this library we attemp to better things, by actually starting right from the `Category` class. This is not a new idea, and has not intrinsically much to do with `ConstraintKinds`. But it turns out the combination of re-doing the category-theory stuff with focus on `ConstraintKinds` works quite well.
+With this library we attempt to better things, by actually starting right from the `Category` class. This is not a new idea, and has not intrinsically much to do with `ConstraintKinds`. But it turns out the combination of re-doing the category-theory stuff with focus on `ConstraintKinds` works quite well.
 
 The outset
 ---
@@ -81,7 +81,7 @@ What will not work is if you
         instance Hask.Functor YourFunctor where
           Hask.fmap = ...
 
-where `Hask.Functor` is just the plain old `Functor` class from the prelude, as re-imported through `Control.Category.Hask`.
+  where `Hask.Functor` is just the plain old `Functor` class from the prelude, as re-imported through `Control.Category.Hask`.
 
 As for actually doing stuff you couldn't have also done with `Prelude.Monad` etc. – There are mainly two such things:
 
