@@ -1,0 +1,194 @@
+;; -*- mode: emacs-lisp; coding: emacs-mule; -*-
+;; --------------------------------------------------------------------------
+;; Desktop File for Emacs
+;; --------------------------------------------------------------------------
+;; Created Sun May 10 10:53:29 2015
+;; Desktop file format version 206
+;; Emacs version 23.4.1
+
+;; Global section:
+(setq desktop-missing-file-warning nil)
+(setq tags-file-name nil)
+(setq tags-table-list nil)
+(setq search-ring nil)
+(setq regexp-search-ring nil)
+(setq register-alist '((115 . "ODdf)OCp")))
+(setq file-name-history '("" "README.md" "" "constrained-categories.cabal" "" "wild-ideas/TupMat.hs" "examples/VectK.hs" "" "examples/Invertible.hs" "" "examples/Hask.hs" "" "examples/Set.hs" "" "Control/Category/Constrained/Prelude.hs" "" "Data/Traversable/Constrained.hs" "Data/Foldable/Constrained.hs" ""))
+
+;; Buffer section -- buffers listed in same order as in buffer list:
+(desktop-create-buffer 206
+  "README.md"
+  "README.md"
+  'fundamental-mode
+  '(vim-local-mode linum-mode)
+  1
+  '(nil nil)
+  nil
+  nil
+  '((buffer-file-coding-system . utf-8-unix)))
+
+(desktop-create-buffer 206
+  "constrained-categories.cabal"
+  "constrained-categories.cabal"
+  'haskell-cabal-mode
+  '(vim-local-mode linum-mode)
+  1
+  '(nil nil)
+  nil
+  nil
+  '((buffer-file-coding-system . utf-8-unix)))
+
+(desktop-create-buffer 206
+  "Control/Category/Constrained.hs"
+  "Cat"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  5990
+  '(9463 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "examples/VectK.hs"
+  "VectK.hs"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  2589
+  '(2957 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "wild-ideas/TupMat.hs"
+  "TupMat.hs"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  802
+  '(nil nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix)))
+
+(desktop-create-buffer 206
+  "examples/Invertible.hs"
+  "Invertible.hs"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  1
+  '(nil nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix)))
+
+(desktop-create-buffer 206
+  "examples/Hask.hs"
+  "Hask-ex"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  1770
+  '(nil nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix)))
+
+(desktop-create-buffer 206
+  "Data/Foldable/Constrained.hs"
+  "Fold"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  5380
+  '(3521 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "Control/Arrow/Constrained.hs"
+  "Arr"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  846
+  '(552 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "Control/Category/Hask.hs"
+  "Hask.hs"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  182
+  '(nil nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix)))
+
+(desktop-create-buffer 206
+  "Control/Category/Constrained/Prelude.hs"
+  "Prelude.hs"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  486
+  '(nil nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "Control/Monad/Constrained.hs"
+  "Monad"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  7366
+  '(1144 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "Control/Applicative/Constrained.hs"
+  "App"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  1660
+  '(3911 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "Data/Traversable/Constrained.hs"
+  "Trav"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  2617
+  '(2869 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "examples/Set.hs"
+  "Set.hs"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  405
+  '(nil nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "Control/Functor/Constrained.hs"
+  "Functor"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  922
+  '(nil nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
