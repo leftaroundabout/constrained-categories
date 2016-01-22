@@ -50,6 +50,17 @@
   '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
 
 (desktop-create-buffer 206
+  "Control/Category/Constrained/Reified.hs"
+  "Reify"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode vim-local-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  2415
+  '(3146 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
   "examples/VectK.hs"
   "VectK.hs"
   'haskell-mode
