@@ -1,6 +1,6 @@
 -- |
 -- Module      :  Control.Category.Constrained
--- Copyright   :  (c) 2013 Justus Sagemüller
+-- Copyright   :  (c) 2013-2016 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
 -- 
@@ -198,12 +198,12 @@ class ( Category k
   
   swap :: ( ObjectPair k a b, ObjectPair k b a ) => k (a,b) (b,a)
   
-  attachUnit :: ( Object k a, u ~ UnitObject k, ObjectPair k a u ) => k a (a,u)
-  detachUnit :: ( Object k a, u ~ UnitObject k, ObjectPair k a u ) => k (a,u) a
-  regroup    :: ( Object k a, Object k c, ObjectPair k a b, ObjectPair k b c
+  attachUnit :: ( u ~ UnitObject k, ObjectPair k a u ) => k a (a,u)
+  detachUnit :: ( u ~ UnitObject k, ObjectPair k a u ) => k (a,u) a
+  regroup    :: ( ObjectPair k a b, ObjectPair k b c
                 , ObjectPair k a (b,c), ObjectPair k (a,b) c
                 ) => k (a, (b, c)) ((a, b), c)
-  regroup'    :: ( Object k a, Object k c, ObjectPair k a b, ObjectPair k b c
+  regroup'    :: ( ObjectPair k a b, ObjectPair k b c
                 , ObjectPair k a (b,c), ObjectPair k (a,b) c
                 ) => k ((a, b), c) (a, (b, c))
 
