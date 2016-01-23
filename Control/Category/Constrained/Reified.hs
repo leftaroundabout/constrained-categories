@@ -34,16 +34,16 @@ import Control.Category.Constrained.Prelude
 
 
 data ReCategory (k :: * -> * -> *) (α :: *) (β :: *) where
-    ReCategory_Lift :: k α β -> ReCategory k α β
-    ReCategory_Id :: Object k α => ReCategory k α α
-    ReCategory_Compo :: ReCategory k β γ -> ReCategory k α β -> ReCategory k α γ
+    ReCategory :: k α β -> ReCategory k α β
+    Id :: Object k α => ReCategory k α α
+    (:>>>) :: ReCategory k α β -> ReCategory k β γ -> ReCategory k α γ
 
 instance Category k => Category (ReCategory k) where
   type Object (ReCategory k) α = Object k α
-  id = ReCategory_Id
-  ReCategory_Id . g = g
-  f . ReCategory_Id = f
-  f . g = ReCategory_Compo f g
+  id = Id
+  Id . g = g
+  f . Id = f
+  f . g = g :>>> f
   
 instance HasAgent k => HasAgent (ReCategory k) where
   type AgentVal (ReCategory k) α ω = GenericAgent (ReCategory k) α ω
@@ -52,42 +52,42 @@ instance HasAgent k => HasAgent (ReCategory k) where
   
 
 data ReCartesian (k :: * -> * -> *) (α :: *) (β :: *) where
-    ReCartesian_Lift :: k α β -> ReCartesian k α β
-    ReCartesian_Cat :: ReCategory (ReCartesian k) α β -> ReCartesian k α β
-    ReCartesian_Swap :: (ObjectPair k α β, ObjectPair k β α)
+    ReCartesian :: k α β -> ReCartesian k α β
+    ReCartesianCat :: ReCategory (ReCartesian k) α β -> ReCartesian k α β
+    Swap :: (ObjectPair k α β, ObjectPair k β α)
                 => ReCartesian k (α,β) (β,α)
-    ReCartesian_AttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u)
+    AttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u)
                 => ReCartesian k α (α,u)
-    ReCartesian_DetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u)
+    DetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u)
                 => ReCartesian k (α,u) α
-    ReCartesian_Regroup :: ( ObjectPair k α β, ObjectPair k β γ
+    Regroup :: ( ObjectPair k α β, ObjectPair k β γ
                            , ObjectPair k α (β,γ), ObjectPair k (α,β) γ )
                 => ReCartesian k (α,(β,γ)) ((α,β),γ)
-    ReCartesian_Regroup' :: ( ObjectPair k α β, ObjectPair k β γ
+    Regroup' :: ( ObjectPair k α β, ObjectPair k β γ
                             , ObjectPair k α (β,γ), ObjectPair k (α,β) γ )
                 => ReCartesian k ((α,β),γ) (α,(β,γ))
 
 instance Category k => Category (ReCartesian k) where
   type Object (ReCartesian k) a = Object k a
   
-  id = ReCartesian_Cat id
+  id = ReCartesianCat id
   
-  ReCartesian_Cat f . ReCartesian_Cat g = ReCartesian_Cat $ f . g
-  ReCartesian_Cat ReCategory_Id . g = g
-  f . ReCartesian_Cat ReCategory_Id = f
-  ReCartesian_Swap . ReCartesian_Swap = id
-  ReCartesian_Regroup . ReCartesian_Regroup' = id
-  ReCartesian_Regroup' . ReCartesian_Regroup = id
-  f . g = ReCartesian_Cat $ ReCategory_Compo (ReCategory_Lift f) (ReCategory_Lift g)
+  ReCartesianCat f . ReCartesianCat g = ReCartesianCat $ f . g
+  ReCartesianCat Id . g = g
+  f . ReCartesianCat Id = f
+  Swap . Swap = id
+  Regroup . Regroup' = id
+  Regroup' . Regroup = id
+  f . g = ReCartesianCat $ ReCategory f . ReCategory g
 
 instance Cartesian k => Cartesian (ReCartesian k) where
   type PairObjects (ReCartesian k) α β = PairObjects k α β
   type UnitObject (ReCartesian k) = UnitObject k
-  swap = ReCartesian_Swap
-  attachUnit = ReCartesian_AttachUnit
-  detachUnit = ReCartesian_DetachUnit
-  regroup = ReCartesian_Regroup
-  regroup' = ReCartesian_Regroup'
+  swap = Swap
+  attachUnit = AttachUnit
+  detachUnit = DetachUnit
+  regroup = Regroup
+  regroup' = Regroup'
   
 instance HasAgent k => HasAgent (ReCartesian k) where
   type AgentVal (ReCartesian k) α ω = GenericAgent (ReCartesian k) α ω
