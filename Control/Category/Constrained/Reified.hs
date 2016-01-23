@@ -104,7 +104,7 @@ infixr 3 :***
 data ReMorphism (k :: * -> * -> *) (α :: *) (β :: *) where
     ReMorphism :: k α β -> ReMorphism k α β
     ReMorphismCart :: ReCartesian (ReMorphism k) α β -> ReMorphism k α β
-    (:***) :: (Object k α, Object k γ, Object k β, Object k δ)
+    (:***) :: (ObjectPair k α γ, ObjectPair k β δ)
               => ReMorphism k α β -> ReMorphism k γ δ -> ReMorphism k (α,γ) (β,δ)
 
 instance Category k => Category (ReMorphism k) where
@@ -140,14 +140,22 @@ instance HasAgent k => HasAgent (ReMorphism k) where
 data RePreArrow (k :: * -> * -> *) (α :: *) (β :: *) where
     RePreArrow :: k α β -> RePreArrow k α β
     RePreArrowMorph :: ReMorphism (RePreArrow k) α β -> RePreArrow k α β
-    Split :: ObjectPair k α α => RePreArrow k α (α,α)
-    Terminate :: Object k α => RePreArrow k α (UnitObject k)
+    (:&&&) :: (Object k α, ObjectPair k β γ)
+            => RePreArrow k α β -> RePreArrow k α γ -> RePreArrow k α (β,γ)
+    Terminal :: Object k α => RePreArrow k α (UnitObject k)
+    Fst :: ObjectPair k α β => RePreArrow k (α,β) α
+    Snd :: ObjectPair k α β => RePreArrow k (α,β) β
 
 instance Category k => Category (RePreArrow k) where
   type Object (RePreArrow k) a = Object k a
   
   id = RePreArrowMorph id
   
+  Terminal . _ = Terminal
+  Fst . (f:&&&_) = f
+  Snd . (_:&&&g) = g
+  Fst . RePreArrowMorph (f:***_) = RePreArrowMorph $ f . ReMorphism Fst
+  Snd . RePreArrowMorph (_:***g) = RePreArrowMorph $ g . ReMorphism Snd
   RePreArrowMorph f . RePreArrowMorph g = RePreArrowMorph $ f . g
   RePreArrowMorph (ReMorphismCart (ReCartesianCat Id)) . g = g
   f . RePreArrowMorph (ReMorphismCart (ReCartesianCat Id)) = f
@@ -162,16 +170,14 @@ instance Cartesian k => Cartesian (RePreArrow k) where
   regroup = RePreArrowMorph regroup
   regroup' = RePreArrowMorph regroup'
 
-rpaPar :: (Object k α, Object k β, Object k γ, Object k δ)
-          => RePreArrow k α β -> RePreArrow k γ δ -> RePreArrow k (α,γ) (β,δ)
-rpaPar (RePreArrowMorph f) (RePreArrowMorph g) = RePreArrowMorph $ f :*** g
-rpaPar (RePreArrowMorph f) g = RePreArrowMorph $ f :*** ReMorphism g
-rpaPar f (RePreArrowMorph g) = RePreArrowMorph $ ReMorphism f :*** g
-rpaPar f g = RePreArrowMorph $ ReMorphism f :*** ReMorphism g
-
 instance Morphism k => Morphism (RePreArrow k) where
-  (***) = rpaPar
+  RePreArrowMorph f *** RePreArrowMorph g = RePreArrowMorph $ f *** g
+  RePreArrowMorph f *** g = RePreArrowMorph $ f *** ReMorphism g
+  f *** RePreArrowMorph g = RePreArrowMorph $ ReMorphism f *** g
+  f *** g = RePreArrowMorph $ ReMorphism f *** ReMorphism g
   
--- instance PreArrow k => PreArrow (RePreArrow k) where
---  f &&& g = rpaPar f g . Split
-  
+instance PreArrow k => PreArrow (RePreArrow k) where
+  f &&& g = f :&&& g
+  terminal = Terminal
+  fst = Fst
+  snd = Snd
