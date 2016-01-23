@@ -80,6 +80,8 @@ instance Category k => Category (ReCartesian k) where
   Swap . Swap = id
   Regroup . Regroup' = id
   Regroup' . Regroup = id
+  ReCartesianCat f . g = ReCartesianCat $ f . ReCategory g
+  f . ReCartesianCat g = ReCartesianCat $ ReCategory f . g
   f . g = ReCartesianCat $ ReCategory f . ReCategory g
 
 instance Cartesian k => Cartesian (ReCartesian k) where
@@ -102,7 +104,7 @@ infixr 3 :***
 data ReMorphism (k :: * -> * -> *) (α :: *) (β :: *) where
     ReMorphism :: k α β -> ReMorphism k α β
     ReMorphismCart :: ReCartesian (ReMorphism k) α β -> ReMorphism k α β
-    (:***) :: (ObjectPair k α γ, ObjectPair k β δ)
+    (:***) :: (Object k α, Object k γ, Object k β, Object k δ)
               => ReMorphism k α β -> ReMorphism k γ δ -> ReMorphism k (α,γ) (β,δ)
 
 instance Category k => Category (ReMorphism k) where
@@ -133,3 +135,43 @@ instance HasAgent k => HasAgent (ReMorphism k) where
   alg = genericAlg
   ($~) = genericAgentMap
 
+
+
+data RePreArrow (k :: * -> * -> *) (α :: *) (β :: *) where
+    RePreArrow :: k α β -> RePreArrow k α β
+    RePreArrowMorph :: ReMorphism (RePreArrow k) α β -> RePreArrow k α β
+    Split :: ObjectPair k α α => RePreArrow k α (α,α)
+    Terminate :: Object k α => RePreArrow k α (UnitObject k)
+
+instance Category k => Category (RePreArrow k) where
+  type Object (RePreArrow k) a = Object k a
+  
+  id = RePreArrowMorph id
+  
+  RePreArrowMorph f . RePreArrowMorph g = RePreArrowMorph $ f . g
+  RePreArrowMorph (ReMorphismCart (ReCartesianCat Id)) . g = g
+  f . RePreArrowMorph (ReMorphismCart (ReCartesianCat Id)) = f
+  f . g = RePreArrowMorph $ ReMorphism f . ReMorphism g
+
+instance Cartesian k => Cartesian (RePreArrow k) where
+  type PairObjects (RePreArrow k) α β = PairObjects k α β
+  type UnitObject (RePreArrow k) = UnitObject k
+  swap = RePreArrowMorph swap
+  attachUnit = RePreArrowMorph attachUnit
+  detachUnit = RePreArrowMorph detachUnit
+  regroup = RePreArrowMorph regroup
+  regroup' = RePreArrowMorph regroup'
+
+rpaPar :: (Object k α, Object k β, Object k γ, Object k δ)
+          => RePreArrow k α β -> RePreArrow k γ δ -> RePreArrow k (α,γ) (β,δ)
+rpaPar (RePreArrowMorph f) (RePreArrowMorph g) = RePreArrowMorph $ f :*** g
+rpaPar (RePreArrowMorph f) g = RePreArrowMorph $ f :*** ReMorphism g
+rpaPar f (RePreArrowMorph g) = RePreArrowMorph $ ReMorphism f :*** g
+rpaPar f g = RePreArrowMorph $ ReMorphism f :*** ReMorphism g
+
+instance Morphism k => Morphism (RePreArrow k) where
+  (***) = rpaPar
+  
+-- instance PreArrow k => PreArrow (RePreArrow k) where
+--  f &&& g = rpaPar f g . Split
+  
