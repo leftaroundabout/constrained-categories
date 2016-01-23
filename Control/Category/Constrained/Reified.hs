@@ -45,10 +45,10 @@ instance Category k => Category (ReCategory k) where
   f . ReCategory_Id = f
   f . g = ReCategory_Compo f g
   
--- instance HasAgent k => HasAgent (ReCategory c) where
---   type AgentVal (ReCategory c) α ω = GenericAgent (ReCategory c) α ω
---   alg = genericAlg
---   ($~) = genericAgentMap
+instance HasAgent k => HasAgent (ReCategory k) where
+  type AgentVal (ReCategory k) α ω = GenericAgent (ReCategory k) α ω
+  alg = genericAlg
+  ($~) = genericAgentMap
   
 
 data ReCartesian (k :: * -> * -> *) (α :: *) (β :: *) where
@@ -89,8 +89,8 @@ instance Cartesian k => Cartesian (ReCartesian k) where
   regroup = ReCartesian_Regroup
   regroup' = ReCartesian_Regroup'
   
--- instance HasAgent (ReCartesian c p u) where
---   type AgentVal (ReCartesian c p u) α ω = GenericAgent (ReCartesian c p u) α ω
---   alg = genericAlg
---   ($~) = genericAgentMap
+instance HasAgent k => HasAgent (ReCartesian k) where
+  type AgentVal (ReCartesian k) α ω = GenericAgent (ReCartesian k) α ω
+  alg = genericAlg
+  ($~) = genericAgentMap
 
