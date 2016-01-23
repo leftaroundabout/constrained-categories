@@ -20,8 +20,10 @@
 -- but can still benefit from them for optimisation (composition with 'id' is
 -- always trivial, and so on).
 
-{-# LANGUAGE GADTs           #-}
-{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE ConstraintKinds     #-}
+{-# LANGUAGE UnicodeSyntax       #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Control.Category.Constrained.Reified where
 
@@ -31,6 +33,8 @@ import GHC.Exts (Constraint)
 
 import Control.Category.Constrained.Prelude
 import Control.Arrow.Constrained
+
+import Data.Tagged
 
 
 infixr 1 :>>>
@@ -181,3 +185,54 @@ instance PreArrow k => PreArrow (RePreArrow k) where
   terminal = Terminal
   fst = Fst
   snd = Snd
+
+
+
+
+data ReWellPointed (k :: * -> * -> *) (α :: *) (β :: *) where
+    ReWellPointed :: k α β -> ReWellPointed k α β
+    ReWellPointedArr' :: RePreArrow (ReWellPointed k) α β -> ReWellPointed k α β
+    Const :: (Object k ν, ObjectPoint k α) => α -> ReWellPointed k ν α
+
+instance Category k => Category (ReWellPointed k) where
+  type Object (ReWellPointed k) a = Object k a
+  
+  id = ReWellPointedArr' id
+  
+  Const α . _ = Const α
+  ReWellPointedArr' f . ReWellPointedArr' g = ReWellPointedArr' $ f . g
+  ReWellPointedArr' (RePreArrowMorph (ReMorphismCart (ReCartesianCat Id))) . g = g
+  f . ReWellPointedArr' (RePreArrowMorph (ReMorphismCart (ReCartesianCat Id))) = f
+  f . g = ReWellPointedArr' $ RePreArrow f . RePreArrow g
+
+instance Cartesian k => Cartesian (ReWellPointed k) where
+  type PairObjects (ReWellPointed k) α β = PairObjects k α β
+  type UnitObject (ReWellPointed k) = UnitObject k
+  swap = ReWellPointedArr' swap
+  attachUnit = ReWellPointedArr' attachUnit
+  detachUnit = ReWellPointedArr' detachUnit
+  regroup = ReWellPointedArr' regroup
+  regroup' = ReWellPointedArr' regroup'
+
+instance Morphism k => Morphism (ReWellPointed k) where
+  ReWellPointedArr' f *** ReWellPointedArr' g = ReWellPointedArr' $ f *** g
+  ReWellPointedArr' f *** g = ReWellPointedArr' $ f *** RePreArrow g
+  f *** ReWellPointedArr' g = ReWellPointedArr' $ RePreArrow f *** g
+  f *** g = ReWellPointedArr' $ RePreArrow f *** RePreArrow g
+
+instance PreArrow k => PreArrow (ReWellPointed k) where
+  ReWellPointedArr' f &&& ReWellPointedArr' g = ReWellPointedArr' $ f &&& g
+  ReWellPointedArr' f &&& g = ReWellPointedArr' $ f &&& RePreArrow g
+  f &&& ReWellPointedArr' g = ReWellPointedArr' $ RePreArrow f &&& g
+  f &&& g = ReWellPointedArr' $ RePreArrow f &&& RePreArrow g
+  terminal = ReWellPointedArr' terminal
+  fst = ReWellPointedArr' fst
+  snd = ReWellPointedArr' snd
+
+instance WellPointed k => WellPointed (ReWellPointed k) where
+  type PointObject (ReWellPointed k) α = PointObject k α
+  const = Const
+  unit = u
+   where u :: ∀ k . WellPointed k => CatTagged (ReWellPointed k) (UnitObject k)
+         u = Tagged u' where Tagged u' = unit :: CatTagged k (UnitObject k)
+  
