@@ -30,8 +30,10 @@ import Prelude ()
 import GHC.Exts (Constraint)
 
 import Control.Category.Constrained.Prelude
+import Control.Arrow.Constrained
 
 
+infixr 1 :>>>
 
 data ReCategory (k :: * -> * -> *) (α :: *) (β :: *) where
     ReCategory :: k α β -> ReCategory k α β
@@ -91,6 +93,43 @@ instance Cartesian k => Cartesian (ReCartesian k) where
   
 instance HasAgent k => HasAgent (ReCartesian k) where
   type AgentVal (ReCartesian k) α ω = GenericAgent (ReCartesian k) α ω
+  alg = genericAlg
+  ($~) = genericAgentMap
+
+
+infixr 3 :***
+
+data ReMorphism (k :: * -> * -> *) (α :: *) (β :: *) where
+    ReMorphism :: k α β -> ReMorphism k α β
+    ReMorphismCart :: ReCartesian (ReMorphism k) α β -> ReMorphism k α β
+    (:***) :: (ObjectPair k α γ, ObjectPair k β δ)
+              => ReMorphism k α β -> ReMorphism k γ δ -> ReMorphism k (α,γ) (β,δ)
+
+instance Category k => Category (ReMorphism k) where
+  type Object (ReMorphism k) a = Object k a
+  
+  id = ReMorphismCart id
+  
+  ReMorphismCart f . ReMorphismCart g = ReMorphismCart $ f . g
+  ReMorphismCart (ReCartesianCat Id) . g = g
+  f . ReMorphismCart (ReCartesianCat Id) = f
+  (f:***g) . (h:***i) = f.h :*** g.i
+  f . g = ReMorphismCart $ ReCartesian f . ReCartesian g
+
+instance Cartesian k => Cartesian (ReMorphism k) where
+  type PairObjects (ReMorphism k) α β = PairObjects k α β
+  type UnitObject (ReMorphism k) = UnitObject k
+  swap = ReMorphismCart swap
+  attachUnit = ReMorphismCart attachUnit
+  detachUnit = ReMorphismCart detachUnit
+  regroup = ReMorphismCart regroup
+  regroup' = ReMorphismCart regroup'
+  
+instance Morphism k => Morphism (ReMorphism k) where
+  (***) = (:***)
+
+instance HasAgent k => HasAgent (ReMorphism k) where
+  type AgentVal (ReMorphism k) α ω = GenericAgent (ReMorphism k) α ω
   alg = genericAlg
   ($~) = genericAgentMap
 
