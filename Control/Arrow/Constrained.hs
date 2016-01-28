@@ -216,12 +216,16 @@ value :: forall f x . (WellPointed f, Function f, Object f x)
 value f = f $ untag(unit :: Tagged (f (UnitObject f) (UnitObject f)) (UnitObject f))
 
 
-class (Category k) => EnhancedCat a k where
+
+-- | @'EnhancedCat' a k@ means that the subcategory of @k@ whose objects are also
+--   objects of @a@ is a subcategory of @a@. This works like
+--   'Control.Category.Constrained.Reified.EnhancedCat'', but
+--   does not require @'Object' k ⊆ 'Object' a@.
+class (Category a, Category k) => EnhancedCat a k where
   arr :: (Object k b, Object k c, Object a b, Object a c)
          => k b c -> a b c
 instance (Category k) => EnhancedCat k k where
   arr = id
-
 
 -- | Many categories have as morphisms essentially /functions with extra properties/:
 --   group homomorphisms, linear maps, continuous functions...
@@ -315,8 +319,9 @@ cstrCatUnit :: forall a o . (WellPointed a, o (UnitObject a))
         => CatTagged (ConstrainedCategory a o) (UnitObject a)
 cstrCatUnit = retag (unit :: CatTagged a (UnitObject a))
   
-instance (Arrow a k, o (UnitObject a)) => EnhancedCat (ConstrainedCategory a o) k where
-  arr = constrainedArr arr 
+instance (EnhancedCat a k, o (UnitObject a))
+            => EnhancedCat (ConstrainedCategory a o) k where
+  arr = constrainedArr arr
 
 
 constrainedLeft :: ( CoCartesian k, ObjectSum k b d, ObjectSum k c d )
