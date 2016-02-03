@@ -93,25 +93,10 @@ instance HasAgent k => HasAgent (ReCategory k) where
 instance Category k => EnhancedCat ((ct) k) k where { arr = arr' };          \
 instance Category k => EnhancedCat' ((ct) k) k where {                        \
   arr' = (ct);                                                                 \
-  arr'Object IsObject = IsObject };                                             \
-instance (EnhancedCat' k l) => EnhancedCat ((ct) k) ((ct) l) where {arr = arr'}; \
-instance (EnhancedCat' k l) => EnhancedCat' ((ct) k) ((ct) l)
+  arr'Object IsObject = IsObject }
 
-#define ARROBJT(ct)                                                      \
-  arr'Object = aobj                                                       \
-   where { aobj :: ∀ k l α . EnhancedCat' k l                              \
-             => ObjectWitness ((ct) l) α -> ObjectWitness ((ct) k) α        \
-         ; aobj IsObject = case arr'Object (IsObject :: ObjectWitness l α)   \
-                                      :: ObjectWitness k α of                 \
-                  { IsObject -> IsObject } }
 
-REENHANCE(ReCategory) where
-  arr' (ReCategory f) = ReCategory $ arr' f
-  arr' f@Id = withObjWitness (arr'Object (domObjWitness f))
-     $ \IsObject -> Id
-  arr' (f:>>>g) = withObjWitness (arr'Object (domObjWitness g))
-     $ \IsObject -> arr' f :>>> arr' g
-  ARROBJT(ReCategory)
+REENHANCE(ReCategory)
 
 data ReCartesian (k :: * -> * -> *) (α :: *) (β :: *) where
     ReCartesian :: k α β -> ReCartesian k α β
@@ -159,67 +144,7 @@ instance HasAgent k => HasAgent (ReCartesian k) where
   ($~) = genericAgentMap
   
   
-#define REENHANCEP(ct)                                                      \
-instance Category k => EnhancedCat ((ct) k) k where { arr = arr' };          \
-instance Category k => EnhancedCat' ((ct) k) k where {                        \
-  arr' = (ct);                                                                 \
-  arr'Object IsObject = IsObject };                                             \
-instance Cartesian k => EnhancedCat'P ((ct) k) k where {                         \
-  arr'ObjPair AreObjects = AreObjects;                                            \
-  arr'UnitObj IsUnitObj = IsUnitObj };                                             \
-instance (EnhancedCat'P k l) => EnhancedCat ((ct) k) ((ct) l) where {arr = arr'};   \
-instance (EnhancedCat'P k l) => EnhancedCat' ((ct) k) ((ct) l)
-
-#define REENHANCES(ct, cq, qsh)                                              \
-instance (Cartesian k) => EnhancedCat ((ct) k) ((cq) k) where {arr = arr'};   \
-instance (Cartesian k) => EnhancedCat' ((ct) k) ((cq) k) where {               \
-  arr' = qsh . arr';                                                            \
-  arr'Object IsObject = IsObject }
-
-REENHANCEP(ReCartesian) where
-  arr' (ReCartesian f) = ReCartesian $ arr' f
-  arr' (ReCartesianCat f) = ReCartesianCat $ arr' f
-  arr' f@Swap = a'sw f
-   where a'sw :: ∀ k l α β . (EnhancedCat'P k l)
-                 => ReCartesian l (α,β) (β,α) -> ReCartesian k (α,β) (β,α)
-         a'sw Swap = case
-           ( arr'ObjPair (AreObjects :: ObjPairWitness l α β) :: ObjPairWitness k α β
-           , arr'ObjPair (AreObjects :: ObjPairWitness l β α) :: ObjPairWitness k β α ) of
-                 (AreObjects, AreObjects) -> Swap
-  arr' f@AttachUnit = a'sw f
-   where a'sw :: ∀ k l α u . (EnhancedCat'P k l)
-                 => ReCartesian l α (α,u) -> ReCartesian k α (α,u)
-         a'sw AttachUnit = case
-           ( arr'ObjPair (AreObjects :: ObjPairWitness l α u) :: ObjPairWitness k α u
-           , arr'UnitObj (IsUnitObj :: UnitObjWitness l u) :: UnitObjWitness k u ) of
-                 (AreObjects, IsUnitObj) -> AttachUnit
-  arr' f@DetachUnit = a'sw f
-   where a'sw :: ∀ k l α u . (EnhancedCat'P k l)
-                 => ReCartesian l (α,u) α -> ReCartesian k (α,u) α
-         a'sw DetachUnit = case
-           ( arr'ObjPair (AreObjects :: ObjPairWitness l α u) :: ObjPairWitness k α u
-           , arr'UnitObj (IsUnitObj :: UnitObjWitness l u) :: UnitObjWitness k u ) of
-                 (AreObjects, IsUnitObj) -> DetachUnit
-  arr' f@Regroup = a'sw f
-   where a'sw :: ∀ k l α β γ . (EnhancedCat'P k l)
-                 => ReCartesian l (α,(β,γ)) ((α,β),γ) -> ReCartesian k (α,(β,γ)) ((α,β),γ)
-         a'sw Regroup = case
-           ( arr'ObjPair (AreObjects :: ObjPairWitness l α β) :: ObjPairWitness k α β
-           , arr'ObjPair (AreObjects :: ObjPairWitness l β γ) :: ObjPairWitness k β γ
-           , arr'ObjPair (AreObjects :: ObjPairWitness l (α,β) γ) :: ObjPairWitness k (α,β) γ
-           , arr'ObjPair (AreObjects :: ObjPairWitness l α (β,γ)) :: ObjPairWitness k α (β,γ) ) of
-                 (AreObjects, AreObjects, AreObjects, AreObjects) -> Regroup
-  arr' f@Regroup' = a'sw f
-   where a'sw :: ∀ k l α β γ . (EnhancedCat'P k l)
-                 => ReCartesian l ((α,β),γ) (α,(β,γ)) -> ReCartesian k ((α,β),γ) (α,(β,γ))
-         a'sw Regroup' = case
-           ( arr'ObjPair (AreObjects :: ObjPairWitness l α β) :: ObjPairWitness k α β
-           , arr'ObjPair (AreObjects :: ObjPairWitness l β γ) :: ObjPairWitness k β γ
-           , arr'ObjPair (AreObjects :: ObjPairWitness l (α,β) γ) :: ObjPairWitness k (α,β) γ
-           , arr'ObjPair (AreObjects :: ObjPairWitness l α (β,γ)) :: ObjPairWitness k α (β,γ) ) of
-                 (AreObjects, AreObjects, AreObjects, AreObjects) -> Regroup'
-  ARROBJT(ReCartesian)
-REENHANCES(ReCartesian, ReCategory, ReCartesianCat)
+REENHANCE(ReCartesian)
 
 
 infixr 3 :***
@@ -258,6 +183,7 @@ instance HasAgent k => HasAgent (ReMorphism k) where
   alg = genericAlg
   ($~) = genericAgentMap
 
+REENHANCE(ReMorphism)
 
 
 data RePreArrow (k :: * -> * -> *) (α :: *) (β :: *) where
@@ -305,6 +231,8 @@ instance PreArrow k => PreArrow (RePreArrow k) where
   fst = Fst
   snd = Snd
 
+
+REENHANCE(RePreArrow)
 
 
 
@@ -356,7 +284,7 @@ instance WellPointed k => WellPointed (ReWellPointed k) where
          u = Tagged u' where Tagged u' = unit :: CatTagged k (UnitObject k)
   
 
-
+REENHANCE(ReWellPointed)
 
 
 
@@ -374,7 +302,4 @@ class (EnhancedCat' a k, Cartesian a, Cartesian k) => EnhancedCat'P a k where
 instance (Category k) => EnhancedCat' k k where
   arr' = id
   arr'Object IsObject = IsObject
-instance (Cartesian k) => EnhancedCat'P k k where
-  arr'ObjPair AreObjects = AreObjects
-  arr'UnitObj IsUnitObj = IsUnitObj
 
