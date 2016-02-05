@@ -36,6 +36,8 @@ module Control.Category.Constrained.Reified (
        , ReMorphism (..)
        , RePreArrow (..)
        , ReWellPointed (..)
+      -- * Pattern synonyms
+       , pattern Id', pattern (:<<<)
       -- * Auxiliary
        , EnhancedCat'
        ) where
@@ -199,6 +201,13 @@ instance Cartesian k => Cartesian (ReMorphism k) where
 instance Morphism k => Morphism (ReMorphism k) where
   (***) = (:***)
 
+instance CRCategory (ReMorphism k) where
+  match_id (ReMorphismCart (ReCartesianCat Id)) = Just Id
+  match_id _ = Nothing
+--  match_compose (ReMorphismCart (ReCartesianCat (f:>>>g)))
+--                       = Just . _ $ f :>>> g
+  match_compose _ = Nothing
+  
 instance HasAgent k => HasAgent (ReMorphism k) where
   type AgentVal (ReMorphism k) α ω = GenericAgent (ReMorphism k) α ω
   alg = genericAlg
@@ -252,6 +261,12 @@ instance PreArrow k => PreArrow (RePreArrow k) where
   fst = Fst
   snd = Snd
 
+instance CRCategory (RePreArrow k) where
+  match_id (RePreArrowMorph (ReMorphismCart (ReCartesianCat Id))) = Just Id
+  match_id _ = Nothing
+--  match_compose (ReMorphismCart (ReCartesianCat (f:>>>g)))
+--                       = Just . _ $ f :>>> g
+  match_compose _ = Nothing
 
 REENHANCE(RePreArrow)
 
@@ -304,6 +319,13 @@ instance WellPointed k => WellPointed (ReWellPointed k) where
    where u :: ∀ k . WellPointed k => CatTagged (ReWellPointed k) (UnitObject k)
          u = Tagged u' where Tagged u' = unit :: CatTagged k (UnitObject k)
   
+instance CRCategory (ReWellPointed k) where
+  match_id (ReWellPointedArr' (RePreArrowMorph (ReMorphismCart (ReCartesianCat Id))))
+              = Just Id
+  match_id _ = Nothing
+--  match_compose (ReMorphismCart (ReCartesianCat (f:>>>g)))
+--                       = Just . _ $ f :>>> g
+  match_compose _ = Nothing
 
 REENHANCE(ReWellPointed)
 
