@@ -26,6 +26,8 @@
 {-# LANGUAGE UnicodeSyntax         #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE CPP                   #-}
+{-# LANGUAGE PatternSynonyms       #-}
+{-# LANGUAGE ViewPatterns          #-}
 
 module Control.Category.Constrained.Reified (
       -- * Reified versions of the category classes
@@ -82,6 +84,19 @@ instance Category k => Category (ReCategory k) where
   Id . g = g
   f . Id = f
   f . g = g :>>> f
+
+class CRCategory k where
+  match_id :: k α β -> Maybe (ReCategory k α β)
+  match_compose :: k α β -> Maybe (ReCategory k α β)
+
+instance CRCategory (ReCategory k) where
+  match_id Id = Just Id
+  match_id _ = Nothing
+  match_compose (f:>>>g) = Just $ ReCategory f :>>> ReCategory g
+  match_compose _ = Nothing
+
+pattern Id' <- (match_id -> Just Id)
+pattern f:<<<g <- (match_compose -> Just (ReCategory g :>>> ReCategory f))
   
 instance HasAgent k => HasAgent (ReCategory k) where
   type AgentVal (ReCategory k) α ω = GenericAgent (ReCategory k) α ω
@@ -137,6 +152,12 @@ instance Cartesian k => Cartesian (ReCartesian k) where
   detachUnit = DetachUnit
   regroup = Regroup
   regroup' = Regroup'
+  
+instance CRCategory (ReCartesian k) where
+  match_id (ReCartesianCat Id) = Just Id
+  match_id _ = Nothing
+  match_compose (ReCartesianCat (f:>>>g)) = Just $ f :>>> g
+  match_compose _ = Nothing
   
 instance HasAgent k => HasAgent (ReCartesian k) where
   type AgentVal (ReCartesian k) α ω = GenericAgent (ReCartesian k) α ω
