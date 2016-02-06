@@ -33,16 +33,18 @@ module Control.Category.Constrained.Reified (
       -- * Reified versions of the category classes
          ReCategory (..)
        , ReCartesian (..)
-       -- , ReMorphism (..)
+       , ReMorphism (..)
        -- , RePreArrow (..)
        -- , ReWellPointed (..)
       -- * Pattern synonyms
       -- ** Category
-       , pattern Concrete, pattern Id, pattern (:<<<)
+       , pattern Concrete, pattern Id, pattern (:<<<), pattern (:>>>)
       -- ** Cartesian
        , pattern Swap
        , pattern AttachUnit, pattern DetachUnit
        , pattern Regroup, pattern Regroup'
+      -- ** Morphism
+       , pattern (:***)
        ) where
 
 
@@ -164,7 +166,6 @@ instance Category k => EnhancedCat (ReCategory k) k where arr = ReCategory
 #else
 #  define RECARTESIAN(catl) \
     ReCartesian :: k α β -> ReCartesian k α β; CartesianId :: Object k α => ReCartesian k α α; CartesianCompo :: Object k β => ReCartesian k α β -> ReCartesian k β γ -> ReCartesian k α γ; CartesianSwap :: (ObjectPair k α β, ObjectPair k β α) => ReCartesian k (α,β) (β,α); CartesianAttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReCartesian k α (α,u); CartesianDetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReCartesian k (α,u) α; CartesianRegroup :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReCartesian k (α,(β,γ)) ((α,β),γ); CartesianRegroup_ :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReCartesian k ((α,β),γ) (α,(β,γ))
-
 #endif
 data ReCartesian (k :: * -> * -> *) (α :: *) (β :: *) where
     RECARTESIAN(Cartesian)
@@ -256,57 +257,86 @@ instance (HasAgent k, Cartesian k) => HasAgent (ReCartesian k) where
 instance Cartesian k => EnhancedCat (ReCartesian k) k where arr = ReCartesian
 
 
--- infixr 3 :***
--- 
--- #define GADTCPP
--- #ifdef GADTCPP
--- #  define REMORPHISM(catl)                                \
---     RECARTESIAN(catl);                                     \
---     catl##Par :: (ObjectPair k α γ, ObjectPair k β δ)       \
---               => Re##catl k α β -> Re##catl k γ δ -> Re##catl k (α,γ) (β,δ)
--- #else
--- #  define REMORPHISM(catl)
--- #endif
--- data ReMorphism (k :: * -> * -> *) (α :: *) (β :: *) where
---     REMORPHISM(Morphism)
--- 
--- instance Category k => Category (ReMorphism k) where
---   type Object (ReMorphism k) a = Object k a
---   
---   id = ReMorphismCart id
---   
---   ReMorphismCart f . ReMorphismCart g = ReMorphismCart $ f . g
---   ReMorphismCart (ReCartesianCat Id) . g = g
---   f . ReMorphismCart (ReCartesianCat Id) = f
---   (f:***g) . (h:***i) = f.h :*** g.i
---   f . g = ReMorphismCart $ ReCartesian f . ReCartesian g
--- 
--- instance Cartesian k => Cartesian (ReMorphism k) where
---   type PairObjects (ReMorphism k) α β = PairObjects k α β
---   type UnitObject (ReMorphism k) = UnitObject k
---   swap = ReMorphismCart swap
---   attachUnit = ReMorphismCart attachUnit
---   detachUnit = ReMorphismCart detachUnit
---   regroup = ReMorphismCart regroup
---   regroup' = ReMorphismCart regroup'
---   
--- instance Morphism k => Morphism (ReMorphism k) where
---   (***) = (:***)
--- 
--- instance CRCategory (ReMorphism k) where
---   match_id (ReMorphismCart (ReCartesianCat Id)) = Just Id
---   match_id _ = Nothing
--- --  match_compose (ReMorphismCart (ReCartesianCat (f:>>>g)))
--- --                       = Just . _ $ f :>>> g
---   match_compose _ = Nothing
---   
--- instance HasAgent k => HasAgent (ReMorphism k) where
---   type AgentVal (ReMorphism k) α ω = GenericAgent (ReMorphism k) α ω
---   alg = genericAlg
---   ($~) = genericAgentMap
--- 
--- REENHANCE(ReMorphism)
--- 
+infixr 3 :***
+
+#ifdef GADTCPP
+#  define REMORPHISM(catl)                                \
+    RECARTESIAN(catl);                                     \
+    catl##Par :: (ObjectPair k α γ, ObjectPair k β δ)       \
+              => Re##catl k α β -> Re##catl k γ δ -> Re##catl k (α,γ) (β,δ)
+#else
+#  define REMORPHISM(catl)  \
+    ReMorphism :: k α β -> ReMorphism k α β; MorphismId :: Object k α => ReMorphism k α α; MorphismCompo :: Object k β => ReMorphism k α β -> ReMorphism k β γ -> ReMorphism k α γ; MorphismSwap :: (ObjectPair k α β, ObjectPair k β α) => ReMorphism k (α,β) (β,α); MorphismAttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReMorphism k α (α,u); MorphismDetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReMorphism k (α,u) α; MorphismRegroup :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReMorphism k (α,(β,γ)) ((α,β),γ); MorphismRegroup_ :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReMorphism k ((α,β),γ) (α,(β,γ)); MorphismPar :: (ObjectPair k α γ, ObjectPair k β δ) => ReMorphism k α β -> ReMorphism k γ δ -> ReMorphism k (α,γ) (β,δ)
+#endif
+data ReMorphism (k :: * -> * -> *) (α :: *) (β :: *) where
+    REMORPHISM(Morphism)
+
+#define MORPHISMCOMPO               \
+  (f:***g) . (h:***i) = f.h *** g.i; \
+  CARTESIANCOMPO
+
+instance Morphism k => Category (ReMorphism k) where
+  type Object (ReMorphism k) a = Object k a
+  
+  id = MorphismId
+  
+  MORPHISMCOMPO
+  g . f = MorphismCompo f g
+
+instance Morphism k => Cartesian (ReMorphism k) where
+  type PairObjects (ReMorphism k) α β = PairObjects k α β
+  type UnitObject (ReMorphism k) = UnitObject k
+  swap = MorphismSwap
+  attachUnit = MorphismAttachUnit
+  detachUnit = MorphismDetachUnit
+  regroup = MorphismRegroup
+  regroup' = MorphismRegroup_
+  
+instance Morphism k => Morphism (ReMorphism k) where
+  (***) = MorphismPar
+
+instance (HasAgent k, Morphism k) => HasAgent (ReMorphism k) where
+  type AgentVal (ReMorphism k) α ω = GenericAgent (ReMorphism k) α ω
+  alg = genericAlg
+  ($~) = genericAgentMap
+
+instance Morphism k => CRCategory (ReMorphism k) where
+  type ConcreteCat (ReMorphism k) = k
+  fromConcrete = ReMorphism
+  match_concrete (ReMorphism f) = Just f
+  match_concrete _ = Nothing
+  match_id (MorphismId) = IsId
+  match_id _ = NotId
+  match_compose (MorphismCompo f g) = IsCompo f g
+  match_compose _ = NotCompo
+
+instance Morphism k => CRCartesian (ReMorphism k) where
+  match_swap (MorphismSwap) = IsSwap
+  match_swap _ = NotSwap
+  match_attachUnit (MorphismAttachUnit) = IsAttachUnit
+  match_attachUnit _ = NotAttachUnit
+  match_detachUnit (MorphismDetachUnit) = IsDetachUnit
+  match_detachUnit _ = NotDetachUnit
+  match_regroup (MorphismRegroup) = IsRegroup
+  match_regroup _ = NotRegroup
+  match_regroup' (MorphismRegroup_) = IsRegroup'
+  match_regroup' _ = NotRegroup'
+
+data ParPattern k α β where
+    IsPar :: (ObjectPair k α γ, ObjectPair k β δ)
+         => k α β -> k γ δ -> ParPattern k (α,γ) (β,δ)
+    NotPar :: ParPattern k α β
+class CRCartesian k => CRMorphism k where
+  match_par :: k α β -> ParPattern k α β
+
+instance Morphism k => CRMorphism (ReMorphism k) where
+  match_par (MorphismPar f g) = IsPar f g
+  match_par _ = NotPar
+
+pattern f:***g <- (match_par -> IsPar f g)
+  
+instance Morphism k => EnhancedCat (ReMorphism k) k where arr = ReMorphism
+
 -- 
 -- data RePreArrow (k :: * -> * -> *) (α :: *) (β :: *) where
 --     RePreArrow :: k α β -> RePreArrow k α β
