@@ -35,7 +35,7 @@ module Control.Category.Constrained.Reified (
        , ReCartesian
        , ReMorphism
        , RePreArrow
-       -- , ReWellPointed (..)
+       , ReWellPointed
       -- * Pattern synonyms
       -- ** Category
        , pattern Specific, pattern Id, pattern (:<<<), pattern (:>>>)
@@ -47,6 +47,8 @@ module Control.Category.Constrained.Reified (
        , pattern (:***)
       -- ** Pre-arrow
        , pattern (:&&&), pattern Fst, pattern Snd, pattern Terminal
+      -- ** Well-pointed
+       , pattern Const
        ) where
 
 
@@ -343,6 +345,8 @@ pattern f:***g <- (match_par -> IsPar f g)
 instance Morphism k => EnhancedCat (ReMorphism k) k where arr = ReMorphism
 
 
+
+infixr 3 :&&&
 
 
 #ifdef GADTCPP
