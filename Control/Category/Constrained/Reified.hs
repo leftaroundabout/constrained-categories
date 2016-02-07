@@ -31,20 +31,22 @@
 
 module Control.Category.Constrained.Reified (
       -- * Reified versions of the category classes
-         ReCategory (..)
-       , ReCartesian (..)
-       , ReMorphism (..)
-       -- , RePreArrow (..)
+         ReCategory
+       , ReCartesian
+       , ReMorphism
+       , RePreArrow
        -- , ReWellPointed (..)
       -- * Pattern synonyms
       -- ** Category
-       , pattern Concrete, pattern Id, pattern (:<<<), pattern (:>>>)
+       , pattern Specific, pattern Id, pattern (:<<<), pattern (:>>>)
       -- ** Cartesian
        , pattern Swap
        , pattern AttachUnit, pattern DetachUnit
        , pattern Regroup, pattern Regroup'
       -- ** Morphism
        , pattern (:***)
+      -- ** Pre-arrow
+       , pattern (:&&&), pattern Fst, pattern Snd, pattern Terminal
        ) where
 
 
@@ -115,15 +117,15 @@ data CompoPattern k α β where
          => k α β -> k β γ -> CompoPattern k α γ
     NotCompo :: CompoPattern k α β
 class Category k => CRCategory k where
-  type ConcreteCat k :: * -> * -> *
-  fromConcrete :: ConcreteCat k α β -> k α β
-  match_concrete :: k α β -> Maybe (ConcreteCat k α β)
+  type SpecificCat k :: * -> * -> *
+  fromSpecific :: SpecificCat k α β -> k α β
+  match_concrete :: k α β -> Maybe (SpecificCat k α β)
   match_id :: k α β -> IdPattern k α β
   match_compose :: k α β -> CompoPattern k α β
 
 instance Category k => CRCategory (ReCategory k) where
-  type ConcreteCat (ReCategory k) = k
-  fromConcrete = ReCategory
+  type SpecificCat (ReCategory k) = k
+  fromSpecific = ReCategory
   match_concrete (ReCategory f) = Just f
   match_concrete _ = Nothing
   match_id CategoryId = IsId
@@ -131,8 +133,8 @@ instance Category k => CRCategory (ReCategory k) where
   match_compose (CategoryCompo f g) = IsCompo f g
   match_compose _ = NotCompo
 
-pattern Concrete f <- (match_concrete -> Just f) where
-  Concrete f = fromConcrete f
+pattern Specific f <- (match_concrete -> Just f) where
+  Specific f = fromSpecific f
 pattern Id <- (match_id -> IsId) where
   Id = id
 pattern g:<<<f <- (match_compose -> IsCompo f g)
@@ -192,8 +194,8 @@ instance Cartesian k => Cartesian (ReCartesian k) where
   regroup' = CartesianRegroup_
   
 instance Cartesian k => CRCategory (ReCartesian k) where
-  type ConcreteCat (ReCartesian k) = k
-  fromConcrete = ReCartesian
+  type SpecificCat (ReCartesian k) = k
+  fromSpecific = ReCartesian
   match_concrete (ReCartesian f) = Just f
   match_concrete _ = Nothing
   match_id (CartesianId) = IsId
@@ -277,9 +279,7 @@ data ReMorphism (k :: * -> * -> *) (α :: *) (β :: *) where
 
 instance Morphism k => Category (ReMorphism k) where
   type Object (ReMorphism k) a = Object k a
-  
   id = MorphismId
-  
   MORPHISMCOMPO
   g . f = MorphismCompo f g
 
@@ -301,8 +301,8 @@ instance (HasAgent k, Morphism k) => HasAgent (ReMorphism k) where
   ($~) = genericAgentMap
 
 instance Morphism k => CRCategory (ReMorphism k) where
-  type ConcreteCat (ReMorphism k) = k
-  fromConcrete = ReMorphism
+  type SpecificCat (ReMorphism k) = k
+  fromSpecific = ReMorphism
   match_concrete (ReMorphism f) = Just f
   match_concrete _ = Nothing
   match_id (MorphismId) = IsId
@@ -337,60 +337,126 @@ pattern f:***g <- (match_par -> IsPar f g)
   
 instance Morphism k => EnhancedCat (ReMorphism k) k where arr = ReMorphism
 
--- 
--- data RePreArrow (k :: * -> * -> *) (α :: *) (β :: *) where
---     RePreArrow :: k α β -> RePreArrow k α β
---     RePreArrowMorph :: ReMorphism (RePreArrow k) α β -> RePreArrow k α β
---     (:&&&) :: (Object k α, ObjectPair k β γ)
---             => RePreArrow k α β -> RePreArrow k α γ -> RePreArrow k α (β,γ)
---     Terminal :: Object k α => RePreArrow k α (UnitObject k)
---     Fst :: ObjectPair k α β => RePreArrow k (α,β) α
---     Snd :: ObjectPair k α β => RePreArrow k (α,β) β
--- 
--- instance Category k => Category (RePreArrow k) where
---   type Object (RePreArrow k) a = Object k a
---   
---   id = RePreArrowMorph id
---   
---   Terminal . _ = Terminal
---   Fst . (f:&&&_) = f
---   Snd . (_:&&&g) = g
---   Fst . RePreArrowMorph (f:***_) = RePreArrowMorph $ f . ReMorphism Fst
---   Snd . RePreArrowMorph (_:***g) = RePreArrowMorph $ g . ReMorphism Snd
---   RePreArrowMorph f . RePreArrowMorph g = RePreArrowMorph $ f . g
---   RePreArrowMorph (ReMorphismCart (ReCartesianCat Id)) . g = g
---   f . RePreArrowMorph (ReMorphismCart (ReCartesianCat Id)) = f
---   f . g = RePreArrowMorph $ ReMorphism f . ReMorphism g
--- 
--- instance Cartesian k => Cartesian (RePreArrow k) where
---   type PairObjects (RePreArrow k) α β = PairObjects k α β
---   type UnitObject (RePreArrow k) = UnitObject k
---   swap = RePreArrowMorph swap
---   attachUnit = RePreArrowMorph attachUnit
---   detachUnit = RePreArrowMorph detachUnit
---   regroup = RePreArrowMorph regroup
---   regroup' = RePreArrowMorph regroup'
--- 
--- instance Morphism k => Morphism (RePreArrow k) where
---   RePreArrowMorph f *** RePreArrowMorph g = RePreArrowMorph $ f *** g
---   RePreArrowMorph f *** g = RePreArrowMorph $ f *** ReMorphism g
---   f *** RePreArrowMorph g = RePreArrowMorph $ ReMorphism f *** g
---   f *** g = RePreArrowMorph $ ReMorphism f *** ReMorphism g
---   
--- instance PreArrow k => PreArrow (RePreArrow k) where
---   f &&& g = f :&&& g
---   terminal = Terminal
---   fst = Fst
---   snd = Snd
--- 
--- instance CRCategory (RePreArrow k) where
---   match_id (RePreArrowMorph (ReMorphismCart (ReCartesianCat Id))) = Just Id
---   match_id _ = Nothing
--- --  match_compose (ReMorphismCart (ReCartesianCat (f:>>>g)))
--- --                       = Just . _ $ f :>>> g
---   match_compose _ = Nothing
--- 
--- REENHANCE(RePreArrow)
+
+
+
+#ifdef GADTCPP
+#  define REPREARROW(catl)                                          \
+    REMORPHISM(catl);                                                \
+    catl##Fanout :: (Object k α, ObjectPair k β γ)                    \
+            => Re##catl k α β -> Re##catl k α γ -> Re##catl k α (β,γ); \
+    catl##Terminal :: Object k α => Re##catl k α (UnitObject k);        \
+    catl##Fst :: ObjectPair k α β => Re##catl k (α,β) α;                 \
+    catl##Snd :: ObjectPair k α β => Re##catl k (α,β) β
+#else
+#  define REPREARROW(catl) \
+    RePreArrow :: k α β -> RePreArrow k α β; PreArrowId :: Object k α => RePreArrow k α α; PreArrowCompo :: Object k β => RePreArrow k α β -> RePreArrow k β γ -> RePreArrow k α γ; PreArrowSwap :: (ObjectPair k α β, ObjectPair k β α) => RePreArrow k (α,β) (β,α); PreArrowAttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => RePreArrow k α (α,u); PreArrowDetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => RePreArrow k (α,u) α; PreArrowRegroup :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => RePreArrow k (α,(β,γ)) ((α,β),γ); PreArrowRegroup_ :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => RePreArrow k ((α,β),γ) (α,(β,γ)); PreArrowPar :: (ObjectPair k α γ, ObjectPair k β δ) => RePreArrow k α β -> RePreArrow k γ δ -> RePreArrow k (α,γ) (β,δ); PreArrowFanout :: (Object k α, ObjectPair k β γ) => RePreArrow k α β -> RePreArrow k α γ -> RePreArrow k α (β,γ); PreArrowTerminal :: Object k α => RePreArrow k α (UnitObject k); PreArrowFst :: ObjectPair k α β => RePreArrow k (α,β) α; PreArrowSnd :: ObjectPair k α β => RePreArrow k (α,β) β
+#endif
+data RePreArrow (k :: * -> * -> *) (α :: *) (β :: *) where
+    REPREARROW(PreArrow)
+
+#define PREARROWCOMPO      \
+  Terminal . _ = terminal;  \
+  Fst . (f:&&&_) = f;        \
+  Snd . (_:&&&g) = g;         \
+  Fst . (f:***_) = f . fst;    \
+  Snd . (_:***g) = g . snd;     \
+  MORPHISMCOMPO
+
+instance PreArrow k => Category (RePreArrow k) where
+  type Object (RePreArrow k) a = Object k a
+  id = PreArrowId
+  PREARROWCOMPO
+  g . f = PreArrowCompo f g
+
+instance PreArrow k => Cartesian (RePreArrow k) where
+  type PairObjects (RePreArrow k) α β = PairObjects k α β
+  type UnitObject (RePreArrow k) = UnitObject k
+  swap = PreArrowSwap
+  attachUnit = PreArrowAttachUnit
+  detachUnit = PreArrowDetachUnit
+  regroup = PreArrowRegroup
+  regroup' = PreArrowRegroup_
+  
+instance PreArrow k => Morphism (RePreArrow k) where
+  (***) = PreArrowPar
+
+instance PreArrow k => PreArrow (RePreArrow k) where
+  (&&&) = PreArrowFanout
+  terminal = PreArrowTerminal
+  fst = PreArrowFst
+  snd = PreArrowSnd
+
+instance (HasAgent k, PreArrow k) => HasAgent (RePreArrow k) where
+  type AgentVal (RePreArrow k) α ω = GenericAgent (RePreArrow k) α ω
+  alg = genericAlg
+  ($~) = genericAgentMap
+
+instance PreArrow k => CRCategory (RePreArrow k) where
+  type SpecificCat (RePreArrow k) = k
+  fromSpecific = RePreArrow
+  match_concrete (RePreArrow f) = Just f
+  match_concrete _ = Nothing
+  match_id (PreArrowId) = IsId
+  match_id _ = NotId
+  match_compose (PreArrowCompo f g) = IsCompo f g
+  match_compose _ = NotCompo
+
+instance PreArrow k => CRCartesian (RePreArrow k) where
+  match_swap (PreArrowSwap) = IsSwap
+  match_swap _ = NotSwap
+  match_attachUnit (PreArrowAttachUnit) = IsAttachUnit
+  match_attachUnit _ = NotAttachUnit
+  match_detachUnit (PreArrowDetachUnit) = IsDetachUnit
+  match_detachUnit _ = NotDetachUnit
+  match_regroup (PreArrowRegroup) = IsRegroup
+  match_regroup _ = NotRegroup
+  match_regroup' (PreArrowRegroup_) = IsRegroup'
+  match_regroup' _ = NotRegroup'
+
+instance PreArrow k => CRMorphism (RePreArrow k) where
+  match_par (PreArrowPar f g) = IsPar f g
+  match_par _ = NotPar
+
+data FanPattern k α β where
+    IsFan :: (Object k α, ObjectPair k β γ)
+         => k α β -> k α γ -> FanPattern k α (β,γ)
+    NotFan :: FanPattern k α β
+data FstPattern k α β where
+    IsFst :: (ObjectPair k α β)
+                 => FstPattern k (α,β) α
+    NotFst :: FstPattern k α β
+data SndPattern k α β where
+    IsSnd :: (ObjectPair k α β)
+                 => SndPattern k (α,β) β
+    NotSnd :: SndPattern k α β
+data TerminalPattern k α β where
+    IsTerminal :: (Object k α, UnitObject k ~ u)
+                 => TerminalPattern k α u
+    NotTerminal :: TerminalPattern k α β
+class CRCartesian k => CRPreArrow k where
+  match_fan :: k α β -> FanPattern k α β
+  match_fst :: k α β -> FstPattern k α β
+  match_snd :: k α β -> SndPattern k α β
+  match_terminal :: k α β -> TerminalPattern k α β
+
+pattern f:&&&g <- (match_fan -> IsFan f g)
+pattern Fst <- (match_fst -> IsFst)
+pattern Snd <- (match_snd -> IsSnd)
+pattern Terminal <- (match_terminal -> IsTerminal)
+  
+instance PreArrow k => CRPreArrow (RePreArrow k) where
+  match_fan (PreArrowFanout f g) = IsFan f g
+  match_fan _ = NotFan
+  match_fst PreArrowFst = IsFst
+  match_fst _ = NotFst
+  match_snd PreArrowSnd = IsSnd
+  match_snd _ = NotSnd
+  match_terminal PreArrowTerminal = IsTerminal
+  match_terminal _ = NotTerminal
+
+instance PreArrow k => EnhancedCat (RePreArrow k) k where arr = RePreArrow
+
 -- 
 -- 
 -- 
