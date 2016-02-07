@@ -81,7 +81,12 @@ data UnitObjWitness k u where
 
 infixr 1 :>>>, :<<<
 
--- GHC-invoked CPP can't seem able to do token pasting, so invoke this manually.
+-- GHC-invoked CPP can't seem able to do token pasting, so invoke the
+-- preprocessor manually to generate the GADTs.
+-- @
+--  $ cpp Control/Category/Constrained/Reified.hs 2> /dev/null | less
+-- @
+-- You can there copy-and paste the definitions of 'ReCategory' etc..
 #ifndef __GLASGOW_HASKELL__
 #  define GADTCPP
 #endif
@@ -93,7 +98,7 @@ infixr 1 :>>>, :<<<
     C##Compo :: Object k β                           \
          => Re##C k α β -> Re##C k β γ -> Re##C k α γ
 #else
-#  define RECATEGORY(catl)   \
+#  define RECATEGORY(C)   \
     ReCategory :: k α β -> ReCategory k α β; CategoryId :: Object k α => ReCategory k α α; CategoryCompo :: Object k β => ReCategory k α β -> ReCategory k β γ -> ReCategory k α γ
 #endif
 data ReCategory (k :: * -> * -> *) (α :: *) (β :: *) where
@@ -166,7 +171,7 @@ instance Category k => EnhancedCat (ReCategory k) k where arr = ReCategory
                    , ObjectPair k α (β,γ), ObjectPair k (α,β) γ )             \
                 => Re##C k ((α,β),γ) (α,(β,γ))
 #else
-#  define RECARTESIAN(catl) \
+#  define RECARTESIAN(C) \
     ReCartesian :: k α β -> ReCartesian k α β; CartesianId :: Object k α => ReCartesian k α α; CartesianCompo :: Object k β => ReCartesian k α β -> ReCartesian k β γ -> ReCartesian k α γ; CartesianSwap :: (ObjectPair k α β, ObjectPair k β α) => ReCartesian k (α,β) (β,α); CartesianAttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReCartesian k α (α,u); CartesianDetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReCartesian k (α,u) α; CartesianRegroup :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReCartesian k (α,(β,γ)) ((α,β),γ); CartesianRegroup_ :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReCartesian k ((α,β),γ) (α,(β,γ))
 #endif
 data ReCartesian (k :: * -> * -> *) (α :: *) (β :: *) where
@@ -262,12 +267,12 @@ instance Cartesian k => EnhancedCat (ReCartesian k) k where arr = ReCartesian
 infixr 3 :***
 
 #ifdef GADTCPP
-#  define REMORPHISM(catl)                                \
-    RECARTESIAN(catl);                                     \
-    catl##Par :: (ObjectPair k α γ, ObjectPair k β δ)       \
-              => Re##catl k α β -> Re##catl k γ δ -> Re##catl k (α,γ) (β,δ)
+#  define REMORPHISM(C)                                \
+    RECARTESIAN(C);                                     \
+    C##Par :: (ObjectPair k α γ, ObjectPair k β δ)       \
+              => Re##C k α β -> Re##C k γ δ -> Re##C k (α,γ) (β,δ)
 #else
-#  define REMORPHISM(catl)  \
+#  define REMORPHISM(C)  \
     ReMorphism :: k α β -> ReMorphism k α β; MorphismId :: Object k α => ReMorphism k α α; MorphismCompo :: Object k β => ReMorphism k α β -> ReMorphism k β γ -> ReMorphism k α γ; MorphismSwap :: (ObjectPair k α β, ObjectPair k β α) => ReMorphism k (α,β) (β,α); MorphismAttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReMorphism k α (α,u); MorphismDetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReMorphism k (α,u) α; MorphismRegroup :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReMorphism k (α,(β,γ)) ((α,β),γ); MorphismRegroup_ :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReMorphism k ((α,β),γ) (α,(β,γ)); MorphismPar :: (ObjectPair k α γ, ObjectPair k β δ) => ReMorphism k α β -> ReMorphism k γ δ -> ReMorphism k (α,γ) (β,δ)
 #endif
 data ReMorphism (k :: * -> * -> *) (α :: *) (β :: *) where
@@ -341,15 +346,15 @@ instance Morphism k => EnhancedCat (ReMorphism k) k where arr = ReMorphism
 
 
 #ifdef GADTCPP
-#  define REPREARROW(catl)                                          \
-    REMORPHISM(catl);                                                \
-    catl##Fanout :: (Object k α, ObjectPair k β γ)                    \
-            => Re##catl k α β -> Re##catl k α γ -> Re##catl k α (β,γ); \
-    catl##Terminal :: Object k α => Re##catl k α (UnitObject k);        \
-    catl##Fst :: ObjectPair k α β => Re##catl k (α,β) α;                 \
-    catl##Snd :: ObjectPair k α β => Re##catl k (α,β) β
+#  define REPREARROW(C)                                    \
+    REMORPHISM(C);                                          \
+    C##Fanout :: (Object k α, ObjectPair k β γ)              \
+            => Re##C k α β -> Re##C k α γ -> Re##C k α (β,γ); \
+    C##Terminal :: Object k α => Re##C k α (UnitObject k);     \
+    C##Fst :: ObjectPair k α β => Re##C k (α,β) α;              \
+    C##Snd :: ObjectPair k α β => Re##C k (α,β) β
 #else
-#  define REPREARROW(catl) \
+#  define REPREARROW(C) \
     RePreArrow :: k α β -> RePreArrow k α β; PreArrowId :: Object k α => RePreArrow k α α; PreArrowCompo :: Object k β => RePreArrow k α β -> RePreArrow k β γ -> RePreArrow k α γ; PreArrowSwap :: (ObjectPair k α β, ObjectPair k β α) => RePreArrow k (α,β) (β,α); PreArrowAttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => RePreArrow k α (α,u); PreArrowDetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => RePreArrow k (α,u) α; PreArrowRegroup :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => RePreArrow k (α,(β,γ)) ((α,β),γ); PreArrowRegroup_ :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => RePreArrow k ((α,β),γ) (α,(β,γ)); PreArrowPar :: (ObjectPair k α γ, ObjectPair k β δ) => RePreArrow k α β -> RePreArrow k γ δ -> RePreArrow k (α,γ) (β,δ); PreArrowFanout :: (Object k α, ObjectPair k β γ) => RePreArrow k α β -> RePreArrow k α γ -> RePreArrow k α (β,γ); PreArrowTerminal :: Object k α => RePreArrow k α (UnitObject k); PreArrowFst :: ObjectPair k α β => RePreArrow k (α,β) α; PreArrowSnd :: ObjectPair k α β => RePreArrow k (α,β) β
 #endif
 data RePreArrow (k :: * -> * -> *) (α :: *) (β :: *) where
@@ -457,80 +462,119 @@ instance PreArrow k => CRPreArrow (RePreArrow k) where
 
 instance PreArrow k => EnhancedCat (RePreArrow k) k where arr = RePreArrow
 
--- 
--- 
--- 
--- data ReWellPointed (k :: * -> * -> *) (α :: *) (β :: *) where
---     ReWellPointed :: k α β -> ReWellPointed k α β
---     ReWellPointedArr' :: RePreArrow (ReWellPointed k) α β -> ReWellPointed k α β
---     Const :: (Object k ν, ObjectPoint k α) => α -> ReWellPointed k ν α
--- 
--- instance Category k => Category (ReWellPointed k) where
---   type Object (ReWellPointed k) a = Object k a
---   
---   id = ReWellPointedArr' id
---   
---   Const α . _ = Const α
---   ReWellPointedArr' f . ReWellPointedArr' g = ReWellPointedArr' $ f . g
---   ReWellPointedArr' (RePreArrowMorph (ReMorphismCart (ReCartesianCat Id))) . g = g
---   f . ReWellPointedArr' (RePreArrowMorph (ReMorphismCart (ReCartesianCat Id))) = f
---   f . g = ReWellPointedArr' $ RePreArrow f . RePreArrow g
--- 
--- instance Cartesian k => Cartesian (ReWellPointed k) where
---   type PairObjects (ReWellPointed k) α β = PairObjects k α β
---   type UnitObject (ReWellPointed k) = UnitObject k
---   swap = ReWellPointedArr' swap
---   attachUnit = ReWellPointedArr' attachUnit
---   detachUnit = ReWellPointedArr' detachUnit
---   regroup = ReWellPointedArr' regroup
---   regroup' = ReWellPointedArr' regroup'
--- 
--- instance Morphism k => Morphism (ReWellPointed k) where
---   ReWellPointedArr' f *** ReWellPointedArr' g = ReWellPointedArr' $ f *** g
---   ReWellPointedArr' f *** g = ReWellPointedArr' $ f *** RePreArrow g
---   f *** ReWellPointedArr' g = ReWellPointedArr' $ RePreArrow f *** g
---   f *** g = ReWellPointedArr' $ RePreArrow f *** RePreArrow g
--- 
--- instance PreArrow k => PreArrow (ReWellPointed k) where
---   ReWellPointedArr' f &&& ReWellPointedArr' g = ReWellPointedArr' $ f &&& g
---   ReWellPointedArr' f &&& g = ReWellPointedArr' $ f &&& RePreArrow g
---   f &&& ReWellPointedArr' g = ReWellPointedArr' $ RePreArrow f &&& g
---   f &&& g = ReWellPointedArr' $ RePreArrow f &&& RePreArrow g
---   terminal = ReWellPointedArr' terminal
---   fst = ReWellPointedArr' fst
---   snd = ReWellPointedArr' snd
--- 
--- instance WellPointed k => WellPointed (ReWellPointed k) where
---   type PointObject (ReWellPointed k) α = PointObject k α
---   const = Const
---   unit = u
---    where u :: ∀ k . WellPointed k => CatTagged (ReWellPointed k) (UnitObject k)
---          u = Tagged u' where Tagged u' = unit :: CatTagged k (UnitObject k)
---   
--- instance CRCategory (ReWellPointed k) where
---   match_id (ReWellPointedArr' (RePreArrowMorph (ReMorphismCart (ReCartesianCat Id))))
---               = Just Id
---   match_id _ = Nothing
--- --  match_compose (ReMorphismCart (ReCartesianCat (f:>>>g)))
--- --                       = Just . _ $ f :>>> g
---   match_compose _ = Nothing
--- 
--- REENHANCE(ReWellPointed)
--- 
--- 
--- 
--- 
--- -- | @'EnhancedCat'' a k@ means that @k@ is a subcategory of @a@, so @k@-arrows also
--- --   work as @a@-arrows. This requires of course that all objects of @k@ are also
--- --   objects of @a@.
--- class (EnhancedCat a k) => EnhancedCat' a k where
---   arr' :: (Object k b, Object k c)
---          => k b c -> a b c
---   arr'Object :: ObjectWitness k α -> ObjectWitness a α
--- class (EnhancedCat' a k, Cartesian a, Cartesian k) => EnhancedCat'P a k where
---   arr'ObjPair :: ObjPairWitness k α β -> ObjPairWitness a α β
---   arr'UnitObj :: UnitObjWitness k u -> UnitObjWitness a u
--- instance (Category k) => EnhancedCat' k k where
---   arr' = id
---   arr'Object IsObject = IsObject
+
+
+
+#ifdef GADTCPP
+#  define REWELLPOINTED(C)                                       \
+    REPREARROW(C);                                                \
+    C##Const :: (Object k ν, ObjectPoint k α) => α -> Re##C k ν α
+#else
+#  define REWELLPOINTED(C) \
+    ReWellPointed :: k α β -> ReWellPointed k α β; WellPointedId :: Object k α => ReWellPointed k α α; WellPointedCompo :: Object k β => ReWellPointed k α β -> ReWellPointed k β γ -> ReWellPointed k α γ; WellPointedSwap :: (ObjectPair k α β, ObjectPair k β α) => ReWellPointed k (α,β) (β,α); WellPointedAttachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReWellPointed k α (α,u); WellPointedDetachUnit :: (Object k α, UnitObject k ~ u, ObjectPair k α u) => ReWellPointed k (α,u) α; WellPointedRegroup :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReWellPointed k (α,(β,γ)) ((α,β),γ); WellPointedRegroup_ :: ( ObjectPair k α β, ObjectPair k β γ , ObjectPair k α (β,γ), ObjectPair k (α,β) γ ) => ReWellPointed k ((α,β),γ) (α,(β,γ)); WellPointedPar :: (ObjectPair k α γ, ObjectPair k β δ) => ReWellPointed k α β -> ReWellPointed k γ δ -> ReWellPointed k (α,γ) (β,δ); WellPointedFanout :: (Object k α, ObjectPair k β γ) => ReWellPointed k α β -> ReWellPointed k α γ -> ReWellPointed k α (β,γ); WellPointedTerminal :: Object k α => ReWellPointed k α (UnitObject k); WellPointedFst :: ObjectPair k α β => ReWellPointed k (α,β) α; WellPointedSnd :: ObjectPair k α β => ReWellPointed k (α,β) β; WellPointedConst :: (Object k ν, ObjectPoint k α) => α -> ReWellPointed k ν α
+#endif
+data ReWellPointed (k :: * -> * -> *) (α :: *) (β :: *) where
+    REWELLPOINTED(WellPointed)
+
+
+#define WELLPOINTEDCOMPO  \
+  Const c . _ = const c;   \
+  PREARROWCOMPO
+
+instance WellPointed k => Category (ReWellPointed k) where
+  type Object (ReWellPointed k) a = Object k a
+  id = WellPointedId
+  PREARROWCOMPO
+  g . f = WellPointedCompo f g
+
+instance WellPointed k => Cartesian (ReWellPointed k) where
+  type PairObjects (ReWellPointed k) α β = PairObjects k α β
+  type UnitObject (ReWellPointed k) = UnitObject k
+  swap = WellPointedSwap
+  attachUnit = WellPointedAttachUnit
+  detachUnit = WellPointedDetachUnit
+  regroup = WellPointedRegroup
+  regroup' = WellPointedRegroup_
+  
+instance WellPointed k => Morphism (ReWellPointed k) where
+  -- Const c *** Const d = const (c,d)
+  -- f@Terminal *** g@Terminal = tpar f g
+  --  where tpar :: ∀ k α β . (WellPointed k, ObjectPair k α β)
+  --           => ReWellPointed k α (UnitObject k) -> ReWellPointed k β (UnitObject k)
+  --               -> ReWellPointed k (α,β) (UnitObject k, UnitObject k)
+  --        tpar Terminal Terminal = const (u, u)
+  --         where Tagged u = unit :: CatTagged k (UnitObject k)
+  f *** g = WellPointedPar f g
+
+instance WellPointed k => PreArrow (ReWellPointed k) where
+  -- Const c &&& Const d = const (c,d)
+  f &&& g = WellPointedFanout f g
+  terminal = WellPointedTerminal
+  fst = WellPointedFst
+  snd = WellPointedSnd
+
+instance WellPointed k => WellPointed (ReWellPointed k) where
+  type PointObject (ReWellPointed k) α = PointObject k α
+  const = WellPointedConst
+  unit = u
+   where u :: ∀ k . WellPointed k => CatTagged (ReWellPointed k) (UnitObject k)
+         u = Tagged u' where Tagged u' = unit :: CatTagged k (UnitObject k)
+  
+  
+instance (HasAgent k, WellPointed k) => HasAgent (ReWellPointed k) where
+  type AgentVal (ReWellPointed k) α ω = GenericAgent (ReWellPointed k) α ω
+  alg = genericAlg
+  ($~) = genericAgentMap
+
+instance WellPointed k => CRCategory (ReWellPointed k) where
+  type SpecificCat (ReWellPointed k) = k
+  fromSpecific = ReWellPointed
+  match_concrete (ReWellPointed f) = Just f
+  match_concrete _ = Nothing
+  match_id (WellPointedId) = IsId
+  match_id _ = NotId
+  match_compose (WellPointedCompo f g) = IsCompo f g
+  match_compose _ = NotCompo
+
+instance WellPointed k => CRCartesian (ReWellPointed k) where
+  match_swap (WellPointedSwap) = IsSwap
+  match_swap _ = NotSwap
+  match_attachUnit (WellPointedAttachUnit) = IsAttachUnit
+  match_attachUnit _ = NotAttachUnit
+  match_detachUnit (WellPointedDetachUnit) = IsDetachUnit
+  match_detachUnit _ = NotDetachUnit
+  match_regroup (WellPointedRegroup) = IsRegroup
+  match_regroup _ = NotRegroup
+  match_regroup' (WellPointedRegroup_) = IsRegroup'
+  match_regroup' _ = NotRegroup'
+
+instance WellPointed k => CRMorphism (ReWellPointed k) where
+  match_par (WellPointedPar f g) = IsPar f g
+  match_par _ = NotPar
+  
+instance WellPointed k => CRPreArrow (ReWellPointed k) where
+  match_fan (WellPointedFanout f g) = IsFan f g
+  match_fan _ = NotFan
+  match_fst WellPointedFst = IsFst
+  match_fst _ = NotFst
+  match_snd WellPointedSnd = IsSnd
+  match_snd _ = NotSnd
+  match_terminal WellPointedTerminal = IsTerminal
+  match_terminal _ = NotTerminal
+
+data ConstPattern k α β where
+    IsConst :: (Object k α, Object k β)
+                 => β -> ConstPattern k α β
+    NotConst :: ConstPattern k α β
+class CRPreArrow k => CRWellPointed k where
+  match_const :: k α β -> ConstPattern k α β
+
+pattern Const c <- (match_const -> IsConst c)
+  
+instance WellPointed k => CRWellPointed (ReWellPointed k) where
+  match_const (WellPointedConst c) = IsConst c
+  match_const _ = NotConst
+
+instance WellPointed k => EnhancedCat (ReWellPointed k) k where arr = ReWellPointed
+
 
