@@ -23,7 +23,7 @@
 
 module Control.Category.Constrained.Reified.PolyPattern (
 #if __GLASGOW_HASKELL__ > 708
-      -- * Pattern synonyms
+      -- * Pattern synonyms (GHC>=7.10)
       -- ** Category
          pattern Specific, pattern Id, pattern (:<<<), pattern (:>>>)
       -- ** Cartesian
@@ -51,6 +51,9 @@ import Control.Category.Constrained.Reified
 
 import Data.Tagged
 
+#if __GLASGOW_HASKELL__ > 708
+infixr 1 :<<<, :>>>
+#endif
 
 data IdPattern k α β where
     IsId :: Object k α => IdPattern k α α
