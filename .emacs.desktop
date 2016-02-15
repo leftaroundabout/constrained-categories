@@ -2,7 +2,7 @@
 ;; --------------------------------------------------------------------------
 ;; Desktop File for Emacs
 ;; --------------------------------------------------------------------------
-;; Created Sun Feb 14 14:37:42 2016
+;; Created Mon Feb 15 14:35:33 2016
 ;; Desktop file format version 206
 ;; Emacs version 24.3.1
 
@@ -11,18 +11,51 @@
 (setq tags-file-name nil)
 (setq tags-table-list nil)
 (setq search-ring nil)
-(setq regexp-search-ring nil)
-(setq register-alist '((115 . "ODdf)OCp")))
-(setq file-name-history '("" "README.md" "" "constrained-categories.cabal" "" "wild-ideas/TupMat.hs" "examples/VectK.hs" "" "examples/Invertible.hs" "" "examples/Hask.hs" "" "examples/Set.hs" "" "Control/Category/Constrained/Prelude.hs" "" "Data/Traversable/Constrained.hs" "Data/Foldable/Constrained.hs" ""))
+(setq regexp-search-ring '("7.8"))
+(setq register-alist '((48 . "#if __GLASGOW_HASKELL__ > 7.8\n") (115 . "ODdf)OCp")))
+(setq file-name-history '("~/progwrit/haskell/constrained-categories/" "" "README.md" "" "constrained-categories.cabal" "" "wild-ideas/TupMat.hs" "examples/VectK.hs" "" "examples/Invertible.hs" "" "examples/Hask.hs" "" "examples/Set.hs" "" "Control/Category/Constrained/Prelude.hs" "" "Data/Traversable/Constrained.hs" "Data/Foldable/Constrained.hs" ""))
 
 ;; Buffer section -- buffers listed in same order as in buffer list:
+(desktop-create-buffer 206
+  ".travis.yml"
+  ".travis.yml"
+  'fundamental-mode
+  '(undo-tree-mode)
+  27
+  '(nil nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "constrained-categories.cabal"
+  "constrained-categories.cabal"
+  'haskell-cabal-mode
+  '(undo-tree-mode linum-mode)
+  2314
+  '(nil nil)
+  nil
+  nil
+  '((indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
 (desktop-create-buffer 206
   "Control/Category/Constrained/Reified/PolyPattern.hs"
   "PolyPattern.hs"
   'haskell-mode
   '(haskell-indent-mode undo-tree-mode linum-mode auto-complete-mode)
-  1
-  '(nil nil)
+  1238
+  '(1 nil)
+  nil
+  nil
+  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
+
+(desktop-create-buffer 206
+  "Control/Category/Constrained/Reified.hs"
+  "Reify"
+  'haskell-mode
+  '(haskell-doc-mode haskell-indent-mode undo-tree-mode linum-mode auto-complete-mode haskell-indentation-mode)
+  1407
+  '(3146 nil)
   nil
   nil
   '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
@@ -39,34 +72,12 @@
   '((buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
 
 (desktop-create-buffer 206
-  "constrained-categories.cabal"
-  "constrained-categories.cabal"
-  'haskell-cabal-mode
-  '(undo-tree-mode linum-mode)
-  1
-  '(nil nil)
-  nil
-  nil
-  '((indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
-
-(desktop-create-buffer 206
   "Control/Category/Constrained.hs"
   "Cat"
   'haskell-mode
   '(haskell-doc-mode haskell-indent-mode undo-tree-mode linum-mode auto-complete-mode haskell-indentation-mode)
   5990
   '(9463 nil)
-  nil
-  nil
-  '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))
-
-(desktop-create-buffer 206
-  "Control/Category/Constrained/Reified.hs"
-  "Reify"
-  'haskell-mode
-  '(haskell-doc-mode haskell-indent-mode undo-tree-mode linum-mode auto-complete-mode haskell-indentation-mode)
-  2415
-  '(3146 nil)
   nil
   nil
   '((tab-width . 8) (indent-tabs-mode) (buffer-file-coding-system . utf-8-unix) (overwrite-mode)))

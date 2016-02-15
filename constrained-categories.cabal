@@ -38,7 +38,7 @@ source-repository head
 
 Library
   Default-Language:   Haskell2010
-  Build-Depends:      base>=4.8 && <5
+  Build-Depends:      base>=4.6 && <5
                       , tagged
                       , void
   Default-Extensions: ConstraintKinds

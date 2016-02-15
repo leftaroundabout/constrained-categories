@@ -9,8 +9,8 @@
 -- in "Control.Category.Constrained.Reified" in a uniform way.
 -- 
 -- This kind of polymorphic pattern (with @ViewPatterns@) doesn't
--- seem to work prior to GHC-7.10, so if you have base<4.8 this
--- module will be empty.
+-- seem to work prior to GHC-7.10, so if you have base<4.8 these
+-- synonyms aren't available.
 
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -22,6 +22,7 @@
 {-# LANGUAGE ViewPatterns          #-}
 
 module Control.Category.Constrained.Reified.PolyPattern (
+#if __GLASGOW_HASKELL__ > 708
       -- * Pattern synonyms
       -- ** Category
          pattern Specific, pattern Id, pattern (:<<<), pattern (:>>>)
@@ -34,9 +35,10 @@ module Control.Category.Constrained.Reified.PolyPattern (
       -- ** Pre-arrow
        , pattern (:&&&), pattern Fst, pattern Snd, pattern Terminal
       -- ** Well-pointed
-       , pattern Const
+       , pattern Const,
+#endif
       -- * Deconstruction-classes
-       , CRCategory(..), CRCartesian(..), CRMorphism(..), CRPreArrow(..), CRWellPointed(..)
+         CRCategory(..), CRCartesian(..), CRMorphism(..), CRPreArrow(..), CRWellPointed(..)
        ) where
 
 
@@ -74,12 +76,14 @@ instance Category k => CRCategory (ReCategory k) where
   match_compose (CategoryCompo f g) = IsCompo f g
   match_compose _ = NotCompo
 
+#if __GLASGOW_HASKELL__ > 708
 pattern Specific f <- (match_concrete -> Just f) where
   Specific f = fromSpecific f
 pattern Id <- (match_id -> IsId) where
   Id = id
 pattern g:<<<f <- (match_compose -> IsCompo f g)
 pattern f:>>>g <- (match_compose -> IsCompo f g)
+#endif
   
 instance Cartesian k => CRCategory (ReCartesian k) where
   type SpecificCat (ReCartesian k) = k
@@ -132,13 +136,17 @@ instance Cartesian k => CRCartesian (ReCartesian k) where
   match_regroup' (CartesianRegroup_) = IsRegroup'
   match_regroup' _ = NotRegroup'
 
+#if __GLASGOW_HASKELL__ > 708
 pattern Swap <- (match_swap -> IsSwap)
 pattern AttachUnit <- (match_attachUnit -> IsAttachUnit)
 pattern DetachUnit <- (match_detachUnit -> IsDetachUnit)
 pattern Regroup <- (match_regroup -> IsRegroup) 
 pattern Regroup' <- (match_regroup' -> IsRegroup')
+#endif
   
+#if __GLASGOW_HASKELL__ > 708
 infixr 3 :***
+#endif
 
 instance Morphism k => CRCategory (ReMorphism k) where
   type SpecificCat (ReMorphism k) = k
@@ -173,10 +181,14 @@ instance Morphism k => CRMorphism (ReMorphism k) where
   match_par (MorphismPar f g) = IsPar f g
   match_par _ = NotPar
 
+#if __GLASGOW_HASKELL__ > 708
 pattern f:***g <- (match_par -> IsPar f g)
+#endif
   
 
+#if __GLASGOW_HASKELL__ > 708
 infixr 3 :&&&
+#endif
 
 
 instance PreArrow k => CRCategory (RePreArrow k) where
@@ -227,10 +239,12 @@ class CRCartesian k => CRPreArrow k where
   match_snd :: k α β -> SndPattern k α β
   match_terminal :: k α β -> TerminalPattern k α β
 
+#if __GLASGOW_HASKELL__ > 708
 pattern f:&&&g <- (match_fan -> IsFan f g)
 pattern Fst <- (match_fst -> IsFst)
 pattern Snd <- (match_snd -> IsSnd)
 pattern Terminal <- (match_terminal -> IsTerminal)
+#endif
   
 instance PreArrow k => CRPreArrow (RePreArrow k) where
   match_fan (PreArrowFanout f g) = IsFan f g
@@ -286,7 +300,9 @@ data ConstPattern k α β where
 class CRPreArrow k => CRWellPointed k where
   match_const :: k α β -> ConstPattern k α β
 
+#if __GLASGOW_HASKELL__ > 708
 pattern Const c <- (match_const -> IsConst c)
+#endif
   
 instance WellPointed k => CRWellPointed (ReWellPointed k) where
   match_const (WellPointedConst c) = IsConst c
