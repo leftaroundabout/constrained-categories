@@ -71,6 +71,9 @@ instance SumToProduct [] (->) (->) where
    where ~(xs,ys) = mapEither f l
   filter = Prelude.filter
 
+
+infixl 4 <$>
+
 (<$>) :: (Functor f r (->), Object r a, Object r b)
      => r a b -> f a -> f b
 (<$>) = fmap

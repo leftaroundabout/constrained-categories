@@ -57,7 +57,7 @@ class (Monoidal f r t, Curry r, Curry t) => Applicative f r t where
        => f (r a b) `t` t (f a) (f b)
   (<*>) = curry (fzipWith $ uncurry id)
 
-infixl 4 <*>
+infixl 4 <*>, <**>
   
 (<**>) :: ( Applicative f r (->), ObjectMorphism r a b, ObjectPair r (r a b) a )
              => f a -> f (r a b) -> f b
