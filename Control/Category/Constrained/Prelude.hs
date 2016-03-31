@@ -21,7 +21,9 @@ module Control.Category.Constrained.Prelude (
 
 import Prelude hiding ( id, const, fst, snd, (.), ($), curry, uncurry
                       , Functor(..), (<$>), Applicative(..), (<*>), Monad(..), (=<<), filter
-                      , mapM, mapM_, sequence, sequence_ )
+                      , mapM, mapM_, sequence, sequence_
+                      , Foldable, foldMap, fold, traverse_, concatMap
+                      , Traversable, traverse )
 
 import Control.Category.Constrained hiding (ConstrainedMorphism)
 import Control.Functor.Constrained
@@ -29,4 +31,8 @@ import Control.Applicative.Constrained
 import Control.Monad.Constrained hiding 
          (MonadPlus(..), MonadZero(..), (>=>), (<=<), guard, forever, void)
 import Control.Arrow.Constrained (Function, ($), ifThenElse, fst, snd, const)
+import Control.Applicative.Constrained
+
+import Data.Foldable.Constrained (Foldable, foldMap, fold, traverse_, concatMap)
+import Data.Traversable.Constrained (Traversable, traverse)
 
