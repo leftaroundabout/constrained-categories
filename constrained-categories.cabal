@@ -31,6 +31,8 @@ Maintainer:          (@) sagemueller $ geo.uni-koeln.de
 Homepage:            https://github.com/leftaroundabout/constrained-categories
 Build-Type:          Simple
 Cabal-Version:       >=1.10
+Tested-With:         GHC == 7.8.4, GHC == 7.10.2, GHC == 8.0.2
+                                
 
 source-repository head
   type: git
