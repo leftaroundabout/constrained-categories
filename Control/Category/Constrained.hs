@@ -45,6 +45,8 @@ import GHC.Exts (Constraint)
 import Data.Tagged
 import Data.Monoid
 import Data.Void
+import Data.Type.Coercion
+import qualified Control.Category as Hask
 
 -- | In mathematics, a category is defined as a class of /objects/, plus a class of
 --   /morphisms/ between those objects. In Haskell, one traditionally works in
@@ -399,4 +401,6 @@ instance HasAgent (->) where
   ($~) = ($)
 
 
-
+instance Category Coercion where
+  id = Hask.id
+  (.) = (Hask..)

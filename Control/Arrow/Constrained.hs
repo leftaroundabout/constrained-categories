@@ -69,6 +69,8 @@ import GHC.Exts (Constraint)
 import Data.Tagged
 import Data.Void
 
+import Data.Type.Coercion
+
 import qualified Control.Arrow as Arr
 
 infixr 1 >>>, <<<
@@ -244,6 +246,9 @@ f $ x = arr f x
 
 instance (Function f) => EnhancedCat (->) (ConstrainedCategory f o) where
   arr (ConstrainedMorphism q) = arr q
+
+instance EnhancedCat (->) Coercion where
+  arr = coerceWith
 
 
 
