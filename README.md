@@ -37,7 +37,7 @@ This allows for some practically useful things like the `Monad` instance of the 
 The solution
 ---
 
-This package attempts to offer a good compromise between the two approaches. It is very similar to [packages/hask](http://hackage.haskell.org/package/hask-0), but actually keeps even closer to the `base` modules.
+This package attempts to offer a good compromise between the two approaches. It is very similar to [packages/hask](http://hackage.haskell.org/package/hask-0) or [packages/subhask](http://hackage.haskell.org/package/subhask)<sup>[see note below](https://github.com/leftaroundabout/constrained-categories#deprecation)</sup>, but keeps a lot closer to the terminology used in the `base` modules.
 
 Two crucial changes are made, relative to the established standard classes:
 
@@ -130,3 +130,10 @@ Trying to generalise random existing code to the classes in this package works e
 In [Hask](http://hackage.haskell.org/package/hask), the `Op` constraint is only required for generating &ldquo;new&rdquo; arrows; the general philosophy seems to be to pack constraints in GADT dictionaries as much a possible. All in all, that is probably the better solution, but off the top it does require more structure (e.g. `observe`) that differs substantially from the standard modules.
 
 So all in all, this project may be seen as a brute-force hack, generalising the traditional base-classes as much as possible without actually changing the interface.
+
+
+Deprecation
+---
+
+The [`subhask` package](http://hackage.haskell.org/package/subhask) has a very similar focus and tackles the subject in an arguably more consequent manner. It is very possible that this package will in the future be deprecated in favour of subhask, but probably not while that package has its own problems. In particular, it depends on [hmatrix](http://hackage.haskell.org/package/hmatrix), which I consider quite problematic for such a general-purpose project.
+
