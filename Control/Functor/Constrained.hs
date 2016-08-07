@@ -32,6 +32,9 @@ import qualified Prelude
 
 import Data.Void
 
+import Data.Type.Coercion
+import Data.Complex
+
 class ( Category r, Category t, Object t (f (UnitObject r)) )
            => Functor f r t | f r -> t, f t -> r where
   fmap :: (Object r a, Object t (f a), Object r b, Object t (f b))
@@ -95,4 +98,11 @@ instance (o (), o [()], o Void, o [Void]) => SumToProduct []
   filter (ConstrainedMorphism f) = ConstrainedMorphism $ filter f
 
   
+instance Functor [] Coercion Coercion where fmap Coercion = Coercion
+instance Functor Maybe Coercion Coercion where fmap Coercion = Coercion
+instance Functor (Either a) Coercion Coercion where fmap Coercion = Coercion
+instance Functor ((->) a) Coercion Coercion where fmap Coercion = Coercion
+instance Functor ((,) a) Coercion Coercion where fmap Coercion = Coercion
+instance Functor IO Coercion Coercion where fmap Coercion = Coercion
+instance Functor Complex Coercion Coercion where fmap Coercion = Coercion
 
