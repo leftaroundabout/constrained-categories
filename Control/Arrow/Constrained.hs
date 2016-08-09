@@ -60,7 +60,7 @@ module Control.Arrow.Constrained (
     -- ** Conditionals
     , choose, ifThenElse
     -- ** Coercions
-    , follow, flout, pretend, pretendLike
+    , follow, flout, pretend, swallow, pretendLike, swallowLike
     ) where
 
 import Prelude hiding (id, const, fst, snd, (.), ($), Functor(..), Monad(..), (=<<))
@@ -450,9 +450,15 @@ flout _ = arr Coercion
 
 -- | Wrap an endomorphism in inverse coercions, to have it work on any type
 --   that's representationally equivalent to the one in the morphism's signature.
+--   This is a specialised version of 'pretendLike'.
 pretend :: (EnhancedCat k Coercion, Object k a, Object k b)
                   => Coercion a b -> k a a -> k b b
 pretend crc f = arr crc . f . arr (sym crc)
+
+-- | Equivalent to @'pretend' . 'sym'@.
+swallow :: (EnhancedCat k Coercion, Object k a, Object k b)
+                  => Coercion b a -> k a a -> k b b
+swallow crc f = arr (sym crc) . f . arr crc
 
 -- | This works much like <http://hackage.haskell.org/package/newtype-0.2/docs/Control-Newtype.html#v:over over>:
 --   wrap a morphism in any coercions required so the result types match.
@@ -462,3 +468,11 @@ pretendLike :: ( EnhancedCat k Coercion, Coercible b a, Coercible c d
                , Object k a, Object k b, Object k c, Object k d )
                    => p c d -> k a c -> k b d
 pretendLike _ f = arr Coercion . f . arr Coercion
+
+
+-- | Generalised coercion analogue of
+--   <http://hackage.haskell.org/package/newtype-0.2/docs/Control-Newtype.html#v:under under>.
+swallowLike :: ( EnhancedCat k Coercion, Coercible b a, Coercible c d
+               , Object k a, Object k b, Object k c, Object k d )
+                   => p b a -> k a c -> k b d
+swallowLike _ f = arr Coercion . f . arr Coercion
