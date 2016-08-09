@@ -444,7 +444,7 @@ follow :: (EnhancedCat k Coercion, Coercible a b, Object k a, Object k b)
 follow _ = arr Coercion
 
 -- | The opposite of 'follow'.
-flout :: (EnhancedCat k Coercion, Coercible a b, Object k a, Object k b)
+flout :: (EnhancedCat k Coercion, Coercible b a, Object k a, Object k b)
                  => p a b -> k b a
 flout _ = arr Coercion
 
@@ -458,7 +458,7 @@ pretend crc f = arr crc . f . arr (sym crc)
 --   wrap a morphism in any coercions required so the result types match.
 --   This will often be too polymorphic for the type checker; consider using the
 --   more explicit 'follow' and 'flout'.
-pretendLike :: ( EnhancedCat k Coercion, Coercible a b, Coercible c d
+pretendLike :: ( EnhancedCat k Coercion, Coercible b a, Coercible c d
                , Object k a, Object k b, Object k c, Object k d )
                    => p c d -> k a c -> k b d
 pretendLike _ f = arr Coercion . f . arr Coercion
