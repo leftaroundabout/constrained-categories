@@ -59,6 +59,8 @@ module Control.Arrow.Constrained (
     -- * Misc utility
     -- ** Conditionals
     , choose, ifThenElse
+    -- ** Coercions
+    , follow, flout, pretend, pretendLike
     ) where
 
 import Prelude hiding (id, const, fst, snd, (.), ($), Functor(..), Monad(..), (=<<))
@@ -69,6 +71,7 @@ import GHC.Exts (Constraint)
 import Data.Tagged
 import Data.Void
 
+import Data.Coerce
 import Data.Type.Coercion
 
 import qualified Control.Arrow as Arr
@@ -432,3 +435,30 @@ genericPoint :: ( WellPointed k, Object k a, ObjectPoint k x )
        => x -> GenericAgent k a x
 genericPoint x = GenericAgent $ const x
 
+
+
+-- | Imitate a type change in a different category. This is usually possible
+--   for type changes that are no-ops at runtime, in particular for newtype wrappers.
+follow :: (EnhancedCat k Coercion, Coercible a b, Object k a, Object k b)
+                 => p a b -> k a b
+follow _ = arr Coercion
+
+-- | The opposite of 'follow'.
+flout :: (EnhancedCat k Coercion, Coercible a b, Object k a, Object k b)
+                 => p a b -> k b a
+flout _ = arr Coercion
+
+-- | Wrap an endomorphism in inverse coercions, to have it work on any type
+--   that's representationally equivalent to the one in the morphism's signature.
+pretend :: (EnhancedCat k Coercion, Object k a, Object k b)
+                  => Coercion a b -> k a a -> k b b
+pretend crc f = arr crc . f . arr (sym crc)
+
+-- | This works much like <http://hackage.haskell.org/package/newtype-0.2/docs/Control-Newtype.html#v:over over>:
+--   wrap a morphism in any coercions required so the result types match.
+--   This will often be too polymorphic for the type checker; consider using the
+--   more explicit 'follow' and 'flout'.
+pretendLike :: ( EnhancedCat k Coercion, Coercible a b, Coercible c d
+               , Object k a, Object k b, Object k c, Object k d )
+                   => p c d -> k a c -> k b d
+pretendLike _ f = arr Coercion . f . arr Coercion
