@@ -102,16 +102,16 @@ newtype HaskWrapApplicative f x = HaskWrapApplicative { getHWAppl :: f x }
 
 instance (Functor f (->) (->)) => Hask.Functor (HaskWrapApplicative f) where
   fmap f (HaskWrapApplicative c) = HaskWrapApplicative $ fmap f c
-instance (Applicative f (->) (->)) => Hask.Applicative (HaskWrapApplicative f) where
-  pure = HaskWrapApplicative . pure
+instance (Monoidal f (->) (->)) => Hask.Applicative (HaskWrapApplicative f) where
+  pure x = HaskWrapApplicative $ (fmap (const x) . pureUnit) ()
   HaskWrapApplicative fs <*> HaskWrapApplicative xs
-       = HaskWrapApplicative $ fs <*> xs
+       = HaskWrapApplicative $ fzipWith (uncurry ($)) (fs, xs)
 
 -- | Use this if you want to “derive” a constrained traversable instance from a
 --   given 'Hask.Traversable' one. (You will not be able to simply set
 --   @'traverse' = 'Hask.traverse'@, because the latter requires the Prelude version
---   of 'Hask.Applicative', which can not be inferred from the constrained version.
-haskTraverse :: (Hask.Traversable t, Applicative f (->) (->))
+--   of 'Hask.Applicative', which can not be inferred from the constrained `Monoidal`.
+haskTraverse :: (Hask.Traversable t, Monoidal f (->) (->))
       => (a -> f b) -> t a -> f (t b)
 haskTraverse f = getHWAppl . Hask.traverse (HaskWrapApplicative . f) 
 
