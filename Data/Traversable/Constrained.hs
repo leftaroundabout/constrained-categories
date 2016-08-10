@@ -37,6 +37,8 @@ import Prelude hiding (
 import qualified Control.Category.Hask as Hask
 import qualified Control.Arrow as A
 
+import qualified Data.Traversable as Hask
+
 import Control.Arrow.Constrained
 
 import Data.Monoid
