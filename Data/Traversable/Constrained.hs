@@ -17,7 +17,7 @@
 module Data.Traversable.Constrained
            ( module Control.Applicative.Constrained 
            , Traversable(..)
-           , sequence, forM
+           , forM
            , EndoTraversable
            , haskTraverse
            ) where
@@ -59,12 +59,12 @@ class (Category k, Category l, Functor s l l, Functor t k k)
   mapM = traverse
 
 
-sequence :: ( Traversable t t k k, Monoidal f k k
-            , ObjectPair k a (t a), ObjectPair k (f a) (f (t a))
-            , Object k (t (f a))
-            , ObjectPoint k (t a)
-            ) => t (f a) `k` f (t a)
-sequence = traverse id
+  sequence :: ( k~l, s~t, Monoidal f k k
+              , ObjectPair k a (t a), ObjectPair k (f a) (f (t a))
+              , Object k (t (f a))
+              , ObjectPoint k (t a)
+              ) => t (f a) `k` f (t a)
+  sequence = traverse id
 
 instance (Arrow k (->), WellPointed k, Function k, Functor [] k k) 
              => Traversable [] [] k k where
