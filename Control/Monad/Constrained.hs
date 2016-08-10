@@ -264,7 +264,7 @@ filterM :: ( PreArrow k, Monad m k, SumToProduct c k k, EndoTraversable c k
            , ObjectPair k (Bool, a) (c (Bool, a))
            , ObjectPair k (m Bool) (m a)
            , ObjectPair k (m (Bool, a)) (m (c (Bool, a)))
-           , PointObject k (c (Bool, a))
+           , TraversalObject k c (Bool, a)
            ) => a `k` m Bool -> c a `k` m (c a)
 filterM pg = fmap (fmap snd <<< filter fst) <<< mapM (fzip <<< pg &&& pure)
     
