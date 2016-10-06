@@ -12,6 +12,10 @@
 {-# LANGUAGE FlexibleInstances            #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE UndecidableInstances         #-}
+{-# LANGUAGE CPP                          #-}
+#if __GLASGOW_HASKELL__ >= 800
+{-# LANGUAGE UndecidableSuperClasses      #-}
+#endif
 
 
 module Control.Functor.Constrained

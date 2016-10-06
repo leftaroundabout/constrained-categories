@@ -10,6 +10,10 @@
 {-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE FlexibleInstances            #-}
+{-# LANGUAGE CPP                          #-}
+#if __GLASGOW_HASKELL__ >= 800
+{-# LANGUAGE UndecidableSuperClasses      #-}
+#endif
 {-# LANGUAGE ScopedTypeVariables          #-}
 {-# LANGUAGE TupleSections                #-}
 {-# LANGUAGE LambdaCase                   #-}

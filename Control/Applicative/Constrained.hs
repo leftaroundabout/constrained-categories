@@ -11,6 +11,10 @@
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE FlexibleInstances            #-}
 {-# LANGUAGE ScopedTypeVariables          #-}
+{-# LANGUAGE CPP                          #-}
+#if __GLASGOW_HASKELL__ >= 800
+{-# LANGUAGE UndecidableSuperClasses      #-}
+#endif
 
 
 module Control.Applicative.Constrained ( 

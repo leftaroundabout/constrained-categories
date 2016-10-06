@@ -15,6 +15,11 @@
 {-# LANGUAGE RankNTypes                   #-}
 {-# LANGUAGE AllowAmbiguousTypes          #-}
 {-# LANGUAGE TypeOperators                #-}
+{-# LANGUAGE ExplicitNamespaces           #-}
+{-# LANGUAGE CPP                          #-}
+#if __GLASGOW_HASKELL__ >= 800
+{-# LANGUAGE UndecidableSuperClasses      #-}
+#endif
 
 module Control.Category.Constrained ( 
             -- * The category class
@@ -23,7 +28,7 @@ module Control.Category.Constrained (
           , Cartesian (..), ObjectPair
           , Curry (..), ObjectMorphism
             -- * Monoidal with coproducts
-          , (+)()
+          , type (+)()
           , CoCartesian (..), ObjectSum
             -- * Isomorphisms
           , Isomorphic (..)

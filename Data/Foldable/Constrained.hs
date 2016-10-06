@@ -9,7 +9,10 @@
 {-# LANGUAGE FunctionalDependencies       #-}
 {-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE FlexibleContexts             #-}
-{-# LANGUAGE FlexibleContexts             #-}
+{-# LANGUAGE CPP                          #-}
+#if __GLASGOW_HASKELL__ >= 800
+{-# LANGUAGE UndecidableSuperClasses      #-}
+#endif
 {-# LANGUAGE KindSignatures               #-}
 {-# LANGUAGE ScopedTypeVariables          #-}
 {-# LANGUAGE TupleSections                #-}
