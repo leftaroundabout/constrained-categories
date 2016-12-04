@@ -9,7 +9,7 @@ License:             GPL-3
 License-file:        COPYING
 Author:              Justus Sagemüller
 Maintainer:          (@) sagemueller $ geo.uni-koeln.de
-Homepage:            https://github.com/leftaroundabout/constrained-categories
+Homepage:            https://github.com/leftaroundabout/constrained-categories/tree/compound/master
 Build-Type:          Simple
 Cabal-Version:       >=1.10
 Tested-With:         GHC == 7.8.4, GHC == 7.10.2, GHC == 8.0.2
