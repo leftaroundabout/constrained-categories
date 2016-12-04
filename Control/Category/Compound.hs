@@ -30,8 +30,6 @@ module Control.Category.Compound (
             -- * Monoidal with coproducts
           , type (+)()
           , CoCartesian (..), ObjectSum
-            -- * Isomorphisms
-          , Isomorphic (..)
             -- * Constraining a category
           , ConstrainedCategory (ConstrainedMorphism)
           , constrained, unconstrained
@@ -114,61 +112,6 @@ instance (Category k) => Category (ConstrainedCategory k isObj) where
   ConstrainedMorphism f . ConstrainedMorphism g = ConstrainedMorphism $ f . g
 
 
--- | Apart from /the/ identity morphism, 'id', there are other morphisms that
---   can basically be considered identies. For instance, in any cartesian
---   category (where it makes sense to have tuples and unit @()@ at all), it should be
---   possible to switch between @a@ and the isomorphic @(a, ())@. 'iso' is
---   the method for such \"pseudo-identities\", the most basic of which
---   are required as methods of the 'Cartesian' class.
---   
---   Why it is necessary to make these morphisms explicit: they are needed
---   for a couple of general-purpose category-theory methods, but even though
---   they're normally trivial to define there is no uniform way to do so.
---   For instance, for vector spaces, the baseis of @(a, (b,c))@ and @((a,b), c)@
---   are sure enough structurally equivalent, but not in the same way the spaces
---   themselves are (sum vs. product types).
-{-# DEPRECATED iso "This generic method, while looking nicely uniform, relies on OverlappingInstances and is therefore probably a bad idea. Use the specialised methods in classes like 'SPDistribute' instead." #-}
-class (Category k) => Isomorphic k a b where
-  iso :: k a b
-
-instance (Cartesian k, Object k a, u ~ UnitObject k, ObjectPair k a u) => Isomorphic k a (a,u) where
-  iso = attachUnit
-instance (Cartesian k, Object k a, u ~ UnitObject k, ObjectPair k a u) => Isomorphic k (a,u) a where
-  iso = detachUnit
-instance (Cartesian k, Object k a, u ~ UnitObject k, ObjectPair k a u, ObjectPair k u a, Object k (u, a), Object k (a, u) ) 
-              => Isomorphic k a (u,a) where
-  iso = swap . attachUnit
-instance (Cartesian k, Object k a, u ~ UnitObject k, ObjectPair k a u, ObjectPair k u a, Object k (u, a), Object k (a, u) ) 
-              => Isomorphic k (u,a) a where
-  iso = detachUnit . swap
-instance ( Cartesian k, Object k a, ObjectPair k a b, ObjectPair k b c
-         , ObjectPair k a (b,c), ObjectPair k (a,b) c, Object k c )
-                                       => Isomorphic k (a,(b,c)) ((a,b),c) where
-  iso = regroup
-instance ( Cartesian k, Object k a, ObjectPair k a b, ObjectPair k b c
-         , ObjectPair k a (b,c), ObjectPair k (a,b) c, Object k c )
-                                       => Isomorphic k ((a,b),c) (a,(b,c)) where
-  iso = regroup'
-
-
-instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u) => Isomorphic k a (a+u) where
-  iso = attachZero
-instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u) => Isomorphic k (a+u) a where
-  iso = detachZero
-instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u, ObjectSum k u a, Object k (u+a), Object k (a+u) ) 
-              => Isomorphic k a (u+a) where
-  iso = coSwap . attachZero
-instance (CoCartesian k, Object k a, u ~ ZeroObject k, ObjectSum k a u, ObjectSum k u a, Object k (u+a), Object k (a+u) ) 
-              => Isomorphic k (u+a) a where
-  iso = detachZero . coSwap
-instance ( CoCartesian k, Object k a, ObjectSum k a b, ObjectSum k b c
-         , ObjectSum k a (b+c), ObjectSum k (a+b) c, Object k c )
-                                       => Isomorphic k (a+(b+c)) ((a+b)+c) where
-  iso = coRegroup
-instance ( CoCartesian k, Object k a, ObjectSum k a b, ObjectSum k b c
-         , ObjectSum k a (b+c), ObjectSum k (a+b) c, Object k c )
-                                       => Isomorphic k ((a+b)+c) (a+(b+c)) where
-  iso = coRegroup'
 
 
 -- | Quite a few categories (/monoidal categories/) will permit \"products\" of 

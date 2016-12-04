@@ -161,24 +161,6 @@ class (PreArrow k, PreArrChoice k) => SPDistribute k where
   boolFromSwitch :: ( ObjectSum k a a, ObjectPair k Bool a ) => k (a+a) (Bool,a)
 -- boolFromSwitch = (boolFromSum <<< terminal +++ terminal) &&& (id ||| id)
 
-instance ( SPDistribute k 
-         , ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
-         , ObjectSum k b c, PairObjects k a b, PairObjects k a c
-         ) => Isomorphic k (a, b+c) ((a,b)+(a,c)) where
-  iso = distribute
-instance ( SPDistribute k 
-         , ObjectSum k (a,b) (a,c), ObjectPair k a (b+c)
-         , ObjectSum k b c, PairObjects k a b, PairObjects k a c
-         ) => Isomorphic k ((a,b)+(a,c)) (a, b+c) where
-  iso = unDistribute
-instance ( SPDistribute k 
-         , ObjectSum k a a, ObjectPair k Bool a
-         ) => Isomorphic k (Bool, a) (a+a) where
-  iso = boolAsSwitch
-instance ( SPDistribute k 
-         , ObjectSum k a a, ObjectPair k Bool a
-         ) => Isomorphic k (a+a) (Bool, a) where
-  iso = boolFromSwitch
 
  
 
