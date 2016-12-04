@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Monad.Constrained
+-- Module      :  Control.Monad.Compound
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -19,7 +19,7 @@
 {-# LANGUAGE LambdaCase                   #-}
 
 
-module Control.Monad.Constrained( module Control.Applicative.Constrained 
+module Control.Monad.Compound( module Control.Applicative.Compound 
                                 -- * Monads                                
                                 , Monad(..), return, (>>=), (=<<), (>>), (<<)
                                 -- * Kleisli arrows
@@ -36,9 +36,9 @@ module Control.Monad.Constrained( module Control.Applicative.Constrained
                                 ) where
 
 
-import Control.Applicative.Constrained
-import Data.Foldable.Constrained
-import Data.Traversable.Constrained
+import Control.Applicative.Compound
+import Data.Foldable.Compound
+import Data.Traversable.Compound
 import Data.Tagged
 
 import Prelude hiding (
@@ -49,7 +49,7 @@ import Prelude hiding (
    )
 import qualified Control.Category.Hask as Hask
 
-import Control.Arrow.Constrained
+import Control.Arrow.Compound
 
 
 class ( Applicative m k k

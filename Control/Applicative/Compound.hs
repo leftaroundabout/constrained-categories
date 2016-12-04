@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Applicative.Constrained
+-- Module      :  Control.Applicative.Compound
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -17,8 +17,8 @@
 #endif
 
 
-module Control.Applicative.Constrained ( 
-            module Control.Functor.Constrained
+module Control.Applicative.Compound ( 
+            module Control.Functor.Compound
             -- * Monoidal / applicative functors
           , Monoidal(..)
           , Applicative(..)
@@ -29,8 +29,8 @@ module Control.Applicative.Constrained (
           ) where
 
 
-import Control.Functor.Constrained
-import Control.Arrow.Constrained
+import Control.Functor.Compound
+import Control.Arrow.Compound
 
 import Prelude hiding (id, const, (.), ($), Functor(..), Applicative(..), curry, uncurry)
 import qualified Control.Category.Hask as Hask

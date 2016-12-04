@@ -1,5 +1,5 @@
 -- |
--- Module      :  Data.Foldable.Constrained
+-- Module      :  Data.Foldable.Compound
 -- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -18,8 +18,8 @@
 {-# LANGUAGE TupleSections                #-}
 
 
-module Data.Foldable.Constrained
-           ( module Control.Category.Constrained 
+module Data.Foldable.Compound
+           ( module Control.Category.Compound
            , Foldable(..)
            , fold
            , traverse_, mapM_, forM_, sequence_
@@ -27,9 +27,9 @@ module Data.Foldable.Constrained
            ) where
 
 
-import Control.Category.Constrained
-import Control.Functor.Constrained
-import Control.Applicative.Constrained
+import Control.Category.Compound
+import Control.Functor.Compound
+import Control.Applicative.Compound
 
 import Prelude hiding (
      id, (.), ($)
@@ -45,7 +45,7 @@ import qualified Control.Category.Hask as Hask
 import qualified Data.Foldable as Hask
 import qualified Control.Arrow as A
 
-import Control.Arrow.Constrained
+import Control.Arrow.Compound
 
 
 

@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Category.Constrained.Reified
+-- Module      :  Control.Category.Compound.Reified
 -- Copyright   :  (c) 2016 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -27,7 +27,7 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE CPP                   #-}
 
-module Control.Category.Constrained.Reified (
+module Control.Category.Compound.Reified (
       -- * Reified versions of the category classes
          ReCategory(..)
        , ReCartesian(..)
@@ -40,8 +40,8 @@ module Control.Category.Constrained.Reified (
 import Prelude ()
 import GHC.Exts (Constraint)
 
-import Control.Category.Constrained.Prelude
-import Control.Arrow.Constrained
+import Control.Category.Compound.Prelude
+import Control.Arrow.Compound
 
 import Data.Tagged
 

@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Category.Constrained
+-- Module      :  Control.Category.Compound
 -- Copyright   :  (c) 2013-2016 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -21,7 +21,7 @@
 {-# LANGUAGE UndecidableSuperClasses      #-}
 #endif
 
-module Control.Category.Constrained ( 
+module Control.Category.Compound ( 
             -- * The category class
             Category (..)
             -- * Monoidal categories

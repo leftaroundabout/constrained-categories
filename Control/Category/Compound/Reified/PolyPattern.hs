@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Category.Constrained.Reified.PolyPattern
+-- Module      :  Control.Category.Compound.Reified.PolyPattern
 -- Copyright   :  (c) 2016 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -21,7 +21,7 @@
 {-# LANGUAGE PatternSynonyms       #-}
 {-# LANGUAGE ViewPatterns          #-}
 
-module Control.Category.Constrained.Reified.PolyPattern (
+module Control.Category.Compound.Reified.PolyPattern (
 #if __GLASGOW_HASKELL__ > 708
       -- * Pattern synonyms (GHC>=7.10)
       -- ** Category
@@ -45,9 +45,9 @@ module Control.Category.Constrained.Reified.PolyPattern (
 import Prelude ()
 import GHC.Exts (Constraint)
 
-import Control.Category.Constrained.Prelude
-import Control.Arrow.Constrained
-import Control.Category.Constrained.Reified
+import Control.Category.Compound.Prelude
+import Control.Arrow.Compound
+import Control.Category.Compound.Reified
 
 import Data.Tagged
 

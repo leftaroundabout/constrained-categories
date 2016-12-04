@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Arrow.Constrained
+-- Module      :  Control.Arrow.Compound
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -45,7 +45,7 @@
 {-# LANGUAGE AllowAmbiguousTypes          #-}
 
 
-module Control.Arrow.Constrained (
+module Control.Arrow.Compound (
     -- * The Arrow type classes
       Arrow, Morphism(..), PreArrow(..), WellPointed(..),ObjectPoint, EnhancedCat(..)
     -- * Dual / "choice" arrows
@@ -68,7 +68,7 @@ module Control.Arrow.Constrained (
     ) where
 
 import Prelude hiding (id, const, fst, snd, (.), ($), Functor(..), Monad(..), (=<<))
-import Control.Category.Constrained
+import Control.Category.Compound
 import qualified Control.Category.Hask as Hask
 
 import GHC.Exts (Constraint)

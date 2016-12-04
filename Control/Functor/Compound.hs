@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Functor.Constrained
+-- Module      :  Control.Functor.Compound
 -- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -18,8 +18,8 @@
 #endif
 
 
-module Control.Functor.Constrained
-   ( module Control.Category.Constrained
+module Control.Functor.Compound
+   ( module Control.Category.Compound
      -- * Functors
    , Functor(..)
    , (<$>)
@@ -29,7 +29,7 @@ module Control.Functor.Constrained
    ) where
 
 
-import Control.Category.Constrained
+import Control.Category.Compound
 
 import Prelude hiding (id, (.), Functor(..), filter, (<$>))
 import qualified Prelude

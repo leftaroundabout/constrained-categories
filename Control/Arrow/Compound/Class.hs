@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Arrow.Constrained.Class
+-- Module      :  Control.Arrow.Compound.Class
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -15,11 +15,11 @@
 {-# LANGUAGE UndecidableInstances         #-}
 
 
-module Control.Arrow.Constrained.Class where
+module Control.Arrow.Compound.Class where
 
 import Prelude ()
-import Control.Category.Constrained
-import Control.Category.Constrained.Prelude
+import Control.Category.Compound
+import Control.Category.Compound.Prelude
 import qualified Control.Category.Hask as Hask
 
 import qualified Control.Arrow as Arr

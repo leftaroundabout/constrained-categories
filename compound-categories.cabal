@@ -1,29 +1,10 @@
-Name:                constrained-categories
-Version:             0.3.0.1
+Name:                compound-categories
+Version:             0.0.0.0
 Category:            control
-Synopsis:            Constrained clones of the category-theory type classes, using ConstraintKinds.
-Description:         Haskell has, and makes great use of, powerful facilities from category
-                     theory – basically various variants of functors.
-                     .
-                     However, all those are just endofunctors in Hask, the category of
-                     all Haskell types with functions as morphisms. Which is sufficient
-                     for container / control structures that you want to be able to handle 
-                     any type of data, but otherwise it's a bit limiting, seeing as 
-                     there are (in maths, science etc.) many categories that cannot properly
-                     be represented this way. Commonly used libraries such as 
-                     <http://hackage.haskell.org/package/vector-space> thus make 
-                     little notion of the fact that the objects they deal with actually
-                     form a category, instead defining just specialised versions of
-                     the operations.
-                     .
-                     This library generalises functors etc. to a much wider class of
-                     categories, by allowing for constraints on objects (so these can have
-                     extra properties required). At the same time, we try to keep as close
-                     as possible to the well-known Haskell type class hierarchies rather
-                     than exactly adopting the mathematicians' notions.
-                     .
-                     Consider the README file, the examples, and/or the documentation to
-                     "Control.Category.Constrained" for how to make use of this.
+Synopsis:            Cartesian (WRT compound-types) -closed categories
+Description:         A port of the <http://hackage.haskell.org/package/constrained-categories constrained-categories library>
+                     that uses @*@ and @+@ <http://hackage.haskell.org/package/compound-types compound-types>
+                     as its product / coproducts.
 License:             GPL-3
 License-file:        COPYING
 Author:              Justus Sagemüller
@@ -43,20 +24,21 @@ Library
   Build-Depends:      base>=4.7 && <5
                       , tagged
                       , void
+                      , compound-types
   Default-Extensions: ConstraintKinds
                       TypeFamilies
                       FlexibleInstances
                       UndecidableInstances
                       Trustworthy
-  Exposed-modules:    Control.Category.Constrained
-                      Control.Functor.Constrained
-                      Control.Applicative.Constrained
-                      Control.Arrow.Constrained
-                      Control.Monad.Constrained
+  Exposed-modules:    Control.Category.Compound
+                      Control.Functor.Compound
+                      Control.Applicative.Compound
+                      Control.Arrow.Compound
+                      Control.Monad.Compound
                       Control.Category.Hask
-                      Control.Category.Constrained.Prelude
-                      Control.Category.Constrained.Reified
-                      Control.Category.Constrained.Reified.PolyPattern
-                      Data.Foldable.Constrained
-                      Data.Traversable.Constrained
+                      Control.Category.Compound.Prelude
+                      Control.Category.Compound.Reified
+                      Control.Category.Compound.Reified.PolyPattern
+                      Data.Foldable.Compound
+                      Data.Traversable.Compound
                      

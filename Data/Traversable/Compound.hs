@@ -1,5 +1,5 @@
 -- |
--- Module      :  Data.Traversable.Constrained
+-- Module      :  Data.Traversable.Compound
 -- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -18,8 +18,8 @@
 {-# LANGUAGE TupleSections                #-}
 
 
-module Data.Traversable.Constrained
-           ( module Control.Applicative.Constrained 
+module Data.Traversable.Compound
+           ( module Control.Applicative.Compound
            , Traversable(..)
            , forM
            , EndoTraversable
@@ -27,8 +27,8 @@ module Data.Traversable.Constrained
            ) where
 
 
-import Control.Category.Constrained
-import Control.Applicative.Constrained
+import Control.Category.Compound
+import Control.Applicative.Compound
 
 import Prelude hiding (
      id, const, (.), ($)
@@ -43,7 +43,7 @@ import qualified Control.Arrow as A
 
 import qualified Data.Traversable as Hask
 
-import Control.Arrow.Constrained
+import Control.Arrow.Compound
 
 import Data.Monoid
 

@@ -1,5 +1,5 @@
 -- |
--- Module      :  Control.Category.Constrained.Prelude
+-- Module      :  Control.Category.Compound.Prelude
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
 -- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
@@ -8,13 +8,13 @@
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}
 
-module Control.Category.Constrained.Prelude ( 
+module Control.Category.Compound.Prelude ( 
           -- * The constrained-categories facilities
-           module Control.Category.Constrained
-         , module Control.Functor.Constrained
-         , module Control.Applicative.Constrained
-         , module Control.Monad.Constrained
-         , module Control.Arrow.Constrained
+           module Control.Category.Compound
+         , module Control.Functor.Compound
+         , module Control.Applicative.Compound
+         , module Control.Monad.Compound
+         , module Control.Arrow.Compound
           -- * The compatible part of the standard Prelude 
          , module Prelude
          ) where
@@ -25,14 +25,14 @@ import Prelude hiding ( id, const, fst, snd, (.), ($), curry, uncurry
                       , Foldable, foldMap, fold, traverse_, concatMap
                       , Traversable, traverse )
 
-import Control.Category.Constrained hiding (ConstrainedMorphism)
-import Control.Functor.Constrained
-import Control.Applicative.Constrained
-import Control.Monad.Constrained hiding 
+import Control.Category.Compound hiding (CompoundMorphism)
+import Control.Functor.Compound
+import Control.Applicative.Compound
+import Control.Monad.Compound hiding 
          (MonadPlus(..), MonadZero(..), (>=>), (<=<), guard, forever, void)
-import Control.Arrow.Constrained (Function, ($), ifThenElse, fst, snd, const)
-import Control.Applicative.Constrained
+import Control.Arrow.Compound (Function, ($), ifThenElse, fst, snd, const)
+import Control.Applicative.Compound
 
-import Data.Foldable.Constrained (Foldable, foldMap, fold, traverse_, concatMap)
-import Data.Traversable.Constrained (Traversable, traverse)
+import Data.Foldable.Compound (Foldable, foldMap, fold, traverse_, concatMap)
+import Data.Traversable.Compound (Traversable, traverse)
 
