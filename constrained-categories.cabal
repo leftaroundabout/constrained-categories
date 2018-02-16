@@ -54,6 +54,7 @@ Library
                       Control.Arrow.Constrained
                       Control.Monad.Constrained
                       Control.Category.Hask
+                      Control.Category.Discrete
                       Control.Category.Constrained.Prelude
                       Control.Category.Constrained.Reified
                       Control.Category.Constrained.Reified.PolyPattern

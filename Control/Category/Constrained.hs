@@ -53,6 +53,8 @@ import Data.Void
 import Data.Type.Coercion
 import qualified Control.Category as Hask
 
+import Control.Category.Discrete
+
 -- | In mathematics, a category is defined as a class of /objects/, plus a class of
 --   /morphisms/ between those objects. In Haskell, one traditionally works in
 --   the category @(->)@ (called /Hask/), in which /any Haskell type/ is an object. 
@@ -74,6 +76,10 @@ class Category k where
          => k b c -> k a b -> k a c
 
 infixr 9 .
+
+instance Category Discrete where
+  id = Refl
+  Refl . Refl = Refl
 
 instance Category (->) where
   id = Prelude.id
