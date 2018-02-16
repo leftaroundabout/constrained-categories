@@ -80,6 +80,8 @@ import Data.Type.Coercion
 
 import qualified Control.Arrow as Arr
 
+import Control.Category.Discrete
+
 infixr 1 >>>, <<<
 infixr 3 &&&, ***
 
@@ -235,6 +237,9 @@ class (Category a, Category k) => EnhancedCat a k where
          => k b c -> a b c
 instance (Category k) => EnhancedCat k k where
   arr = id
+
+instance EnhancedCat (->) Discrete where
+  arr Refl = id
 
 -- | Many categories have as morphisms essentially /functions with extra properties/:
 --   group homomorphisms, linear maps, continuous functions...

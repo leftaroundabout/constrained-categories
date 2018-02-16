@@ -411,6 +411,9 @@ instance HasAgent (->) where
   alg f = f
   ($~) = ($)
 
+instance HasAgent Discrete where
+  alg = genericAlg
+  ($~) = genericAgentMap
 
 instance Category Coercion where
   id = Hask.id
