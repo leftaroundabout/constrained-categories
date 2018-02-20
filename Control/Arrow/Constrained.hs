@@ -240,6 +240,10 @@ instance (Category k) => EnhancedCat k k where
 
 instance EnhancedCat (->) Discrete where
   arr Refl = id
+instance EnhancedCat Coercion Discrete where
+  arr Refl = id
+instance Category f => EnhancedCat (ConstrainedCategory f o) Discrete where
+  arr Refl = id
 
 -- | Many categories have as morphisms essentially /functions with extra properties/:
 --   group homomorphisms, linear maps, continuous functions...
@@ -257,6 +261,8 @@ infixr 0 $
 f $ x = arr f x
 
 instance (Function f) => EnhancedCat (->) (ConstrainedCategory f o) where
+  arr (ConstrainedMorphism q) = arr q
+instance (EnhancedCat Discrete f) => EnhancedCat Discrete (ConstrainedCategory f o) where
   arr (ConstrainedMorphism q) = arr q
 
 instance EnhancedCat (->) Coercion where
