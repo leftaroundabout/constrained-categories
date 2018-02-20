@@ -1,5 +1,5 @@
 Name:                constrained-categories
-Version:             0.3.0.1
+Version:             0.3.1.0
 Category:            control
 Synopsis:            Constrained clones of the category-theory type classes, using ConstraintKinds.
 Description:         Haskell has, and makes great use of, powerful facilities from category
