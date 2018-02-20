@@ -13,6 +13,10 @@ module Control.Category.Discrete where
 
 import Control.Category
 
+-- | The discrete category is the category with the minimum possible amount
+--   of arrows: for any given type, there is 'id', and that's all.
+--   You can use this to provide a proof that some endomorphism (of not closer
+--   specified category) is the identity.
 data Discrete a b where
    Refl :: Discrete a a
 
