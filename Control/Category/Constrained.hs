@@ -35,6 +35,7 @@ module Control.Category.Constrained (
             -- * Constraining a category
           , ConstrainedCategory (ConstrainedMorphism)
           , constrained, unconstrained
+          , ConstrainedFunction
             -- * Global-element proxies
           , HasAgent (..)
           , genericAlg, genericAgentMap
@@ -118,6 +119,8 @@ instance (Category k) => Category (ConstrainedCategory k isObj) where
   type Object (ConstrainedCategory k isObj) o = (Object k o, isObj o)
   id = ConstrainedMorphism id
   ConstrainedMorphism f . ConstrainedMorphism g = ConstrainedMorphism $ f . g
+
+type ConstrainedFunction isObj = ConstrainedCategory (->) isObj
 
 
 -- | Apart from /the/ identity morphism, 'id', there are other morphisms that
