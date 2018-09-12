@@ -38,6 +38,8 @@ import Prelude hiding (
    , mapM_, sequence_, concatMap
    , Foldable(..)
    )
+
+import Data.Semigroup hiding ((<>))
 import Data.Monoid
 import qualified Data.List as List
 

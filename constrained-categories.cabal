@@ -31,7 +31,7 @@ Maintainer:          (@) sagemueller $ geo.uni-koeln.de
 Homepage:            https://github.com/leftaroundabout/constrained-categories
 Build-Type:          Simple
 Cabal-Version:       >=1.10
-Tested-With:         GHC == 7.8.4, GHC == 7.10.2, GHC == 8.0.2
+Tested-With:         GHC == 7.8.4, GHC == 7.10.2, GHC == 8.0.2,  GHC == 8.2.1
                                 
 
 source-repository head
@@ -43,6 +43,7 @@ Library
   Build-Depends:      base>=4.7 && <5
                       , tagged
                       , void
+                      , semigroups
   Default-Extensions: ConstraintKinds
                       TypeFamilies
                       FlexibleInstances
