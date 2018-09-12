@@ -39,8 +39,8 @@ import Prelude hiding (
    , Foldable(..)
    )
 
-import Data.Semigroup hiding ((<>))
-import Data.Monoid
+import Data.Semigroup
+import Data.Monoid hiding ((<>))
 import qualified Data.List as List
 
 import qualified Control.Category.Hask as Hask
@@ -71,10 +71,10 @@ class (Functor t k l) => Foldable t k l where
   -- @
   -- 'foldMap' &#x2261; 'Hask.foldMap'
   -- @
-  foldMap :: ( Object k a, Object l (t a), Monoid m, Object k m, Object l m )
+  foldMap :: ( Object k a, Object l (t a), Semigroup m, Monoid m, Object k m, Object l m )
                => (a `k` m) -> t a `l` m
 
-fold :: (Foldable t k k, Monoid m, Object k m, Object k (t m)) => t m `k` m
+fold :: (Foldable t k k, Monoid m, Semigroup m, Object k m, Object k (t m)) => t m `k` m
 fold = foldMap id
 
 newtype Endo' k a = Endo' { runEndo' :: k a a }
@@ -87,12 +87,12 @@ instance (Category k, Object k a) => Monoid (Endo' k a) where
 newtype Monoidal_ (r :: * -> * -> *) (s :: * -> * -> *) (f :: * -> *) (u :: *) 
       = Monoidal { runMonoidal :: f u }
 instance ( Monoidal f k k, Function k
-         , u ~ UnitObject k, Monoid u 
+         , u ~ UnitObject k, Semigroup u, Monoid u 
          , ObjectPair k u u, ObjectPair k (f u) (f u), Object k (f u,f u)
          ) => Semigroup (Monoidal_ k k f u) where
   (<>) = mappendMdl
 instance ( Monoidal f k k, Function k
-         , u ~ UnitObject k, Monoid u 
+         , u ~ UnitObject k, Semigroup u, Monoid u 
          , ObjectPair k u u, ObjectPair k (f u) (f u), Object k (f u,f u)
          ) => Monoid (Monoidal_ k k f u) where
   mempty = memptyMdl
