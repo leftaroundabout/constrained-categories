@@ -44,6 +44,7 @@ Library
                       , tagged
                       , void
                       , semigroups
+                      , contravariant
   Default-Extensions: ConstraintKinds
                       TypeFamilies
                       FlexibleInstances

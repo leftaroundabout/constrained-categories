@@ -20,6 +20,7 @@
 #if __GLASGOW_HASKELL__ >= 800
 {-# LANGUAGE UndecidableSuperClasses      #-}
 #endif
+{-# LANGUAGE LambdaCase                   #-}
 
 module Control.Category.Constrained ( 
             -- * The category class
@@ -53,6 +54,7 @@ import Data.Monoid
 import Data.Void
 import Data.Type.Coercion
 import qualified Control.Category as Hask
+import qualified Data.Functor.Contravariant as Hask (Op(..))
 
 import Control.Category.Discrete
 
@@ -85,6 +87,10 @@ instance Category Discrete where
 instance Category (->) where
   id = Prelude.id
   (.) = (Prelude..)
+
+instance Category Hask.Op where
+  id = Hask.id
+  (.) = (Hask..)
 
 -- | Analogue to 'asTypeOf', this does not actually do anything but can
 --   give the compiler type unification hints in a convenient manner.
@@ -234,6 +240,13 @@ instance Cartesian (->) where
   detachUnit = \(a, ()) -> a
   regroup = \(a, (b, c)) -> ((a, b), c)
   regroup' = \((a, b), c) -> (a, (b, c))
+
+instance Cartesian Hask.Op where
+  swap = Hask.Op $ \(a,b) -> (b,a)
+  attachUnit = Hask.Op $ \(a, ()) -> a
+  detachUnit = Hask.Op $ \a -> (a, ())
+  regroup = Hask.Op $ \((a, b), c) -> (a, (b, c))
+  regroup' = Hask.Op $ \(a, (b, c)) -> ((a, b), c)
                         
 instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) where
   type PairObjects (ConstrainedCategory f o) a b = (PairObjects f a b)
@@ -319,6 +332,27 @@ instance CoCartesian (->) where
 --   boolFromSwitch (Left x) = (False,x)
 --   boolFromSwitch (Right x) = (True,x)
 --                         
+instance CoCartesian Hask.Op where
+  coSwap = Hask.Op $ \case Right a -> Left a
+                           Left a -> Right a
+  attachZero = Hask.Op $ \case Left a -> a
+                               Right void -> absurd void
+  detachZero = Hask.Op Left
+  coRegroup = Hask.Op $ \case Left (Left a) -> Left a
+                              Left (Right a) -> (Right (Left a))
+                              Right a -> Right (Right a)
+  coRegroup' = Hask.Op $ \case (Left a) -> Left (Left a)
+                               Right (Left a) -> Left (Right a)
+                               Right (Right a) -> Right a
+  maybeFromSum = Hask.Op $ \case Nothing -> Left ()
+                                 Just x -> Right x
+  maybeAsSum = Hask.Op $ \case Left () -> Nothing
+                               Right x -> Just x
+  boolFromSum = Hask.Op $ \case False -> Left ()
+                                True -> Right ()
+  boolAsSum = Hask.Op $ \case Left () -> False
+                              Right () -> True
+
 instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (ConstrainedCategory f o) where
   type SumObjects (ConstrainedCategory f o) a b = (SumObjects f a b)
   type ZeroObject (ConstrainedCategory f o) = ZeroObject f

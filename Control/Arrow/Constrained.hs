@@ -82,6 +82,8 @@ import qualified Control.Arrow as Arr
 
 import Control.Category.Discrete
 
+import qualified Data.Functor.Contravariant as Hask
+
 infixr 1 >>>, <<<
 infixr 3 &&&, ***
 
@@ -320,6 +322,14 @@ constrainedSecond :: ( Category a, Cartesian a, ObjectPair a d b, ObjectPair a d
      -> ConstrainedCategory a o b c -> ConstrainedCategory a o (d, b) (d, c)
 constrainedSecond sn = ConstrainedMorphism . sn . unconstrained
 
+instance Morphism Hask.Op where
+  first (Hask.Op f) = Hask.Op $ first f
+  second (Hask.Op f) = Hask.Op $ second f
+  Hask.Op f *** Hask.Op g = Hask.Op $ f *** g
+instance MorphChoice Hask.Op where
+  left (Hask.Op f) = Hask.Op $ left f
+  right (Hask.Op f) = Hask.Op $ right f
+  Hask.Op f +++ Hask.Op g = Hask.Op $ f +++ g
 
 instance (Morphism a, o (UnitObject a)) => Morphism (ConstrainedCategory a o) where
   first = constrainedFirst first
