@@ -31,6 +31,8 @@ module Control.Category.Constrained (
             -- * Monoidal with coproducts
           , type (+)()
           , CoCartesian (..), ObjectSum
+            -- * The standard function category
+          , type Hask
             -- * Isomorphisms
           , Isomorphic (..)
             -- * Constraining a category
@@ -56,6 +58,8 @@ import Data.Void
 import Data.Type.Coercion
 import qualified Control.Category as Hask
 import qualified Data.Functor.Contravariant as Hask (Op(..))
+
+import Data.Constraint.Trivial (Unconstrained)
 
 import Control.Category.Discrete
 
@@ -92,6 +96,17 @@ instance Category (->) where
 instance Category Hask.Op where
   id = Hask.id
   (.) = (Hask..)
+
+-- | The category of all Haskell types, with (wrapped) Haskell functions as morphisms.
+--   This is just a type-wrapper, morally equivalent to the @(->)@ category itself.
+--   The difference is that 'Control.Functor.Constrained.Functor' instances in the '(->)'
+--   category are automatically inherited from the standard 'Prelude.Functor' instances
+--   that most packages define their type for. The benefit of that is that normal
+--   Haskell code keeps working when the "Prelude" classes are replaced with the ones
+--   from this library, but the downside is that you can't make /more gradual/ instances
+--   when this is desired. This is where the 'Hask' category comes in: it only has functors
+--   that are explicitly declared as such.
+type Hask = Unconstrained⊢(->)
 
 -- | Analogue to 'asTypeOf', this does not actually do anything but can
 --   give the compiler type unification hints in a convenient manner.
