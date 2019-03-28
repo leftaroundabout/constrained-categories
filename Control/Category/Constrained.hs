@@ -214,8 +214,8 @@ class ( Category k
   
   swap :: ( ObjectPair k a b, ObjectPair k b a ) => k (a,b) (b,a)
   
-  attachUnit :: ( u ~ UnitObject k, ObjectPair k a u ) => k a (a,u)
-  detachUnit :: ( u ~ UnitObject k, ObjectPair k a u ) => k (a,u) a
+  attachUnit :: ( unit ~ UnitObject k, ObjectPair k a unit ) => k a (a,unit)
+  detachUnit :: ( unit ~ UnitObject k, ObjectPair k a unit ) => k (a,unit) a
   regroup    :: ( ObjectPair k a b, ObjectPair k b c
                 , ObjectPair k a (b,c), ObjectPair k (a,b) c
                 ) => k (a, (b, c)) ((a, b), c)
@@ -272,8 +272,8 @@ class ( Category k, Object k (ZeroObject k)
   
   coSwap :: ( ObjectSum k a b, ObjectSum k b a ) => k (a+b) (b+a)
   
-  attachZero :: ( Object k a, z ~ ZeroObject k, ObjectSum k a z ) => k a (a+z)
-  detachZero :: ( Object k a, z ~ ZeroObject k, ObjectSum k a z ) => k (a+z) a
+  attachZero :: ( Object k a, zero ~ ZeroObject k, ObjectSum k a zero ) => k a (a+zero)
+  detachZero :: ( Object k a, zero ~ ZeroObject k, ObjectSum k a zero ) => k (a+zero) a
   coRegroup  :: ( Object k a, Object k c, ObjectSum k a b, ObjectSum k b c
                 , ObjectSum k a (b+c), ObjectSum k (a+b) c
                 ) => k (a+(b+c)) ((a+b)+c)
