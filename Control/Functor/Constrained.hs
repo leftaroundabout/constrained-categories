@@ -90,16 +90,14 @@ infixl 4 <$>
 
   
 constrainedFmap :: (Category r, Category t, o a, o b, o (f a), o (f b)) 
-      => (        r a b               -> t (f a) (f b)                      ) 
-       -> ConstrainedCategory r o a b -> ConstrainedCategory t o (f a) (f b)
+      => (   r  a b ->    t  (f a) (f b)  ) 
+       -> (o⊢r) a b -> (o⊢t) (f a) (f b)
 constrainedFmap q = constrained . q . unconstrained
 
-instance (Functor [] k k, o [UnitObject k]) 
-       => Functor [] (ConstrainedCategory k o) (ConstrainedCategory k o) where
+instance (Functor [] k k, o [UnitObject k]) => Functor [] (o⊢k) (o⊢k) where
   fmap (ConstrainedMorphism f) = ConstrainedMorphism $ fmap f
 
-instance (o (), o [()], o Void, o [Void]) => SumToProduct []
-     (ConstrainedCategory (->) o) (ConstrainedCategory (->) o) where
+instance (o (), o [()], o Void, o [Void]) => SumToProduct [] (o⊢(->)) (o⊢(->)) where
   sum2product = ConstrainedMorphism sum2product
   mapEither (ConstrainedMorphism f) = ConstrainedMorphism $ mapEither f
   filter (ConstrainedMorphism f) = ConstrainedMorphism $ filter f

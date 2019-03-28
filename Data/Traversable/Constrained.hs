@@ -91,11 +91,6 @@ instance (Arrow k (->), WellPointed k, Function k, Functor Maybe k k)
    where mM Nothing = constPure Nothing `inCategoryOf` f $ mempty
          mM (Just x) = fmap (arr Just) . f $ x
 
--- data Stupid a = Stupid a
--- instance Functor Stupid (ConstrainedCategory (->) Num) (->) where
---   fmap (Stupid (ConstrainedMorphism f)) (Stupid a) = Stupid (f a)
--- 
-
 -- | Flipped version of 'traverse' / 'mapM'.
 forM :: forall s t k m a b l . 
         ( Traversable s t k l, Monoidal m k l, Function l

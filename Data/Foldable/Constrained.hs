@@ -127,9 +127,8 @@ instance Foldable Maybe (->) (->) where
   ffoldl f (i,Just a) = f(i,a)
 
 
-instance ( Foldable f s t, WellPointed s, WellPointed t
-         , Functor f (ConstrainedCategory s o) (ConstrainedCategory t o) 
-         ) => Foldable f (ConstrainedCategory s o) (ConstrainedCategory t o) where
+instance ( Foldable f s t, WellPointed s, WellPointed t, Functor f (o⊢s) (o⊢t) )
+              => Foldable f (o⊢s) (o⊢t) where
   foldMap (ConstrainedMorphism f) = ConstrainedMorphism $ foldMap f
   ffoldl (ConstrainedMorphism f) = ConstrainedMorphism $ ffoldl f
 

@@ -244,7 +244,7 @@ instance EnhancedCat (->) Discrete where
   arr Refl = id
 instance EnhancedCat Coercion Discrete where
   arr Refl = id
-instance Category f => EnhancedCat (ConstrainedCategory f o) Discrete where
+instance Category f => EnhancedCat (o⊢f) Discrete where
   arr Refl = id
 
 -- | Many categories have as morphisms essentially /functions with extra properties/:
@@ -262,9 +262,9 @@ infixr 0 $
 ($) :: (Function f, Object f a, Object f b) => f a b -> a -> b
 f $ x = arr f x
 
-instance (Function f) => EnhancedCat (->) (ConstrainedCategory f o) where
+instance (Function f) => EnhancedCat (->) (o⊢f) where
   arr (ConstrainedMorphism q) = arr q
-instance (EnhancedCat Discrete f) => EnhancedCat Discrete (ConstrainedCategory f o) where
+instance (EnhancedCat Discrete f) => EnhancedCat Discrete (o⊢f) where
   arr (ConstrainedMorphism q) = arr q
 
 instance EnhancedCat (->) Coercion where
@@ -307,19 +307,18 @@ instance WellPointed (->) where
   unit = Hask.pure ()
   const = Hask.const
 
-constrainedArr :: (Category k, Category a, o b, o c )
-  => ( k b c                        -> a b c  )
-     -> k b c -> ConstrainedCategory a o b c
+constrainedArr :: (Category k, Category a, o b, o c ) => ( k b c ->    a  b c )
+                                                        -> k b c -> (o⊢a) b c
 constrainedArr ar = constrained . ar
 
 constrainedFirst :: ( Category a, Cartesian a, ObjectPair a b d, ObjectPair a c d )
-  => ( a b c -> a (b, d) (c, d) )
-     -> ConstrainedCategory a o b c -> ConstrainedCategory a o (b, d) (c, d)
+  => (    a  b c ->    a  (b, d) (c, d) )
+    -> (o⊢a) b c -> (o⊢a) (b, d) (c, d)
 constrainedFirst fs = ConstrainedMorphism . fs . unconstrained
   
 constrainedSecond :: ( Category a, Cartesian a, ObjectPair a d b, ObjectPair a d c )
-  => ( a b c -> a (d, b) (d, c) )
-     -> ConstrainedCategory a o b c -> ConstrainedCategory a o (d, b) (d, c)
+  => (    a  b c ->    a  (d, b) (d, c) )
+    -> (o⊢a) b c -> (o⊢a) (d, b) (d, c)
 constrainedSecond sn = ConstrainedMorphism . sn . unconstrained
 
 instance Morphism Hask.Op where
@@ -331,55 +330,55 @@ instance MorphChoice Hask.Op where
   right (Hask.Op f) = Hask.Op $ right f
   Hask.Op f +++ Hask.Op g = Hask.Op $ f +++ g
 
-instance (Morphism a, o (UnitObject a)) => Morphism (ConstrainedCategory a o) where
+instance (Morphism a, o (UnitObject a)) => Morphism (o⊢a) where
   first = constrainedFirst first
   second = constrainedSecond second
   ConstrainedMorphism a *** ConstrainedMorphism b = ConstrainedMorphism $ a *** b
   
-instance (PreArrow a, o (UnitObject a)) => PreArrow (ConstrainedCategory a o) where
+instance (PreArrow a, o (UnitObject a)) => PreArrow (o⊢a) where
   ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
   terminal = ConstrainedMorphism terminal
   fst = ConstrainedMorphism fst
   snd = ConstrainedMorphism snd
 
-instance (WellPointed a, o (UnitObject a)) => WellPointed (ConstrainedCategory a o) where
-  type PointObject (ConstrainedCategory a o) x = PointObject a x
+instance (WellPointed a, o (UnitObject a)) => WellPointed (o⊢a) where
+  type PointObject (o⊢a) x = PointObject a x
   globalElement x = ConstrainedMorphism $ globalElement x
   unit = cstrCatUnit
   const x = ConstrainedMorphism $ const x
 
 cstrCatUnit :: forall a o . (WellPointed a, o (UnitObject a))
-        => CatTagged (ConstrainedCategory a o) (UnitObject a)
+        => CatTagged (o⊢a) (UnitObject a)
 cstrCatUnit = retag (unit :: CatTagged a (UnitObject a))
   
 instance (EnhancedCat a k, o (UnitObject a))
-            => EnhancedCat (ConstrainedCategory a o) k where
+            => EnhancedCat (o⊢a) k where
   arr = constrainedArr arr
 
 
 constrainedLeft :: ( CoCartesian k, ObjectSum k b d, ObjectSum k c d )
-  => ( k b c -> k (b+d) (c+d) )
-     -> ConstrainedCategory k o b c -> ConstrainedCategory k o (b+d) (c+d)
+  => (    k  b c ->    k  (b+d) (c+d) )
+    -> (o⊢k) b c -> (o⊢k) (b+d) (c+d)
 constrainedLeft fs = ConstrainedMorphism . fs . unconstrained
   
 constrainedRight :: ( CoCartesian k, ObjectSum k b c, ObjectSum k b d )
-  => ( k c d -> k (b+c) (b+d) )
-     -> ConstrainedCategory k o c d -> ConstrainedCategory k o (b+c) (b+d)
+  => (    k  c d ->    k  (b+c) (b+d) )
+    -> (o⊢k) c d -> (o⊢k) (b+c) (b+d)
 constrainedRight fs = ConstrainedMorphism . fs . unconstrained
 
-instance (MorphChoice k, o (ZeroObject k)) => MorphChoice (ConstrainedCategory k o) where
+instance (MorphChoice k, o (ZeroObject k)) => MorphChoice (o⊢k) where
   left = constrainedLeft left
   right = constrainedRight right
   ConstrainedMorphism a +++ ConstrainedMorphism b = ConstrainedMorphism $ a +++ b
   
-instance (PreArrChoice k, o (ZeroObject k)) => PreArrChoice (ConstrainedCategory k o) where
+instance (PreArrChoice k, o (ZeroObject k)) => PreArrChoice (o⊢k) where
   ConstrainedMorphism a ||| ConstrainedMorphism b = ConstrainedMorphism $ a ||| b
   initial = ConstrainedMorphism initial
   coFst = ConstrainedMorphism coFst
   coSnd = ConstrainedMorphism coSnd
 
 instance (SPDistribute k, o (ZeroObject k), o (UnitObject k))
-     => SPDistribute (ConstrainedCategory k o) where
+     => SPDistribute (o⊢k) where
   distribute = ConstrainedMorphism distribute
   unDistribute = ConstrainedMorphism unDistribute
   boolAsSwitch = ConstrainedMorphism boolAsSwitch

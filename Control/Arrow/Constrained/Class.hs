@@ -47,27 +47,27 @@ instance Arrow (->) (->) where
   arr = Arr.arr
 
 constrainedArr :: (Category k, Category a, o b, o c )
-  => ( k b c                        -> a b c  )
-     -> k b c -> ConstrainedCategory a o b c
+  => ( k b c ->    a  b c )
+    -> k b c -> (o⊢a) b c
 constrainedArr ar = constrained . ar
 
 constrainedFirst :: ( Category a, Curry a, o b, o c, o d
                     , PairObject a b d, PairObject a c d )
-  => ( a b c -> a (b, d) (c, d) )
-     -> ConstrainedCategory a o b c -> ConstrainedCategory a o (b, d) (c, d)
+  => (    a  b c ->    a  (b, d) (c, d) )
+    -> (o⊢a) b c -> (o⊢a) (b, d) (c, d)
 constrainedFirst fs = ConstrainedMorphism . fs . unconstrained
   
 constrainedSecond :: ( Category a, Curry a, o b, o c, o d
                     , PairObject a d b, PairObject a d c )
-  => ( a b c -> a (d, b) (d, c) )
-     -> ConstrainedCategory a o b c -> ConstrainedCategory a o (d, b) (d, c)
+  => (    a  b c ->    a  (d, b) (d, c) )
+    -> (o⊢a) b c -> (o⊢a) (d, b) (d, c)
 constrainedSecond sn = ConstrainedMorphism . sn . unconstrained
 
-instance (Morphism a) => Morphism (ConstrainedCategory a o) where
+instance (Morphism a) => Morphism (o⊢a) where
   first = constrainedFirst first
   second = constrainedSecond second
   
-instance (Arrow a k) => Arrow (ConstrainedCategory a o) k where
+instance (Arrow a k) => Arrow (o⊢a) k where
   arr = constrainedArr arr 
 
 newtype Kleisli m k a b = Kleisli { runKleisli :: k a (m b) }

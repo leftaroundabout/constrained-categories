@@ -91,8 +91,8 @@ liftA3 f = curry $ (<*>) . (fzipWith $ uncurry f)
 
 constrainedFZipWith :: ( Category r, Category t, o a, o b, o (a,b), o c
                                                , o (f a, f b), o (f c) )
-        =>  ( r (a, b) c -> t (f a, f b) (f c) )
-         -> ConstrainedCategory r o (a, b) c -> ConstrainedCategory t o (f a, f b) (f c)
+        =>  (   r  (a, b) c ->    t  (f a, f b) (f c) )
+          -> (o⊢r) (a, b) c -> (o⊢t) (f a, f b) (f c)
 constrainedFZipWith zf = constrained . zf . unconstrained
          
 

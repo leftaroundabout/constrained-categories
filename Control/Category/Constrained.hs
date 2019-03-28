@@ -35,6 +35,7 @@ module Control.Category.Constrained (
           , Isomorphic (..)
             -- * Constraining a category
           , ConstrainedCategory (ConstrainedMorphism)
+          , type (⊢)()
           , constrained, unconstrained
           , ConstrainedFunction
             -- * Global-element proxies
@@ -101,15 +102,17 @@ m `inCategoryOf` _ = m
 -- | A given category can be specialised, by using the same morphisms but adding
 --   extra constraints to what is considered an object. 
 -- 
---   For instance, @'ConstrainedCategory' (->) 'Ord'@ is the category of all
+--   For instance, @'Ord'⊢(->)@ is the category of all
 --   totally ordered data types (but with arbitrary functions; this does not require
 --   monotonicity or anything).
 newtype ConstrainedCategory (k :: * -> * -> *) (o :: * -> Constraint) (a :: *) (b :: *)
    = ConstrainedMorphism { unconstrainedMorphism :: k a b }
 
+type o ⊢ k = ConstrainedCategory k o
+
 -- | Cast a morphism to its equivalent in a more constrained category,
 --   provided it connects objects that actually satisfy the extra constraint.
-constrained :: (Category k, o a, o b) => k a b -> ConstrainedCategory k o a b
+constrained :: (Category k, o a, o b) => k a b -> (o⊢k) a b
 constrained = ConstrainedMorphism
 
 -- | \"Unpack\" a constrained morphism again (forgetful functor).
@@ -118,11 +121,11 @@ constrained = ConstrainedMorphism
 --   morphisms that are actually 'Function's can just be applied
 --   to their objects with '$' right away, no need to go back to
 --   Hask first.
-unconstrained :: (Category k) => ConstrainedCategory k o a b -> k a b
+unconstrained :: (Category k) => (o⊢k) a b -> k a b
 unconstrained = unconstrainedMorphism
 
-instance (Category k) => Category (ConstrainedCategory k isObj) where
-  type Object (ConstrainedCategory k isObj) o = (Object k o, isObj o)
+instance (Category k) => Category (isObj⊢k) where
+  type Object (isObj⊢k) o = (Object k o, isObj o)
   id = ConstrainedMorphism id
   ConstrainedMorphism f . ConstrainedMorphism g = ConstrainedMorphism $ f . g
 
@@ -248,9 +251,9 @@ instance Cartesian Hask.Op where
   regroup = Hask.Op $ \((a, b), c) -> (a, (b, c))
   regroup' = Hask.Op $ \(a, (b, c)) -> ((a, b), c)
                         
-instance (Cartesian f, o (UnitObject f)) => Cartesian (ConstrainedCategory f o) where
-  type PairObjects (ConstrainedCategory f o) a b = (PairObjects f a b)
-  type UnitObject (ConstrainedCategory f o) = UnitObject f
+instance (Cartesian f, o (UnitObject f)) => Cartesian (o⊢f) where
+  type PairObjects (o⊢f) a b = (PairObjects f a b)
+  type UnitObject (o⊢f) = UnitObject f
 
   swap = ConstrainedMorphism swap
   attachUnit = ConstrainedMorphism attachUnit
@@ -353,9 +356,9 @@ instance CoCartesian Hask.Op where
   boolAsSum = Hask.Op $ \case Left () -> False
                               Right () -> True
 
-instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (ConstrainedCategory f o) where
-  type SumObjects (ConstrainedCategory f o) a b = (SumObjects f a b)
-  type ZeroObject (ConstrainedCategory f o) = ZeroObject f
+instance (CoCartesian f, o (ZeroObject f)) => CoCartesian (o⊢f) where
+  type SumObjects (o⊢f) a b = (SumObjects f a b)
+  type ZeroObject (o⊢f) = ZeroObject f
 
   coSwap = ConstrainedMorphism coSwap
   attachZero = ConstrainedMorphism attachZero
@@ -403,8 +406,8 @@ instance Curry (->) where
   apply (f,x) = f x
       
 
-instance (Curry f, o (UnitObject f)) => Curry (ConstrainedCategory f o) where
-  type MorphObjects (ConstrainedCategory f o) a c = ( MorphObjects f a c, f ~ (->) )
+instance (Curry f, o (UnitObject f)) => Curry (o⊢f) where
+  type MorphObjects (o⊢f) a c = ( MorphObjects f a c, f ~ (->) )
   uncurry (ConstrainedMorphism f) = ConstrainedMorphism $ \(a,b) -> unconstrained (f a) b
   curry (ConstrainedMorphism f) = ConstrainedMorphism $ \a -> ConstrainedMorphism $ \b -> f (a, b)
                                                                      
