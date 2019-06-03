@@ -13,6 +13,7 @@
 {-# LANGUAGE MultiParamTypeClasses        #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE RankNTypes                   #-}
+{-# LANGUAGE UnicodeSyntax                #-}
 {-# LANGUAGE AllowAmbiguousTypes          #-}
 {-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE ExplicitNamespaces           #-}
@@ -127,7 +128,12 @@ type o ⊢ k = ConstrainedCategory k o
 
 -- | Cast a morphism to its equivalent in a more constrained category,
 --   provided it connects objects that actually satisfy the extra constraint.
-constrained :: (Category k, o a, o b) => k a b -> (o⊢k) a b
+-- 
+--   In practice, it is often necessary to specify to what typeclass it should be
+--   constrained. The most convenient way of doing that is with
+--   <https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#extension-TypeApplications type-applications syntax>.
+--   E.g. @'constrained' \@Ord length@ is the 'length' function considered as a morphism in the subcategory of Hask in which all types are orderable. (Which makes it suitable for e.g. fmapping over a set.)
+constrained :: ∀ o k a b . (Category k, o a, o b) => k a b -> (o⊢k) a b
 constrained = ConstrainedMorphism
 
 -- | \"Unpack\" a constrained morphism again (forgetful functor).
@@ -136,7 +142,7 @@ constrained = ConstrainedMorphism
 --   morphisms that are actually 'Function's can just be applied
 --   to their objects with '$' right away, no need to go back to
 --   Hask first.
-unconstrained :: (Category k) => (o⊢k) a b -> k a b
+unconstrained :: ∀ o k a b . (Category k) => (o⊢k) a b -> k a b
 unconstrained = unconstrainedMorphism
 
 instance (Category k) => Category (isObj⊢k) where
