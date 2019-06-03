@@ -45,6 +45,7 @@ Library
                       , void
                       , semigroups
                       , contravariant
+                      , trivial-constraint >= 0.4 && < 0.5
   Default-Extensions: ConstraintKinds
                       TypeFamilies
                       FlexibleInstances

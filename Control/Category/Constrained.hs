@@ -13,6 +13,7 @@
 {-# LANGUAGE MultiParamTypeClasses        #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE RankNTypes                   #-}
+{-# LANGUAGE UnicodeSyntax                #-}
 {-# LANGUAGE AllowAmbiguousTypes          #-}
 {-# LANGUAGE TypeOperators                #-}
 {-# LANGUAGE ExplicitNamespaces           #-}
@@ -31,6 +32,8 @@ module Control.Category.Constrained (
             -- * Monoidal with coproducts
           , type (+)()
           , CoCartesian (..), ObjectSum
+            -- * The standard function category
+          , type Hask
             -- * Isomorphisms
           , Isomorphic (..)
             -- * Constraining a category
@@ -56,6 +59,8 @@ import Data.Void
 import Data.Type.Coercion
 import qualified Control.Category as Hask
 import qualified Data.Functor.Contravariant as Hask (Op(..))
+
+import Data.Constraint.Trivial (Unconstrained)
 
 import Control.Category.Discrete
 
@@ -93,6 +98,17 @@ instance Category Hask.Op where
   id = Hask.id
   (.) = (Hask..)
 
+-- | The category of all Haskell types, with (wrapped) Haskell functions as morphisms.
+--   This is just a type-wrapper, morally equivalent to the @(->)@ category itself.
+--   The difference is that 'Control.Functor.Constrained.Functor' instances in the '(->)'
+--   category are automatically inherited from the standard 'Prelude.Functor' instances
+--   that most packages define their type for. The benefit of that is that normal
+--   Haskell code keeps working when the "Prelude" classes are replaced with the ones
+--   from this library, but the downside is that you can't make /more gradual/ instances
+--   when this is desired. This is where the 'Hask' category comes in: it only has functors
+--   that are explicitly declared as such.
+type Hask = Unconstrained⊢(->)
+
 -- | Analogue to 'asTypeOf', this does not actually do anything but can
 --   give the compiler type unification hints in a convenient manner.
 inCategoryOf :: (Category k) => k a b -> k c d -> k a b
@@ -112,7 +128,12 @@ type o ⊢ k = ConstrainedCategory k o
 
 -- | Cast a morphism to its equivalent in a more constrained category,
 --   provided it connects objects that actually satisfy the extra constraint.
-constrained :: (Category k, o a, o b) => k a b -> (o⊢k) a b
+-- 
+--   In practice, it is often necessary to specify to what typeclass it should be
+--   constrained. The most convenient way of doing that is with
+--   <https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#extension-TypeApplications type-applications syntax>.
+--   E.g. @'constrained' \@Ord length@ is the 'length' function considered as a morphism in the subcategory of Hask in which all types are orderable. (Which makes it suitable for e.g. fmapping over a set.)
+constrained :: ∀ o k a b . (Category k, o a, o b) => k a b -> (o⊢k) a b
 constrained = ConstrainedMorphism
 
 -- | \"Unpack\" a constrained morphism again (forgetful functor).
@@ -121,7 +142,7 @@ constrained = ConstrainedMorphism
 --   morphisms that are actually 'Function's can just be applied
 --   to their objects with '$' right away, no need to go back to
 --   Hask first.
-unconstrained :: (Category k) => (o⊢k) a b -> k a b
+unconstrained :: ∀ o k a b . (Category k) => (o⊢k) a b -> k a b
 unconstrained = unconstrainedMorphism
 
 instance (Category k) => Category (isObj⊢k) where
