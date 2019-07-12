@@ -1,7 +1,7 @@
 -- |
 -- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
+-- Maintainer  :  (@) jsag $ hvl.no
 -- 
 --   This example shows the backwards-compatilility of the constrained-categories
 --   framework with existing Haskell code. All the familiar monadic etc. functions

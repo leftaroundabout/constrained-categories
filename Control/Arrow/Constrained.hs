@@ -2,7 +2,7 @@
 -- Module      :  Control.Arrow.Constrained
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
+-- Maintainer  :  (@) jsag $ hvl.no
 -- 
 -- Haskell's 'Arr.Arrow's, going back to [Hughes 2000], combine multiple ideas from
 -- category theory:

@@ -2,7 +2,7 @@
 -- |
 -- Copyright   :  (c) 2013 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
+-- Maintainer  :  (@) jsag $ hvl.no
 -- 
 --   Simple implementation of Vect /k/, the category of vector spaces
 --   over the field /k/, with linear maps as morphisms. Furthermore, the

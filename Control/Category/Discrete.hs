@@ -2,7 +2,7 @@
 -- Module      :  Control.Category.Discrete
 -- Copyright   :  (c) 2018 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
+-- Maintainer  :  (@) jsag $ hvl.no
 -- 
 -- 
 {-# LANGUAGE GADTs                #-}

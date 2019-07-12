@@ -2,7 +2,7 @@
 -- Module      :  Data.Foldable.Constrained
 -- Copyright   :  (c) 2014 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
+-- Maintainer  :  (@) jsag $ hvl.no
 -- 
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE TypeFamilies                 #-}

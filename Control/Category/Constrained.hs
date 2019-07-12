@@ -2,7 +2,7 @@
 -- Module      :  Control.Category.Constrained
 -- Copyright   :  (c) 2013-2016 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
+-- Maintainer  :  (@) jsag $ hvl.no
 -- 
 -- 
 -- The most basic category theory tools are included partly in this

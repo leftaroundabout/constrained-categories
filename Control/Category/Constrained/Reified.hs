@@ -2,7 +2,7 @@
 -- Module      :  Control.Category.Constrained.Reified
 -- Copyright   :  (c) 2016 Justus Sagemüller
 -- License     :  GPL v3 (see COPYING)
--- Maintainer  :  (@) sagemueller $ geo.uni-koeln.de
+-- Maintainer  :  (@) jsag $ hvl.no
 -- 
 -- 
 -- GADTs that mirror the class hierarchy from 'Category' to (at the moment) 'Cartesian',
