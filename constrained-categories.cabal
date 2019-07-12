@@ -27,7 +27,7 @@ Description:         Haskell has, and makes great use of, powerful facilities fr
 License:             GPL-3
 License-file:        COPYING
 Author:              Justus Sagemüller
-Maintainer:          (@) sagemueller $ geo.uni-koeln.de
+Maintainer:          (@) jsag $ hvl.no
 Homepage:            https://github.com/leftaroundabout/constrained-categories
 Build-Type:          Simple
 Cabal-Version:       >=1.10
