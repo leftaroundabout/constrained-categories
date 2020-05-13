@@ -43,7 +43,7 @@ import Data.Tagged
 
 import Prelude hiding (
      id, const, fst, snd, (.), ($)
-   , Functor(..), Applicative(..), Monad(..), (=<<)
+   , Functor(..), Applicative(..), Monad(..), MonadFail(..), (=<<)
    , uncurry, curry, filter
    , mapM, mapM_, sequence, sequence_
    )
@@ -131,7 +131,8 @@ instance (Hask.MonadPlus m, Hask.Applicative m) => MonadPlus m (->) where
 class (MonadPlus m k) => MonadFail m k where
   fail :: (Object k (m a)) => k String (m a) 
 
-instance (Hask.MonadPlus m, Hask.Applicative m) => MonadFail m (->) where
+instance (Hask.MonadPlus m, Hask.Applicative m, Hask.MonadFail m) 
+          => MonadFail m (->) where
   fail = Hask.fail
   
 
