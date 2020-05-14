@@ -23,7 +23,7 @@ import Prelude hiding ( id, const, fst, snd, (.), ($), curry, uncurry
                       , Functor(..), (<$>), Applicative(..), (<*>), Monad(..), (=<<), filter
                       , mapM, mapM_, sequence, sequence_
                       , Foldable, foldMap, fold, traverse_, concatMap
-                      , Traversable, traverse )
+                      , Traversable, traverse, MonadFail(..) )
 
 import Control.Category.Constrained hiding (ConstrainedMorphism)
 import Control.Functor.Constrained

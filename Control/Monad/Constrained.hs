@@ -43,11 +43,12 @@ import Data.Tagged
 
 import Prelude hiding (
      id, const, fst, snd, (.), ($)
-   , Functor(..), Applicative(..), Monad(..), (=<<)
+   , Functor(..), Applicative(..), Monad(..), MonadFail(..), (=<<)
    , uncurry, curry, filter
    , mapM, mapM_, sequence, sequence_
    )
 import qualified Control.Category.Hask as Hask
+import qualified Control.Monad.Fail as HaskFail
 
 import Control.Arrow.Constrained
 
@@ -131,7 +132,8 @@ instance (Hask.MonadPlus m, Hask.Applicative m) => MonadPlus m (->) where
 class (MonadPlus m k) => MonadFail m k where
   fail :: (Object k (m a)) => k String (m a) 
 
-instance (Hask.MonadPlus m, Hask.Applicative m) => MonadFail m (->) where
+instance (Hask.MonadPlus m, Hask.Applicative m, HaskFail.MonadFail m) 
+          => MonadFail m (->) where
   fail = Hask.fail
   
 
