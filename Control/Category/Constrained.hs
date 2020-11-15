@@ -9,6 +9,7 @@
 -- module, partly in "Control.Arrow.Constrained".
 
 {-# LANGUAGE ConstraintKinds              #-}
+{-# LANGUAGE PolyKinds                    #-}
 {-# LANGUAGE TypeFamilies                 #-}
 {-# LANGUAGE MultiParamTypeClasses        #-}
 {-# LANGUAGE FlexibleContexts             #-}
@@ -56,6 +57,9 @@ import GHC.Exts (Constraint)
 import Data.Tagged
 import Data.Monoid
 import Data.Void
+#if MIN_VERSION_base(4,9,0)
+import Data.Kind (Type)
+#endif
 import Data.Type.Coercion
 import qualified Control.Category as Hask
 import qualified Data.Functor.Contravariant as Hask (Op(..))
@@ -77,8 +81,12 @@ import Control.Category.Discrete
 --   /morphism type constructor/. From a mathematician's point of view this may
 --   seem a bit strange way to define the category, but it just turns out to
 --   be quite convenient for practical purposes.
-class Category k where
-  type Object k o :: Constraint
+#if MIN_VERSION_base(4,9,0)
+class Category (k :: κ -> κ -> Type) where
+#else
+class Category (k :: κ -> κ -> *) where
+#endif
+  type Object k (o :: κ) :: Constraint
   type Object k o = ()
   id :: Object k a => k a a
   (.) :: (Object k a, Object k b, Object k c) 
