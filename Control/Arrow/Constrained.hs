@@ -33,6 +33,7 @@
 {-# LANGUAGE FunctionalDependencies       #-}
 {-# LANGUAGE TupleSections                #-}
 {-# LANGUAGE ScopedTypeVariables          #-}
+{-# LANGUAGE UnicodeSyntax                #-}
 {-# LANGUAGE FlexibleInstances            #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE UndecidableInstances         #-}
@@ -74,6 +75,7 @@ import qualified Control.Category.Hask as Hask
 import GHC.Exts (Constraint)
 import Data.Tagged
 import Data.Void
+import Data.CategoryObject.Product
 
 import Data.Coerce
 import Data.Type.Coercion
@@ -306,6 +308,27 @@ instance WellPointed (->) where
   globalElement = Hask.const
   unit = Hask.pure ()
   const = Hask.const
+
+instance (Morphism k, Morphism l) => Morphism (k×l) where
+  (f:***:g) *** (h:***:i) = (f***h) :***: (g***i)
+instance (PreArrow k, PreArrow l) => PreArrow (k×l) where
+  (f:***:g) &&& (h:***:i) = (f&&&h) :***: (g&&&i)
+  terminal = terminal :***: terminal
+  fst = fst :***: fst
+  snd = snd :***: snd
+
+prodCatUnit :: ∀ k l . (WellPointed k, WellPointed l)
+      => Tagged ((k×l) (ProductCatObj (UnitObject k) (UnitObject l))
+                       (ProductCatObj (UnitObject k) (UnitObject l)))
+                (ProductCatObj (UnitObject k) (UnitObject l))
+prodCatUnit = Tagged $ ProductCatObj uk ul
+ where Tagged uk = unit :: Tagged (k (UnitObject k) (UnitObject k)) (UnitObject k)
+       Tagged ul = unit :: Tagged (l (UnitObject l) (UnitObject l)) (UnitObject l)
+
+instance (WellPointed k, WellPointed l) => WellPointed (k×l) where
+  type PointObject (k×l) o = (PointObject k (LFactor o), PointObject l (RFactor o))
+  unit = prodCatUnit
+  const c = const (lfactorProj c) :***: const (rfactorProj c)
 
 constrainedArr :: (Category k, Category a, o b, o c ) => ( k b c ->    a  b c )
                                                         -> k b c -> (o⊢a) b c

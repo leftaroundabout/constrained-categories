@@ -42,6 +42,8 @@ module Control.Category.Constrained (
           , type (⊢)()
           , constrained, unconstrained
           , ConstrainedFunction
+            -- * Product categories
+          , ProductCategory(..), type (×)()
             -- * Global-element proxies
           , HasAgent (..)
           , genericAlg, genericAgentMap
@@ -490,12 +492,14 @@ instance Category Coercion where
   (.) = (Hask..)
 
 
+infixr 3 :***:
+
 data ProductCategory k l p q = k (LFactor p) (LFactor q) :***: l (RFactor p) (RFactor q)
 
 type (×) = ProductCategory
 
 instance (Category k, Category l) => Category (k×l) where
-  type Object (k×l) o = (Object k (LFactor o), Object l (RFactor o))
+  type Object (k×l) o = (IsProduct o, Object k (LFactor o), Object l (RFactor o))
   id = id:***:id
   (f:***:g) . (h:***:i) = (f.h):***:(g.i)
 

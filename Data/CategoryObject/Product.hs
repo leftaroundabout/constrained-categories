@@ -27,6 +27,19 @@ type family RFactor t where
   RFactor (ProductCatObj l r) = r
   RFactor (a,b) = (RFactor a, RFactor b)
 
+class IsProduct t where
+  lfactorProj :: t -> LFactor t
+  rfactorProj :: t -> RFactor t
+
+instance IsProduct (ProductCatObj a b) where
+  lfactorProj (ProductCatObj x _) = x
+  rfactorProj (ProductCatObj _ y) = y
+
+instance (IsProduct a, IsProduct b) => IsProduct (a,b) where
+  lfactorProj (x,y) = (lfactorProj x, lfactorProj y)
+  rfactorProj (x,y) = (rfactorProj x, rfactorProj y)
+
+
 instance (Semigroup a, Semigroup b) => Semigroup (ProductCatObj a b) where
   ProductCatObj x y <> ProductCatObj w z = ProductCatObj (x<>w) (y<>z)
 
