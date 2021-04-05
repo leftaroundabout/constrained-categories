@@ -498,7 +498,7 @@ data ProductCategory k l p q where
 type (×) = ProductCategory
 
 instance (Category k, Category l) => Category (k×l) where
-  type Object (k×l) o = (IsProduct o, Object k (LFactor o), Object l (RFactor o))
+  type Object (k×l) o = (Object k (LFactor o), Object l (RFactor o))
   id = id:***:id
   (f:***:g) . (h:***:i) = (f.h):***:(g.i)
 

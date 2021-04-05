@@ -17,19 +17,15 @@ module Data.CategoryObject.Product where
 import Data.Semigroup
 import Data.Monoid hiding ((<>))
 
-class IsProduct t where
-  type LFactor t
-  type RFactor t
-
 data ProductCatObj a b = ProductCatObj a b
 
-instance IsProduct (ProductCatObj l r) where
-  type LFactor (ProductCatObj l r) = l
-  type RFactor (ProductCatObj l r) = r
+type family LFactor t where
+  LFactor (ProductCatObj l r) = l
+  LFactor (a,b) = (LFactor a, LFactor b)
 
-instance (IsProduct a, IsProduct b) => IsProduct (a,b) where
-  type LFactor (a,b) = (LFactor a, LFactor b)
-  type RFactor (a,b) = (RFactor a, RFactor b)
+type family RFactor t where
+  RFactor (ProductCatObj l r) = r
+  RFactor (a,b) = (RFactor a, RFactor b)
 
 instance (Semigroup a, Semigroup b) => Semigroup (ProductCatObj a b) where
   ProductCatObj x y <> ProductCatObj w z = ProductCatObj (x<>w) (y<>z)
