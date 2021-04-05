@@ -11,7 +11,6 @@
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE PolyKinds                    #-}
 {-# LANGUAGE TypeFamilies                 #-}
-{-# LANGUAGE GADTs                        #-}
 {-# LANGUAGE MultiParamTypeClasses        #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE RankNTypes                   #-}
@@ -491,9 +490,7 @@ instance Category Coercion where
   (.) = (Hask..)
 
 
-data ProductCategory k l p q where
-  (:***:) :: k (LFactor p) (LFactor q) -> l (RFactor p) (RFactor q)
-             -> ProductCategory k l p q
+data ProductCategory k l p q = k (LFactor p) (LFactor q) :***: l (RFactor p) (RFactor q)
 
 type (×) = ProductCategory
 
