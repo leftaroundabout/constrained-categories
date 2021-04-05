@@ -11,6 +11,7 @@
 {-# LANGUAGE ConstraintKinds              #-}
 {-# LANGUAGE PolyKinds                    #-}
 {-# LANGUAGE TypeFamilies                 #-}
+{-# LANGUAGE GADTs                        #-}
 {-# LANGUAGE MultiParamTypeClasses        #-}
 {-# LANGUAGE FlexibleContexts             #-}
 {-# LANGUAGE RankNTypes                   #-}
@@ -57,6 +58,7 @@ import GHC.Exts (Constraint)
 import Data.Tagged
 import Data.Monoid
 import Data.Void
+import Data.CategoryObject.Product
 #if MIN_VERSION_base(4,9,0)
 import Data.Kind (Type)
 #endif
@@ -487,3 +489,25 @@ instance HasAgent Discrete where
 instance Category Coercion where
   id = Hask.id
   (.) = (Hask..)
+
+
+data ProductCategory k l p q where
+  (:***:) :: k (LFactor p) (LFactor q) -> l (RFactor p) (RFactor q)
+             -> ProductCategory k l p q
+
+type (×) = ProductCategory
+
+instance (Category k, Category l) => Category (k×l) where
+  type Object (k×l) o = (IsProduct o, Object k (LFactor o), Object l (RFactor o))
+  id = id:***:id
+  (f:***:g) . (h:***:i) = (f.h):***:(g.i)
+
+instance (Cartesian k, Cartesian l) => Cartesian (k×l) where
+  type UnitObject (k×l) = ProductCatObj (UnitObject k) (UnitObject l)
+  type PairObjects (k×l) a b = ( PairObjects k (LFactor a) (LFactor b)
+                               , PairObjects l (RFactor a) (RFactor b) )
+  swap = swap :***: swap
+  attachUnit = attachUnit :***: attachUnit
+  detachUnit = detachUnit :***: detachUnit
+  regroup = regroup :***: regroup
+  regroup' = regroup' :***: regroup'
