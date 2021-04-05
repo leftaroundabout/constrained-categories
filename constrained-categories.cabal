@@ -64,4 +64,5 @@ Library
                       Control.Category.Constrained.Reified.PolyPattern
                       Data.Foldable.Constrained
                       Data.Traversable.Constrained
+                      Data.Tuple.Constraint
                      
