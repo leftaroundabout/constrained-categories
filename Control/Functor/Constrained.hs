@@ -42,7 +42,7 @@ import Data.Complex
 import Control.Category.Discrete
 
 
-class ( Category r, Category t, Object t (f (UnitObject r)) )
+class ( Category r, Category t )
            => Functor f r t | f r -> t, f t -> r where
   fmap :: (Object r a, Object t (f a), Object r b, Object t (f b))
      => r a b -> t (f a) (f b)
@@ -94,10 +94,10 @@ constrainedFmap :: (Category r, Category t, o a, o b, o (f a), o (f b))
        -> (o⊢r) a b -> (o⊢t) (f a) (f b)
 constrainedFmap q = constrained . q . unconstrained
 
-instance (Functor [] k k, o [UnitObject k]) => Functor [] (o⊢k) (o⊢k) where
+instance (Functor [] k k) => Functor [] (o⊢k) (o⊢k) where
   fmap (ConstrainedMorphism f) = ConstrainedMorphism $ fmap f
 
-instance (o (), o [()], o Void, o [Void]) => SumToProduct [] (o⊢(->)) (o⊢(->)) where
+instance (o (), o Void, o [Void]) => SumToProduct [] (o⊢(->)) (o⊢(->)) where
   sum2product = ConstrainedMorphism sum2product
   mapEither (ConstrainedMorphism f) = ConstrainedMorphism $ mapEither f
   filter (ConstrainedMorphism f) = ConstrainedMorphism $ filter f

@@ -36,7 +36,8 @@ import Prelude hiding (id, const, (.), ($), Functor(..), Applicative(..), curry,
 import qualified Control.Category.Hask as Hask
 
 
-class (Functor f r t, Cartesian r, Cartesian t) => Monoidal f r t where
+class (Functor f r t, Cartesian r, Cartesian t, Object t (f (UnitObject r)))
+               => Monoidal f r t where
   pureUnit :: UnitObject t `t` f (UnitObject r)
   fzipWith :: (ObjectPair r a b, Object r c, ObjectPair t (f a) (f b), Object t (f c))
               => r (a, b) c -> t (f a, f b) (f c)
