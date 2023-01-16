@@ -29,6 +29,7 @@ module Control.Applicative.Constrained (
           ) where
 
 
+import Control.Category.Constrained
 import Control.Functor.Constrained
 import Control.Arrow.Constrained
 

@@ -19,8 +19,7 @@
 
 
 module Data.Foldable.Constrained
-           ( module Control.Category.Constrained 
-           , Foldable(..)
+           ( Foldable(..)
            , fold
            , traverse_, mapM_, forM_, sequence_
            , concatMap

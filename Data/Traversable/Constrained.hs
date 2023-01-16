@@ -19,8 +19,7 @@
 
 
 module Data.Traversable.Constrained
-           ( module Control.Applicative.Constrained 
-           , Traversable(..)
+           ( Traversable(..)
            , forM
            , EndoTraversable
            , haskTraverse

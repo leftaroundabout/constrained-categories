@@ -19,9 +19,8 @@
 
 
 module Control.Functor.Constrained
-   ( module Control.Category.Constrained
-     -- * Functors
-   , Functor(..)
+   ( -- * Functors
+     Functor(..)
    , (<$>)
    , constrainedFmap
      -- * [Co]product mapping
