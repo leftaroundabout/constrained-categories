@@ -41,11 +41,11 @@ source-repository head
 Library
   Default-Language:   Haskell2010
   Build-Depends:      base>=4.8 && <5
-                      , tagged
-                      , void
-                      , semigroups
-                      , contravariant
-                      , fail
+                      , tagged <0.9
+                      , void <0.8
+                      , semigroups <0.21
+                      , contravariant <1.6
+                      , fail <4.9.0.1
                       , trivial-constraint >= 0.4 && < 0.8
   Default-Extensions: ConstraintKinds
                       TypeFamilies
