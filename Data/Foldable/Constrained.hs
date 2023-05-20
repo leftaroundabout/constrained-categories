@@ -141,6 +141,7 @@ traverse_ :: forall t k l o f a b uk ul .
            , ObjectPair k b ul, Object k (f b)
            , ObjectPair k (f ul) (f ul), ObjectPair k ul ul
            , uk ~ UnitObject k, ul ~ UnitObject l, uk ~ ul
+           , TerminateObject k b
            ) => a `k` f b -> t a `l` f ul
 traverse_ f = ffoldl q . first pureUnit . swap . attachUnit
     where q :: k (f uk, a) (f uk)
@@ -157,6 +158,7 @@ mapM_ :: forall t k o f a b u .
            , ObjectPair k u (t a), ObjectPair k (t a) u
            , ObjectPair k (f u) (f u), ObjectPair k u u
            , ObjectPair k b u, Object k (f b)
+           , TerminateObject k b
            ) => a `k` f b -> t a `k` f u
 mapM_ = traverse_
        
@@ -171,6 +173,7 @@ forM_ :: forall t k l f a b uk ul .
           , ObjectPair l (t a) ul, ObjectPair l (f ul) a
           , ObjectPair k b (f b), ObjectPair k b ul
           , ObjectPair k uk uk, ObjectPair k (f uk) a, ObjectPair k (f uk) (f uk)
+          , TerminateObject k b
           ) => t a -> a `k` f b -> f uk
 forM_ v f = traverse_ f $ v
 
@@ -184,6 +187,7 @@ sequence_ :: forall t k l m a b uk ul .
              , ObjectPair l (m ul) (t (m a)), ObjectPair l ul (t (m a))
              , ObjectPair l (m uk) (t (m a)), ObjectPair l (t (m a)) ul
              , ObjectPair k (m uk) (m a)
+             , TerminateObject k a
              ) => t (m a) `l` m uk
 sequence_ = traverse_ id 
 

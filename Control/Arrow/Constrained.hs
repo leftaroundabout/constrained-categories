@@ -130,12 +130,16 @@ class (CoCartesian a) => MorphChoice a where
 --   between /initial-/ and /terminal objects/. The latter are more interesting,
 --   basically what 'UnitObject' is useful for. It gives rise to the tuple
 --   selector morphisms as well.
-class (Morphism a) => PreArrow a where
-  (&&&) :: ( Object a b, ObjectPair a c c' )
+class (Morphism a, DuplicateObject a (UnitObject a), TerminateObject a (UnitObject a)) => PreArrow a where
+  type DuplicateObject a b :: Constraint
+  type DuplicateObject a b = ()
+  type TerminateObject a b :: Constraint
+  type TerminateObject a b = ()
+  (&&&) :: ( Object a b, ObjectPair a c c', DuplicateObject a b )
          => a b c -> a b c' -> a b (c,c')
-  terminal :: ( Object a b ) => a b (UnitObject a)
-  fst :: (ObjectPair a x y) => a (x,y) x
-  snd :: (ObjectPair a x y) => a (x,y) y
+  terminal :: ( Object a b, TerminateObject a b ) => a b (UnitObject a)
+  fst :: (ObjectPair a x y, TerminateObject a y) => a (x,y) x
+  snd :: (ObjectPair a x y, TerminateObject a x) => a (x,y) y
 
 infixr 2 |||
 -- | Dual to 'PreArrow', this class deals with the vacuous initial (zero) objects,
@@ -208,7 +212,7 @@ class (PreArrow a, ObjectPoint a (UnitObject a)) => WellPointed a where
   globalElement :: (ObjectPoint a x) => x -> a (UnitObject a) x
   globalElement = const
   unit :: CatTagged a (UnitObject a)
-  const :: (Object a b, ObjectPoint a x) 
+  const :: (Object a b, ObjectPoint a x, TerminateObject a b)
             => x -> a b x
   const x = globalElement x . terminal
 
@@ -359,6 +363,8 @@ instance (Morphism a, o (UnitObject a)) => Morphism (o⊢a) where
   ConstrainedMorphism a *** ConstrainedMorphism b = ConstrainedMorphism $ a *** b
   
 instance (PreArrow a, o (UnitObject a)) => PreArrow (o⊢a) where
+  type DuplicateObject (o⊢a) x = DuplicateObject a x
+  type TerminateObject (o⊢a) x = TerminateObject a x
   ConstrainedMorphism a &&& ConstrainedMorphism b = ConstrainedMorphism $ a &&& b
   terminal = ConstrainedMorphism terminal
   fst = ConstrainedMorphism fst
@@ -426,12 +432,13 @@ ifThenElse = arr $ \c -> arr $ \tv -> arr $ \fv -> if c then tv else fv
 
 
 genericAgentCombine :: ( HasAgent k, PreArrow k
-                       , Object k a, ObjectPair k b c, Object k d )
+                       , Object k a, ObjectPair k b c, Object k d
+                       , DuplicateObject k a)
      => k (b,c) d -> GenericAgent k a b -> GenericAgent k a c -> GenericAgent k a d
 genericAgentCombine m (GenericAgent v) (GenericAgent w)
        = GenericAgent $ m . (v &&& w)
   
-genericUnit :: ( PreArrow k, HasAgent k, Object k a )
+genericUnit :: ( PreArrow k, HasAgent k, Object k a, TerminateObject k a )
         => GenericAgent k a (UnitObject k)
 genericUnit = GenericAgent terminal
 
@@ -452,6 +459,7 @@ class (Morphism k, HasAgent k) => CartesianAgent k where
 
 genericAlg1to2 :: ( PreArrow k, u ~ UnitObject k
                   , Object k a, ObjectPair k b c
+                  , DuplicateObject k a
                   ) => ( forall q . Object k q
                       => GenericAgent k q a -> (GenericAgent k q b, GenericAgent k q c) )
                -> k a (b,c)
@@ -459,6 +467,8 @@ genericAlg1to2 f = runGenericAgent b &&& runGenericAgent c
  where (b,c) = f $ GenericAgent id
 genericAlg2to1 :: ( PreArrow k, u ~ UnitObject k
                   , ObjectPair k a u, ObjectPair k a b, ObjectPair k b u, ObjectPair k b a
+                  , TerminateObject k a
+                  , TerminateObject k b
                   ) => ( forall q . Object k q
                       => GenericAgent k q a -> GenericAgent k q b -> GenericAgent k q c )
                -> k (a,b) c
@@ -466,6 +476,10 @@ genericAlg2to1 f = runGenericAgent $ f (GenericAgent fst) (GenericAgent snd)
 genericAlg2to2 :: ( PreArrow k, u ~ UnitObject k
                   , ObjectPair k a u, ObjectPair k a b, ObjectPair k c d
                   , ObjectPair k b u, ObjectPair k b a
+                  --TODO: Can the duplicate and terminate be eliminated?
+                  , DuplicateObject k (a, b)
+                  , TerminateObject k a
+                  , TerminateObject k b
                   ) => ( forall q . Object k q
                       => GenericAgent k q a -> GenericAgent k q b 
                          -> (GenericAgent k q c, GenericAgent k q d) )
@@ -478,7 +492,7 @@ class (HasAgent k, AgentVal k a x ~ p a x)
            => PointAgent p k a x | p -> k where
   point :: (Object k a, Object k x) => x -> p a x
 
-genericPoint :: ( WellPointed k, Object k a, ObjectPoint k x )
+genericPoint :: ( WellPointed k, Object k a, ObjectPoint k x, TerminateObject k a )
        => x -> GenericAgent k a x
 genericPoint x = GenericAgent $ const x
 

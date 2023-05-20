@@ -87,6 +87,7 @@ g >>= h = (=<<) h $ g
 infixr 1 <<
 (<<) :: ( Monad m k, WellPointed k
         , Object k a, Object k b, Object k (m a), ObjectPoint k (m b), Object k (m (m b))
+        , TerminateObject k a
         ) => m b -> k (m a) (m b)
 (<<) b = join . fmap (const b)
 
@@ -96,6 +97,7 @@ infixl 1 >>
         , ObjectPair k (UnitObject k) (m b), ObjectPair k b a
         , ObjectPair k a b, Object k (m (a,b)), ObjectPair k (m a) (m b)
         , ObjectPoint k (m a)
+        , TerminateObject k a
         ) => m a -> k (m b) (m b)
 (>>) a = fmap snd . fzip . first (globalElement a) . swap . attachUnit
   -- where result = arr $ \b -> (join . fmap (const b)) `inCategoryOf` result $ a
@@ -204,6 +206,8 @@ instance (Monad m a, Morphism a, Curry a) => Morphism (Kleisli m a) where
   second (Kleisli f) = Kleisli $ fzip . (pure *** f)
   Kleisli f *** Kleisli g = Kleisli $ fzip . (f *** g)
 instance (Monad m a, PreArrow a, Curry a) => PreArrow (Kleisli m a) where
+  type DuplicateObject (Kleisli m a) o = DuplicateObject a o
+  type TerminateObject (Kleisli m a) o = TerminateObject a o
   Kleisli f &&& Kleisli g = Kleisli $ fzip . (f &&& g)
   terminal = Kleisli $ pure . terminal
   fst = Kleisli $ pure . fst
@@ -256,11 +260,13 @@ guard = i . choose fmzero pure
 
 when :: ( Monad m k, PreArrow k, u ~ UnitObject k
         , ObjectPair k (m u) u
+        , TerminateObject k (m u)
         ) => Bool -> m u `k` m u
 when True = id
 when False = pure . terminal
 unless :: ( Monad m k, PreArrow k, u ~ UnitObject k
         , ObjectPair k (m u) u
+        , TerminateObject k (m u)
         ) => Bool -> m u `k` m u
 unless False = id
 unless True = pure . terminal
@@ -272,6 +278,9 @@ filterM :: ( PreArrow k, Monad m k, SumToProduct c k k, EndoTraversable c k
            , ObjectPair k (m Bool) (m a)
            , ObjectPair k (m (Bool, a)) (m (c (Bool, a)))
            , TraversalObject k c (Bool, a)
+           , TerminateObject k Bool --NOTE: This can probably be eliminated
+           , TerminateObject k a
+           , DuplicateObject k a
            ) => a `k` m Bool -> c a `k` m (c a)
 filterM pg = fmap (fmap snd <<< filter fst) <<< mapM (fzip <<< pg &&& pure)
     
@@ -279,6 +288,7 @@ filterM pg = fmap (fmap snd <<< filter fst) <<< mapM (fzip <<< pg &&& pure)
 
 forever :: ( Monad m k, Function k, Arrow k (->), Object k a, Object k b 
            , Object k (m a), Object k (m (m a)), ObjectPoint k (m b), Object k (m (m b))
+           , TerminateObject k a
            ) => m a `k` m b
 forever = i . arr loop 
     where loop a = (join . fmap (const $ loop a)) `inCategoryOf` i $ a
@@ -286,6 +296,7 @@ forever = i . arr loop
 
 void :: ( Monad m k, PreArrow k
         , Object k a, Object k (m a), ObjectPair k a u, u ~ UnitObject k 
+        , TerminateObject k a
         ) => m a `k` m (UnitObject k)
 void = fmap terminal
  
